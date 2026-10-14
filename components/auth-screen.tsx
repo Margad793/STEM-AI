@@ -222,7 +222,7 @@ export function AuthScreen({ language, onLanguageChange, session, accessError }:
     </section>
   </main>
 
-  return <main className="flex min-h-screen items-center justify-center bg-[#f7f8fa] p-4 text-[#18202d]">
+  return <main className="auth-screen flex min-h-screen items-center justify-center bg-[#f7f8fa] p-4 text-[#18202d]">
     <section className="w-full max-w-md rounded-2xl border border-[#e5e8ec] bg-white p-6 shadow-sm sm:p-8">
       <div className="mb-7 flex items-center justify-between">
         <div className="flex items-center gap-2">
