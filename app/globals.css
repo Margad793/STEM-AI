@@ -84,11 +84,11 @@ button { cursor: pointer; }
 
   main:has(> div > div > div > div > button.flip-card) .public-card-prompt {
     margin-top: 0.5rem;
-    margin-bottom: 0.875rem;
+    margin-bottom: 1.5rem;
   }
 
   main:has(> div > div > div > div > button.flip-card) .public-card-socials,
   main:has(> div > div > div > div > button.flip-card) .public-card-save {
-    margin-top: 1.125rem;
+    margin-top: 1.5rem;
   }
 }
