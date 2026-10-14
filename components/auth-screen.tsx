@@ -243,18 +243,18 @@ export function AuthScreen({ language, onLanguageChange, session, accessError }:
       {!supabase && <p role="alert" className="mb-5 rounded-lg bg-amber-50 p-3 text-xs leading-relaxed text-amber-900">{t.missingConfig}</p>}
       <form onSubmit={submit} className="space-y-4">
         <label className="block text-xs font-semibold text-[#4b5868]">{t.email}
-          <input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} className="mt-2 h-11 w-full rounded-xl border-2 border-[#d9dee6] bg-[#fbfcfd] px-3.5 text-sm outline-none focus:border-[#93a4cb]" />
+          <input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} className="mt-2 h-11 w-full rounded-xl border-2 border-[#d9dee6] bg-[#fbfcfd] px-3.5 text-base outline-none focus:border-[#93a4cb] sm:text-sm" />
         </label>
         <label className="block text-xs font-semibold text-[#4b5868]">{t.password}
           <span className="relative mt-2 block">
-            <input type={showPassword ? 'text' : 'password'} autoComplete={mode === 'signIn' ? 'current-password' : 'new-password'} required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} className="h-11 w-full rounded-xl border-2 border-[#d9dee6] bg-[#fbfcfd] px-3.5 pr-12 text-sm outline-none focus:border-[#93a4cb]" />
+            <input type={showPassword ? 'text' : 'password'} autoComplete={mode === 'signIn' ? 'current-password' : 'new-password'} required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} className="h-11 w-full rounded-xl border-2 border-[#d9dee6] bg-[#fbfcfd] px-3.5 pr-12 text-base outline-none focus:border-[#93a4cb] sm:text-sm" />
             <button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? t.hidePassword : t.showPassword} aria-pressed={showPassword} className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl text-[#7c8795] hover:text-[#172538] focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-[#93a4cb]">
               {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
             </button>
           </span>
         </label>
         {mode === 'signUp' && <label className="block text-xs font-semibold text-[#4b5868]">{t.promo}
-          <input type="text" required value={promoCode} onChange={(event) => setPromoCode(event.target.value)} aria-describedby="promo-hint" className="mt-2 h-11 w-full rounded-xl border-2 border-[#d9dee6] bg-[#fbfcfd] px-3.5 text-sm outline-none focus:border-[#93a4cb]" />
+          <input type="text" required value={promoCode} onChange={(event) => setPromoCode(event.target.value)} aria-describedby="promo-hint" className="mt-2 h-11 w-full rounded-xl border-2 border-[#d9dee6] bg-[#fbfcfd] px-3.5 text-base outline-none focus:border-[#93a4cb] sm:text-sm" />
           <span id="promo-hint" className="mt-1 block font-normal text-[#8c96a3]">{t.promoHint}</span>
         </label>}
         {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-xs text-red-800">{error}</p>}

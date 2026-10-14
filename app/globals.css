@@ -48,3 +48,31 @@ body { margin: 0; min-width: 320px; font-family: Arial, Helvetica, sans-serif; }
 button, input, textarea { font: inherit; }
 button { cursor: pointer; }
 ::selection { background: #dce4fb; color: #263a70; }
+
+@media (max-width: 639px) {
+  main:has(> div > div > div > div > button.flip-card) {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  main:has(> div > div > div > div > button.flip-card) > div {
+    height: 100%;
+    min-height: 0;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  main:has(> div > div > div > div > button.flip-card) .mt-6 {
+    margin-top: 0.75rem;
+  }
+
+  main:has(> div > div > div > div > button.flip-card) .mb-6 {
+    margin-bottom: 0.75rem;
+  }
+
+  main:has(> div > div > div > div > button.flip-card) button.mt-7 {
+    margin-top: 0.75rem;
+  }
+}
