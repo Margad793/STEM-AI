@@ -5,22 +5,9 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'cardly — Your digital identity',
   description: 'Create, share, and manage your premium digital business card.',
-  generator: 'v0.app',
+  applicationName: 'Cardly',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
+    icon: '/cardly-icon.png',
     apple: '/apple-icon.png',
   },
 }

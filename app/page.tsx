@@ -363,7 +363,92 @@ export default function Page() {
 function downloadVCard(profile: Profile) { const website = profile.website.replace('https://', '').replace('http://', ''); const vcard = ['BEGIN:VCARD', 'VERSION:3.0', `FN:${profile.name}`, `ORG:${profile.company}`, `TITLE:${profile.title}`, `TEL;TYPE=CELL:${profile.phone}`, `EMAIL:${profile.email}`, `URL:https://${website}`, `ADR;TYPE=WORK:;;${profile.location}`, 'END:VCARD'].join('\r\n'); const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `${profile.name.replace(/\s+/g, '-')}.vcf`; document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000) }
 const useIsoLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect
 function fitText(el: HTMLElement, maxLines: number) { const avail = el.clientWidth; if (!avail) return; el.style.fontSize = ''; for (let pass = 0; pass < 8; pass++) { const cs = getComputedStyle(el); const fontSize = parseFloat(cs.fontSize); let scale = 1; if (el.scrollWidth > el.clientWidth + 1) scale = (el.clientWidth * 0.99) / el.scrollWidth; if (maxLines > 1) { let lh = parseFloat(cs.lineHeight); if (!lh || lh < fontSize * 0.5) lh = fontSize * 1.25; const maxH = maxLines * lh + 1; if (el.scrollHeight > maxH) scale = Math.min(scale, Math.sqrt(maxH / el.scrollHeight)); } if (scale > 0.999) break; el.style.fontSize = fontSize * scale + 'px' } }
-function PhotoField({ profile, update, t }: { profile: Profile; update: (key: keyof Profile) => (value: string) => void; t: typeof copy.en }) { const inputRef = useRef<HTMLInputElement>(null); const [error, setError] = useState(''); const [pending, setPending] = useState(''); const [crop, setCrop] = useState({ x: 0, y: 0 }); const [zoom, setZoom] = useState(1); const [area, setArea] = useState<Area | null>(null); const [working, setWorking] = useState(false); const close = () => { setPending(''); setArea(null); setCrop({ x: 0, y: 0 }); setZoom(1) }; const apply = async () => { if (!pending || !area || working) return; setWorking(true); try { update('photo')(await cropToDataUrl(pending, area)); close() } catch { setError('Could not crop that image - please try another one.'); close() } finally { setWorking(false) } }; const onChange = (event: React.ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (!file) return; if (!file.type.startsWith('image/')) { setError('Please choose an image file (PNG or JPG).'); return } if (file.size > 8 * 1024 * 1024) { setError('Image must be smaller than 8 MB.'); return } setError(''); const reader = new FileReader(); reader.onload = () => { close(); setPending(String(reader.result || '')) }; reader.readAsDataURL(file); event.target.value = '' }; return (<><div className="mt-6 flex flex-wrap items-center gap-4 rounded-xl border-2 border-dashed border-[#d9dee6] bg-[#fbfcfd] p-4"><div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#e1e5ea] bg-[#eef1f4] text-base font-semibold text-[#8996a3]">{profile.photo ? <img src={profile.photo} alt={t.photoPreview} className="size-full object-cover" /> : profile.name.split(' ').map((n) => n[0]).join('').slice(0, 3).toUpperCase() || '?'}</div><div className="flex min-w-0 flex-1 flex-col items-start gap-2"><div><p className="text-xs font-semibold text-[#4b5868]">{t.profilePhoto}</p><p className="mt-0.5 text-xs text-[#8c96a3]">{t.photoHint}</p></div><div className="flex w-full min-w-0 flex-nowrap gap-2"><button type="button" onClick={() => inputRef.current?.click()} className="inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-lg bg-[#172538] px-1.5 text-[10px] font-semibold whitespace-nowrap text-white shadow-[0_2px_8px_rgba(23,37,56,0.25)] transition hover:bg-[#24354b] sm:gap-2 sm:px-4 sm:text-xs"><Upload size={14} className="shrink-0" /><span className="min-w-0 truncate">{profile.photo ? t.changePhoto : t.uploadPhoto}</span></button>{profile.photo && <button type="button" onClick={() => update('photo')('')} className="h-9 min-w-0 flex-1 truncate rounded-lg border border-[#dfe3e8] bg-white px-1.5 text-[10px] font-semibold whitespace-nowrap text-[#52606f] transition hover:bg-[#f7f8fa] sm:px-4 sm:text-xs">{t.remove}</button>}</div>{error && <p className="text-xs font-semibold text-[#c2413a]">{error}</p>}<input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={onChange} /></div></div>{pending && <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4"><div className="w-full max-w-[360px] rounded-2xl bg-white p-4 shadow-2xl"><p className="text-sm font-semibold text-[#263343]">{t.cropPhoto}</p><p className="mt-1 text-xs text-[#8c96a3]">{t.cropHint}</p><div className="relative mt-3 h-[260px] w-full overflow-hidden rounded-xl bg-[#141c28]"><Cropper image={pending} crop={crop} zoom={zoom} aspect={1} cropShape="round" onCropChange={setCrop} onZoomChange={setZoom} onCropComplete={(_, cropped) => setArea(cropped)} /></div><input type="range" min={1} max={3} step={0.05} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} aria-label={t.zoomPhoto} className="mt-3 w-full accent-[#172538]" /><div className="mt-3 flex justify-end gap-2"><button type="button" onClick={close} className="h-9 max-w-full rounded-lg border border-[#dfe3e8] bg-white px-2.5 text-[11px] sm:px-4 sm:text-xs font-semibold text-[#52606f] transition hover:bg-[#f7f8fa]">{t.cancel}</button><button type="button" onClick={apply} disabled={!area || working} className="h-9 rounded-lg bg-[#172538] px-4 text-xs font-semibold text-white transition hover:bg-[#24354b] disabled:cursor-not-allowed disabled:opacity-60">{working ? t.saving : t.applyPhoto}</button></div></div></div>}</> ) }
+function PhotoField({ profile, update, t }: { profile: Profile; update: (key: keyof Profile) => (value: string) => void; t: typeof copy.en }) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [error, setError] = useState('')
+  const [pending, setPending] = useState('')
+  const [crop, setCrop] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(1)
+  const [area, setArea] = useState<Area | null>(null)
+  const [working, setWorking] = useState(false)
+  const close = () => {
+    setPending('')
+    setArea(null)
+    setCrop({ x: 0, y: 0 })
+    setZoom(1)
+  }
+  const apply = async () => {
+    if (!pending || !area || working) return
+    setWorking(true)
+    try {
+      update('photo')(await cropToDataUrl(pending, area))
+      close()
+    } catch {
+      setError('Could not crop that image - please try another one.')
+      close()
+    } finally {
+      setWorking(false)
+    }
+  }
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setError('Please choose an image file (PNG or JPG).')
+      return
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setError('Image must be smaller than 8 MB.')
+      return
+    }
+    setError('')
+    const reader = new FileReader()
+    reader.onload = () => {
+      close()
+      setPending(String(reader.result || ''))
+    }
+    reader.readAsDataURL(file)
+    event.target.value = ''
+  }
+  return (
+    <>
+      <div className="mt-6 flex flex-wrap items-center gap-4 rounded-xl border-2 border-dashed border-[#d9dee6] bg-[#fbfcfd] p-4">
+        <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#e1e5ea] bg-[#eef1f4] text-base font-semibold text-[#8996a3]">
+          {profile.photo ? <img src={profile.photo} alt={t.photoPreview} className="size-full object-cover" /> : profile.name.split(' ').map((n) => n[0]).join('').slice(0, 3).toUpperCase() || '?'}
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col items-start gap-2">
+          <div>
+            <p className="text-xs font-semibold text-[#4b5868]">{t.profilePhoto}</p>
+            <p className="mt-0.5 text-xs text-[#8c96a3]">{t.photoHint}</p>
+          </div>
+          <div className="flex w-full min-w-0 flex-nowrap gap-2">
+            <button type="button" onClick={() => inputRef.current?.click()} aria-label={profile.photo ? t.changePhoto : t.uploadPhoto} className="inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-lg bg-[#172538] px-1.5 text-[10px] font-semibold whitespace-nowrap text-white shadow-[0_2px_8px_rgba(23,37,56,0.25)] transition hover:bg-[#24354b] sm:gap-2 sm:px-4 sm:text-xs">
+              <Upload size={14} className="shrink-0" />
+              <span className="min-w-0 truncate">{profile.photo ? (t.changePhoto === 'Change photo' ? 'Change' : 'Солих') : t.uploadPhoto}</span>
+            </button>
+            {profile.photo && <button type="button" onClick={() => update('photo')('')} className="h-9 min-w-0 flex-1 truncate rounded-lg border border-[#dfe3e8] bg-white px-1.5 text-[10px] font-semibold whitespace-nowrap text-[#52606f] transition hover:bg-[#f7f8fa] sm:px-4 sm:text-xs">{t.remove}</button>}
+          </div>
+          {error && <p className="text-xs font-semibold text-[#c2413a]">{error}</p>}
+          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={onChange} />
+        </div>
+      </div>
+      {pending && <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4">
+        <div className="w-full max-w-[360px] rounded-2xl bg-white p-4 shadow-2xl">
+          <p className="text-sm font-semibold text-[#263343]">{t.cropPhoto}</p>
+          <p className="mt-1 text-xs text-[#8c96a3]">{t.cropHint}</p>
+          <div className="relative mt-3 h-[260px] w-full overflow-hidden rounded-xl bg-[#141c28]">
+            <Cropper image={pending} crop={crop} zoom={zoom} aspect={1} cropShape="round" onCropChange={setCrop} onZoomChange={setZoom} onCropComplete={(_, cropped) => setArea(cropped)} />
+          </div>
+          <input type="range" min={1} max={3} step={0.05} value={zoom} onChange={(event) => setZoom(Number(event.target.value))} aria-label={t.zoomPhoto} className="mt-3 w-full accent-[#172538]" />
+          <div className="mt-3 flex justify-end gap-2">
+            <button type="button" onClick={close} className="h-9 max-w-full rounded-lg border border-[#dfe3e8] bg-white px-2.5 text-[11px] font-semibold text-[#52606f] transition hover:bg-[#f7f8fa] sm:px-4 sm:text-xs">{t.cancel}</button>
+            <button type="button" onClick={apply} disabled={!area || working} className="h-9 rounded-lg bg-[#172538] px-4 text-xs font-semibold text-white transition hover:bg-[#24354b] disabled:cursor-not-allowed disabled:opacity-60">{working ? t.saving : t.applyPhoto}</button>
+          </div>
+        </div>
+      </div>}
+    </>
+  )
+}
 async function cropToDataUrl(src: string, area: { x: number; y: number; width: number; height: number }): Promise<string> {
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image()
