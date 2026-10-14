@@ -202,7 +202,7 @@ export default function Page() {
           setPublicCode(null)
           setSavedPhotoUrl('')
           setPendingPhotoDeletions([])
-          setProfile(emptyProfile)
+          setProfile({ ...emptyProfile, email: session.user.email ?? '' })
           setSelectedTemplate(0)
           setSelectedTexture('arcs')
         }
