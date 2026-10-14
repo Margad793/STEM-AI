@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   description: 'Create, share, and manage your premium digital business card.',
   applicationName: 'Cardly',
   icons: {
-    icon: '/cardly-icon.png',
-    apple: '/apple-icon.png',
+    icon: [{ url: '/cardly-favicon-20261014.png', sizes: '48x48', type: 'image/png' }],
+    apple: [{ url: '/cardly-apple-icon-20261014.png', sizes: '180x180', type: 'image/png' }],
   },
 }
 
