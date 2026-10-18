@@ -1445,6 +1445,48 @@ function SocialGlyph({ name }: { name: 'instagram' | 'facebook' | 'linkedin' | '
 function InstagramGlyph({ size = 18, className }: { size?: number; className?: string }) { return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5.5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><path d="M17.5 6.5h.01" /></svg> }
 function FacebookGlyph({ size = 18, className }: { size?: number; className?: string }) { return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg> }
 function ViberGlyph({ size = 18 }: { size?: number }) { return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /><g transform="translate(6.9 6.9) scale(0.38)" strokeWidth={4.5}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></g></svg> }
+async function imageBlobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.onerror = () => reject(new Error('Could not read image data.'))
+    reader.readAsDataURL(blob)
+  })
+}
+async function createImageReadyExportNode(source: HTMLElement): Promise<{ node: HTMLElement; cleanup: () => void }> {
+  const node = source.cloneNode(true) as HTMLElement
+  node.style.position = 'fixed'
+  node.style.left = '0'
+  node.style.top = '0'
+  node.style.zIndex = '-1'
+  node.style.opacity = '0'
+  document.body.appendChild(node)
+  try {
+    const images = Array.from(node.querySelectorAll('img'))
+    await Promise.all(images.map(async (image) => {
+      if (!image.complete) {
+        await new Promise<void>((resolve, reject) => {
+          image.addEventListener('load', () => resolve(), { once: true })
+          image.addEventListener('error', () => reject(new Error(`Unable to load image: ${image.src}`)), { once: true })
+        })
+      }
+      if (!image.naturalWidth) throw new Error(`Unable to load image: ${image.src}`)
+      await image.decode()
+      if (!image.src.startsWith('data:')) {
+        const response = await fetch(image.currentSrc || image.src, { mode: 'cors', cache: 'force-cache' })
+        if (!response.ok) throw new Error(`Unable to fetch image: ${image.src}`)
+        image.srcset = ''
+        image.src = await imageBlobToDataUrl(await response.blob())
+        await image.decode()
+      }
+    }))
+    await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+    return { node, cleanup: () => node.remove() }
+  } catch (error) {
+    node.remove()
+    throw error
+  }
+}
 function CardAssetActions({
   profile,
   t,
@@ -1464,14 +1506,25 @@ function CardAssetActions({
 }) {
   const imageExportRef = useRef<HTMLDivElement>(null)
   const [savingImage, setSavingImage] = useState(false)
-  const [imageFeedback, setImageFeedback] = useState('')
-  const saveImageFile = async (blob: Blob, filename: string, title: string) => {
+  const [activeAction, setActiveAction] = useState<'qr' | 'card' | null>(null)
+  const [imageFeedback, setImageFeedback] = useState<{ action: 'qr' | 'card'; message: string } | null>(null)
+  const actionMessage = (action: 'qr' | 'card', outcome: 'shared' | 'downloaded' | 'error') => {
+    if (language === 'en') {
+      if (outcome === 'error') return action === 'qr' ? 'Could not create the QR image.' : t.cardImageError
+      if (action === 'qr') return outcome === 'shared' ? 'QR image shared. Choose Save Image to keep it.' : 'QR image downloaded.'
+      return outcome === 'shared' ? 'Card image shared. Choose Save Image to keep it.' : t.cardImageDownloaded
+    }
+    if (outcome === 'error') return action === 'qr' ? 'QR зураг үүсгэж чадсангүй.' : t.cardImageError
+    if (action === 'qr') return outcome === 'shared' ? 'QR зургийг хуваалцлаа. Хадгалахын тулд Save Image сонгоно уу.' : 'QR зураг татагдлаа.'
+    return outcome === 'shared' ? 'Картын зургийг хуваалцлаа. Хадгалахын тулд Save Image сонгоно уу.' : 'Картын зураг татагдлаа.'
+  }
+  const saveImageFile = async (blob: Blob, filename: string, title: string, action: 'qr' | 'card') => {
     const file = new File([blob], filename, { type: 'image/png' })
     const isMobileDevice = navigator.userAgentData?.mobile
       ?? /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
     if (isMobileDevice && navigator.share && navigator.canShare?.({ files: [file] })) {
       await navigator.share({ files: [file], title })
-      setImageFeedback(t.cardImageReady)
+      setImageFeedback({ action, message: actionMessage(action, 'shared') })
       return
     }
     const imageUrl = URL.createObjectURL(blob)
@@ -1482,58 +1535,41 @@ function CardAssetActions({
     link.click()
     link.remove()
     window.setTimeout(() => URL.revokeObjectURL(imageUrl), 60_000)
-    setImageFeedback(t.cardImageDownloaded)
+    setImageFeedback({ action, message: actionMessage(action, 'downloaded') })
   }
   const saveCardImage = async () => {
     if (!imageExportRef.current || savingImage) return
     setSavingImage(true)
-    setImageFeedback('')
+    setActiveAction('card')
+    setImageFeedback(null)
     try {
       await document.fonts.ready
-      const exportNode = imageExportRef.current
-      const originalStyle = exportNode.getAttribute('style')
-      exportNode.style.position = 'fixed'
-      exportNode.style.left = '0'
-      exportNode.style.top = '0'
-      exportNode.style.zIndex = 'auto'
-      exportNode.style.opacity = '0'
-      let blob: Blob | null
+      const { node: exportNode, cleanup } = await createImageReadyExportNode(imageExportRef.current)
       try {
-        await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
-        const images = Array.from(exportNode.querySelectorAll('img'))
-        await Promise.all(images.map(async (image) => {
-          if (!image.complete) {
-            await new Promise<void>((resolve, reject) => {
-              image.addEventListener('load', () => resolve(), { once: true })
-              image.addEventListener('error', () => reject(new Error(`Unable to load image: ${image.src}`)), { once: true })
-            })
-          }
-          if (!image.naturalWidth) throw new Error(`Unable to load image: ${image.src}`)
-          await image.decode()
-        }))
-        blob = await toBlob(exportNode, {
+        const blob = await toBlob(exportNode, {
           backgroundColor: '#eef1f4',
-          cacheBust: true,
+          cacheBust: false,
           pixelRatio: 2,
           style: { position: 'relative', left: '0px', top: '0px', zIndex: 'auto', opacity: '1' },
         })
+        if (!blob) throw new Error('Image export returned no data.')
+        await saveImageFile(blob, `${(profile.name.trim() || 'card').replace(/[^a-z0-9-_]+/gi, '-')}-card.png`, profile.name || t.digital, 'card')
       } finally {
-        if (originalStyle === null) exportNode.removeAttribute('style')
-        else exportNode.setAttribute('style', originalStyle)
+        cleanup()
       }
-      if (!blob) throw new Error('Image export returned no data.')
-      await saveImageFile(blob, `${(profile.name.trim() || 'card').replace(/[^a-z0-9-_]+/gi, '-')}-card.png`, profile.name || t.digital)
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') return
-      setImageFeedback(t.cardImageError)
+      setImageFeedback({ action: 'card', message: actionMessage('card', 'error') })
     } finally {
       setSavingImage(false)
+      setActiveAction(null)
     }
   }
   const saveQrImage = async () => {
     if (!publicCode || savingImage) return
     setSavingImage(true)
-    setImageFeedback('')
+    setActiveAction('qr')
+    setImageFeedback(null)
     try {
       const dataUrl = await QRCode.toDataURL(publicCardUrl(publicCode), {
         width: 1024,
@@ -1543,57 +1579,57 @@ function CardAssetActions({
       })
       const response = await fetch(dataUrl)
       if (!response.ok) throw new Error('Could not prepare the QR image.')
-      await saveImageFile(await response.blob(), `${(profile.name.trim() || 'card').replace(/[^a-z0-9-_]+/gi, '-')}-qr.png`, `${profile.name || t.digital} QR`)
+      await saveImageFile(await response.blob(), `${(profile.name.trim() || 'card').replace(/[^a-z0-9-_]+/gi, '-')}-qr.png`, `${profile.name || t.digital} QR`, 'qr')
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') return
-      setImageFeedback(t.cardImageError)
+      setImageFeedback({ action: 'qr', message: actionMessage('qr', 'error') })
     } finally {
       setSavingImage(false)
+      setActiveAction(null)
     }
   }
   return (
     <>
       <div className={`grid w-full gap-2 ${publicCode ? 'grid-cols-2' : 'grid-cols-1'} ${compact ? '' : 'mx-auto mt-3 max-w-[520px] gap-3'}`}>
         {publicCode && (
+          <div className="min-w-0">
+            <button
+              type="button"
+              onClick={() => void saveQrImage()}
+              disabled={savingImage}
+              title={language === 'en' ? 'Save QR' : 'QR хадгалах'}
+              style={compact ? { fontSize: '9px', lineHeight: 1, WebkitTextSizeAdjust: 'none' } : undefined}
+              className={`flex w-full min-w-0 items-center justify-center rounded-xl border border-current/15 bg-white/75 font-semibold transition hover:bg-white disabled:cursor-wait disabled:opacity-60 ${compact ? 'h-7 gap-1 px-1 text-[9px] leading-none' : 'h-12 gap-2 px-3 text-sm'}`}
+            >
+              <QrCode size={compact ? 10 : 17} className="shrink-0" />
+              <span style={compact ? { fontSize: '9px', lineHeight: 1, WebkitTextSizeAdjust: 'none' } : undefined} className="min-w-0 truncate">{activeAction === 'qr' ? t.savingCardImage : compact && language === 'mn' ? 'QR хадгалах' : language === 'en' ? 'Save QR' : 'QR хадгалах'}</span>
+            </button>
+            {imageFeedback?.action === 'qr' && <p aria-live="polite" className={`${compact ? 'text-[7px]' : 'text-xs'} mt-1 text-center opacity-65`}>{imageFeedback.message}</p>}
+          </div>
+        )}
+        <div className="min-w-0">
           <button
             type="button"
-            onClick={() => void saveQrImage()}
+            onClick={() => void saveCardImage()}
             disabled={savingImage}
-            title={language === 'en' ? 'Save QR' : 'QR хадгалах'}
+            title={t.saveCardImage}
             style={compact ? { fontSize: '9px', lineHeight: 1, WebkitTextSizeAdjust: 'none' } : undefined}
-            className={`flex min-w-0 items-center justify-center rounded-xl border border-current/15 bg-white/75 font-semibold transition hover:bg-white disabled:cursor-wait disabled:opacity-60 ${compact ? 'h-7 gap-1 px-1 text-[9px] leading-none' : 'h-12 gap-2 px-3 text-sm'}`}
+            className={`flex w-full min-w-0 items-center justify-center rounded-xl border border-current/15 bg-white/75 font-semibold transition hover:bg-white disabled:cursor-wait disabled:opacity-60 ${compact ? 'h-7 gap-1 px-1 text-[9px] leading-none' : 'h-12 gap-2 px-3 text-sm'}`}
           >
-            <QrCode size={compact ? 10 : 17} className="shrink-0" />
-            <span style={compact ? { fontSize: '9px', lineHeight: 1, WebkitTextSizeAdjust: 'none' } : undefined} className="min-w-0 truncate">{savingImage ? t.savingCardImage : compact && language === 'mn' ? 'QR хадгалах' : language === 'en' ? 'Save QR' : 'QR хадгалах'}</span>
+            <Share2 size={compact ? 10 : 17} className="shrink-0" />
+            <span style={compact ? { fontSize: '9px', lineHeight: 1, WebkitTextSizeAdjust: 'none' } : undefined} className="min-w-0 truncate">{activeAction === 'card' ? t.savingCardImage : compact ? language === 'en' ? 'Save card' : 'Карт хадгалах' : t.saveCardImage}</span>
           </button>
-        )}
-        <button
-          type="button"
-          onClick={() => void saveCardImage()}
-          disabled={savingImage}
-          title={t.saveCardImage}
-          style={compact ? { fontSize: '9px', lineHeight: 1, WebkitTextSizeAdjust: 'none' } : undefined}
-          className={`flex min-w-0 items-center justify-center rounded-xl border border-current/15 bg-white/75 font-semibold transition hover:bg-white disabled:cursor-wait disabled:opacity-60 ${compact ? 'h-7 gap-1 px-1 text-[9px] leading-none' : 'h-12 gap-2 px-3 text-sm'}`}
-        >
-          <Share2 size={compact ? 10 : 17} className="shrink-0" />
-          <span style={compact ? { fontSize: '9px', lineHeight: 1, WebkitTextSizeAdjust: 'none' } : undefined} className="min-w-0 truncate">{savingImage ? t.savingCardImage : compact ? language === 'en' ? 'Save card' : 'Карт хадгалах' : t.saveCardImage}</span>
-        </button>
+          {imageFeedback?.action === 'card' && <p aria-live="polite" className={`${compact ? 'text-[7px]' : 'text-xs'} mt-1 text-center opacity-65`}>{imageFeedback.message}</p>}
+        </div>
       </div>
-      <p aria-live="polite" className={`${compact ? 'mt-1 text-[7px]' : 'mx-auto mt-2 max-w-[520px] text-xs'} text-center opacity-65`}>
-        {imageFeedback || (language === 'en'
-          ? 'On a computer, the image downloads automatically. On a phone, choose “Save Image” in the share menu.'
-          : 'Компьютер дээр зураг шууд татагдана. Утсан дээр хуваалцах цэснээс “Save Image” сонгоно уу.')}
-      </p>
       <div
         ref={imageExportRef}
         aria-hidden="true"
         className="flip-card pointer-events-none fixed left-[-10000px] top-0 z-[-1] flex w-[600px] flex-col gap-3 bg-[#eef1f4] p-10 text-[#26333a]"
       >
-        <p className="text-sm font-semibold tracking-wide">{t.frontSide}</p>
         <div className="flip-card relative isolate aspect-[1.7] w-full overflow-hidden">
           <CardFace exportMode template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} />
         </div>
-        <p className="mt-2 text-sm font-semibold tracking-wide">{t.backSide}</p>
         <div className="flip-card relative isolate aspect-[1.7] w-full overflow-hidden">
           <CardFace exportMode back template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} />
         </div>
@@ -1644,9 +1680,6 @@ function PreviewPanel({ template, profile, t, language, texture, publicCode }: {
   )
 }
 function PublicCard({ onBack, template, profile, language, t, texture, publicCode }: { onBack: () => void; template: Template; profile: Profile; language: Language; t: typeof copy.en; texture: Texture; publicCode: string | null }) {
-  const imageExportRef = useRef<HTMLDivElement>(null)
-  const [savingImage, setSavingImage] = useState(false)
-  const [imageFeedback, setImageFeedback] = useState('')
   const publicTextColor = template.name === 'Soft Feminine Pastel' ? '#573b48' : template.name === 'Creative Glass' ? '#3d315f' : '#26333a'
   const hasPhone = profile.showPhone && Boolean(profile.phone.trim())
   const emails = [
@@ -1654,104 +1687,6 @@ function PublicCard({ onBack, template, profile, language, t, texture, publicCod
     profile.showPersonalEmail ? profile.personalEmail.trim() : '',
   ].filter(Boolean)
   const actionCount = Number(hasPhone) + emails.length
-  const saveImageFile = async (blob: Blob, filename: string, title: string) => {
-    try {
-      const file = new File([blob], filename, { type: 'image/png' })
-      const isMobileDevice = navigator.userAgentData?.mobile
-        ?? /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-      if (isMobileDevice && navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title })
-        setImageFeedback(t.cardImageReady)
-        return
-      }
-      const imageUrl = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = imageUrl
-      link.download = filename
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      window.setTimeout(() => URL.revokeObjectURL(imageUrl), 60_000)
-      setImageFeedback(t.cardImageDownloaded)
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') return
-      throw error
-    }
-  }
-  const saveCardImage = async () => {
-    if (!imageExportRef.current || savingImage) return
-    setSavingImage(true)
-    setImageFeedback('')
-    try {
-      await document.fonts.ready
-      const exportNode = imageExportRef.current
-      const originalStyle = exportNode.getAttribute('style')
-      exportNode.style.position = 'fixed'
-      exportNode.style.left = '0'
-      exportNode.style.top = '0'
-      exportNode.style.zIndex = 'auto'
-      exportNode.style.opacity = '0'
-      let blob: Blob | null
-      try {
-        await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
-        const images = Array.from(exportNode.querySelectorAll('img'))
-        await Promise.all(images.map(async (image) => {
-          if (!image.complete) {
-            await new Promise<void>((resolve, reject) => {
-              image.addEventListener('load', () => resolve(), { once: true })
-              image.addEventListener('error', () => reject(new Error(`Unable to load image: ${image.src}`)), { once: true })
-            })
-          }
-          if (!image.naturalWidth) throw new Error(`Unable to load image: ${image.src}`)
-          await image.decode()
-        }))
-        blob = await toBlob(exportNode, {
-          backgroundColor: '#eef1f4',
-          cacheBust: true,
-          pixelRatio: 2,
-          style: {
-            position: 'relative',
-            left: '0px',
-            top: '0px',
-            zIndex: 'auto',
-            opacity: '1',
-          },
-        })
-      } finally {
-        if (originalStyle === null) exportNode.removeAttribute('style')
-        else exportNode.setAttribute('style', originalStyle)
-      }
-      if (!blob) throw new Error('Image export returned no data.')
-      const filename = `${(profile.name.trim() || 'card').replace(/[^a-z0-9-_]+/gi, '-')}-card.png`
-      await saveImageFile(blob, filename, profile.name || t.digital)
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') return
-      setImageFeedback(t.cardImageError)
-    } finally {
-      setSavingImage(false)
-    }
-  }
-  const saveQrImage = async () => {
-    if (!publicCode || savingImage) return
-    setSavingImage(true)
-    setImageFeedback('')
-    try {
-      const dataUrl = await QRCode.toDataURL(publicCardUrl(publicCode), {
-        width: 1024,
-        margin: 2,
-        errorCorrectionLevel: 'H',
-        color: { dark: '#172538', light: '#ffffff' },
-      })
-      const response = await fetch(dataUrl)
-      if (!response.ok) throw new Error('Could not prepare the QR image.')
-      await saveImageFile(await response.blob(), `${(profile.name.trim() || 'card').replace(/[^a-z0-9-_]+/gi, '-')}-qr.png`, `${profile.name || t.digital} QR`)
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') return
-      setImageFeedback(t.cardImageError)
-    } finally {
-      setSavingImage(false)
-    }
-  }
 
   return (
     <main
@@ -1802,47 +1737,7 @@ function PublicCard({ onBack, template, profile, language, t, texture, publicCod
               <Download size={16} strokeWidth={2.4} /> {language === 'en' ? 'Save Contact' : t.saveContact}
             </button>
           )}
-          <div className={`mx-auto mt-3 grid w-full max-w-[520px] gap-3 ${publicCode ? 'grid-cols-2' : 'grid-cols-1'}`}>
-            {publicCode && (
-              <button
-                type="button"
-                onClick={() => void saveQrImage()}
-                disabled={savingImage}
-                className="flex h-12 min-w-0 items-center justify-center gap-2 rounded-xl border border-current/15 bg-white/75 px-3 text-sm font-semibold transition hover:bg-white disabled:cursor-wait disabled:opacity-60"
-              >
-                <QrCode size={17} className="shrink-0" />
-                <span className="truncate">{savingImage ? t.savingCardImage : language === 'en' ? 'Save QR' : 'QR хадгалах'}</span>
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => void saveCardImage()}
-              disabled={savingImage}
-              className="flex h-12 min-w-0 items-center justify-center gap-2 rounded-xl border border-current/15 bg-white/75 px-3 text-sm font-semibold transition hover:bg-white disabled:cursor-wait disabled:opacity-60"
-            >
-              <Share2 size={17} className="shrink-0" />
-              <span className="truncate">{savingImage ? t.savingCardImage : t.saveCardImage}</span>
-            </button>
-          </div>
-          <p aria-live="polite" className="mt-2 max-w-[520px] text-center text-xs opacity-65">
-            {imageFeedback || (language === 'en'
-              ? 'On a computer, the image downloads automatically. On a phone, choose “Save Image” in the share menu.'
-              : 'Компьютер дээр зураг шууд татагдана. Утсан дээр хуваалцах цэснээс “Save Image” сонгоно уу.')}
-          </p>
-        </div>
-      </div>
-      <div
-        ref={imageExportRef}
-        aria-hidden="true"
-        className="flip-card pointer-events-none fixed left-[-10000px] top-0 z-[-1] flex w-[600px] flex-col gap-3 bg-[#eef1f4] p-10 text-[#26333a]"
-      >
-        <p className="text-sm font-semibold tracking-wide">{t.frontSide}</p>
-        <div className="flip-card relative isolate aspect-[1.7] w-full overflow-hidden">
-          <CardFace exportMode template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} />
-        </div>
-        <p className="mt-2 text-sm font-semibold tracking-wide">{t.backSide}</p>
-        <div className="flip-card relative isolate aspect-[1.7] w-full overflow-hidden">
-          <CardFace exportMode back template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} />
+          <CardAssetActions profile={profile} t={t} language={language} texture={texture} template={template} publicCode={publicCode} />
         </div>
       </div>
     </main>
