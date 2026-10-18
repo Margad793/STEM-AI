@@ -1358,8 +1358,7 @@ function CardFace({
         <div className="relative z-10 flex h-full min-h-0 w-full flex-col justify-between">
           <div className="flex items-start justify-between gap-[calc(6*var(--u))]">
             <span
-              data-fit="2"
-              className="min-w-0 break-words overflow-hidden text-[calc(12*var(--u))] font-bold tracking-[0.18em]"
+              className="line-clamp-2 min-w-0 flex-1 break-words text-center text-[calc(12*var(--u))] font-bold leading-tight tracking-[0.18em]"
             >
               {profile.company.toUpperCase()}
             </span>
