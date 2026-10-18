@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Globe2, Hash, Mail, Phone } from 'lucide-react'
 import QRCode from 'qrcode'
-import { carbonWaveTextureImage } from '@/lib/card-design'
+import { getCarbonWaveTextureImage } from '@/lib/card-design'
 import type { Profile, Template, Texture } from '@/lib/card-types'
 import { fitText } from '@/lib/fit-text'
 import { getPublicSiteOrigin } from '@/lib/site'
@@ -68,7 +68,7 @@ function CardFace({
   }, [back, profile, template.name])
 
   const textureImage = texture === 'carbon-wave'
-    ? `${carbonWaveTextureImage}, linear-gradient(135deg, rgba(22,30,40,.18), rgba(255,255,255,.04))`
+    ? getCarbonWaveTextureImage(template.name)
     : texture === 'arcs'
     ? undefined
     : texture === 'matte'

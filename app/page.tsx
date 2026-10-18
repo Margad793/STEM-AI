@@ -9,7 +9,7 @@ import Cropper, { type Area } from 'react-easy-crop'
 import type { Session } from '@supabase/supabase-js'
 import { AuthScreen } from '@/components/auth-screen'
 import { FacebookGlyph, InstagramGlyph, ViberGlyph } from '@/components/social-icons'
-import { carbonWaveTextureImage, templates, templateSlugs, textures } from '@/lib/card-design'
+import { getCarbonWaveTextureImage, templates, templateSlugs, textures } from '@/lib/card-design'
 import type { Profile, Template, Texture } from '@/lib/card-types'
 import { fitText } from '@/lib/fit-text'
 import { supabase, supabaseConfigured } from '@/lib/supabase-browser'
@@ -671,7 +671,7 @@ export default function Page() {
                       className={`rounded-xl border p-3 text-left transition hover:-translate-y-0.5 hover:border-[#9cadd0] ${selectedTexture === item.id ? "border-[#6d82bf] bg-[#f6f8fc] ring-2 ring-[#e5eafa]" : "border-[#e5e8ec] bg-white"}`}
                     >
                       <div
-                        style={item.id === 'carbon-wave' ? { backgroundImage: `${carbonWaveTextureImage}, linear-gradient(135deg,#303943,#111820)` } : undefined}
+                        style={item.id === 'carbon-wave' ? { backgroundImage: getCarbonWaveTextureImage('Luxury Dark & Gold') } : undefined}
                         className={`mb-3 h-16 rounded-lg ${item.id === "holographic" ? "bg-[linear-gradient(120deg,#ef8db8,#82d8db,#f8dc87)]" : item.id === "arcs" ? "bg-[#e9edf4] [background-image:radial-gradient(circle_at_90%_0%,transparent_0_28px,#93a5c6_29px_33px,transparent_34px),radial-gradient(circle_at_10%_100%,transparent_0_24px,#b8c5da_25px_29px,transparent_30px)]" : item.id === "matte" ? "bg-[#e9e5df]" : item.id === "carbon-wave" ? "bg-[#202832]" : "bg-[repeating-linear-gradient(115deg,#3d4650_0_2px,#67727d_2px_4px,#252d35_4px_7px)]"}`}
                       />
                       <div className="mb-2 flex items-center justify-between gap-3">
@@ -1245,7 +1245,7 @@ function CardFace({
                 : undefined,
         backgroundImage:
           texture === "carbon-wave"
-            ? `${carbonWaveTextureImage}, linear-gradient(135deg, rgba(22,30,40,.18), rgba(255,255,255,.04))`
+            ? getCarbonWaveTextureImage(template.name)
             : texture === "holographic"
             ? template.name === "Minimalist Classic"
               ? "linear-gradient(118deg, rgba(245,239,230,.95), rgba(198,185,210,.55) 38%, rgba(181,220,222,.48) 68%, rgba(247,220,190,.72)), repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.4) 0 1.5px, rgba(133,91,145,.14) 1.5px 3px, transparent 3px 5px), linear-gradient(32deg, rgba(238,160,202,.18), rgba(255,255,255,.2), rgba(91,210,211,.16))"

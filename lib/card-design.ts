@@ -8,7 +8,23 @@ export const textures: { id: Texture; name: string; mnName: string; description:
   { id: 'carbon-wave', name: 'Carbon Wave Lines', mnName: 'Карбон долгионт зураас', description: 'Flowing engraved lines over a carbon finish.', mnDescription: 'Карбон гадаргуу дээрх урсгал мэт долгионт сийлбэртэй зураас.' },
 ]
 
-export const carbonWaveTextureImage = 'repeating-radial-gradient(ellipse 180% 90% at 0% 50%, transparent 0 9px, rgba(255,255,255,.17) 10px 11px, transparent 12px 19px), repeating-linear-gradient(115deg, rgba(0,0,0,.1) 0 2px, rgba(255,255,255,.07) 2px 3px, transparent 3px 7px)'
+export function getCarbonWaveTextureImage(templateName: string) {
+  const lightSurface = templateName === 'Minimalist Classic' || templateName === 'Soft Feminine Pastel'
+  const palette = templateName === 'Minimalist Classic'
+    ? 'linear-gradient(118deg, #eeeae4 0%, #aeb5b9 22%, #f7f4ee 42%, #89939b 63%, #e5e1da 100%)'
+    : templateName === 'Soft Feminine Pastel'
+      ? 'linear-gradient(118deg, #f6d9df 0%, #bc929e 22%, #f9e8eb 43%, #a97584 64%, #f2d9df 100%)'
+      : templateName === 'Modern Executive'
+        ? 'linear-gradient(118deg, #17253a 0%, #62748b 22%, #263952 44%, #8392a4 63%, #1c2b40 100%)'
+        : templateName === 'Creative Glass'
+          ? 'linear-gradient(118deg, #33294f 0%, #72778a 22%, #3c4864 44%, #788b91 63%, #49365f 100%)'
+          : 'linear-gradient(118deg, #101419 0%, #58616b 20%, #161b21 42%, #74808b 58%, #14191f 78%, #333c46 100%)'
+  const highlight = lightSurface ? 'rgba(255,255,255,.56)' : 'rgba(255,255,255,.4)'
+  const shadow = lightSurface ? 'rgba(34,43,52,.34)' : 'rgba(0,0,0,.5)'
+  const wave = `repeating-radial-gradient(ellipse 150% 78% at 0% 52%, transparent 0 8px, ${highlight} 9px 10px, ${shadow} 11px 12px, transparent 13px 20px)`
+  const brushed = `repeating-linear-gradient(112deg, rgba(255,255,255,.13) 0 1px, transparent 1px 3px, rgba(0,0,0,${lightSurface ? '.12' : '.2'}) 3px 4px, transparent 4px 7px)`
+  return `${wave}, ${brushed}, ${palette}`
+}
 
 export const templates: Template[] = [
   { name: 'Minimalist Classic', mnName: 'Минималист сонгодог', description: 'Crisp paper and quiet elegance', mnDescription: 'Цэвэр цэмцгэр цаас, даруухан дэгжин төрх.', accent: '#9b6038', background: 'bg-[#f4f0eb]', ink: 'text-[#26333a]', textColor: '#26333a', preview: 'bg-[#f4f0eb]', publicBackground: 'bg-[#eef1f4]' },
