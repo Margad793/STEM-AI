@@ -21,7 +21,7 @@ const authCopy = {
     signUpButton: 'Create account',
     googleSignIn: 'Continue with Google',
     googleSignUp: 'Create account with Google',
-    googleLinkHint: 'Use your existing Gmail account. The promo code is still required to create a Cardly account.',
+    googleLinkHint: 'Use your existing Gmail account. The promo code is still required to create a Cardliy account.',
     or: 'or',
     promoHint: 'Enter the account invitation code to register.',
     missingPromo: 'Enter the promo code to create an account.',
@@ -41,7 +41,7 @@ const authCopy = {
     yes: 'Yes',
     no: 'No',
     accessTitle: 'Account access is not active',
-    accessDescription: 'Your sign-in succeeded, but this account does not have Cardly access yet. If you registered with the valid promo code, ask the site administrator to run the latest supabase/promo-code-trigger.sql in Supabase SQL Editor, then sign out and sign in again. Otherwise, the administrator must grant access to this account.',
+    accessDescription: 'Your sign-in succeeded, but this account does not have Cardliy access yet. If you registered with the valid promo code, ask the site administrator to run the latest supabase/promo-code-trigger.sql in Supabase SQL Editor, then sign out and sign in again. Otherwise, the administrator must grant access to this account.',
     signOut: 'Sign out',
   },
   mn: {
@@ -56,7 +56,7 @@ const authCopy = {
     signUpButton: 'Бүртгэл үүсгэх',
     googleSignIn: 'Google-ээр үргэлжлүүлэх',
     googleSignUp: 'Google хаягаар бүртгэл үүсгэх',
-    googleLinkHint: 'Өөрийн Gmail хаягийг ашиглана уу. Cardly бүртгэл үүсгэхэд урамшууллын код шаардлагатай.',
+    googleLinkHint: 'Өөрийн Gmail хаягийг ашиглана уу. Cardliy бүртгэл үүсгэхэд урамшууллын код шаардлагатай.',
     or: 'эсвэл',
     promoHint: 'Бүртгүүлэхийн тулд урилгын код оруулна уу.',
     missingPromo: 'Бүртгэл үүсгэхийн тулд урамшууллын код оруулна уу.',
@@ -76,7 +76,7 @@ const authCopy = {
     yes: 'Тийм',
     no: 'Үгүй',
     accessTitle: 'Бүртгэлийн эрх идэвхгүй байна',
-    accessDescription: 'Та амжилттай нэвтэрсэн боловч энэ бүртгэлд Cardly ашиглах эрх олгогдоогүй байна. Зөв promo кодоор бүртгүүлсэн бол сайтын админаас Supabase SQL Editor дээр шинэчилсэн supabase/promo-code-trigger.sql файлыг ажиллуулахыг хүсээд, дараа нь гараад дахин нэвтэрнэ үү. Үгүй бол админ энэ бүртгэлд эрх олгох шаардлагатай.',
+    accessDescription: 'Та амжилттай нэвтэрсэн боловч энэ бүртгэлд Cardliy ашиглах эрх олгогдоогүй байна. Зөв promo кодоор бүртгүүлсэн бол сайтын админаас Supabase SQL Editor дээр шинэчилсэн supabase/promo-code-trigger.sql файлыг ажиллуулахыг хүсээд, дараа нь гараад дахин нэвтэрнэ үү. Үгүй бол админ энэ бүртгэлд эрх олгох шаардлагатай.',
     signOut: 'Гарах',
   },
 }
@@ -207,12 +207,12 @@ export function AuthScreen({ language, onLanguageChange, session, accessError }:
     }
   }
 
-  if (session) return <main className="flex min-h-screen items-center justify-center bg-[#f7f8fa] p-4 text-[#18202d]">
-    <section className="w-full max-w-md rounded-2xl border border-[#e5e8ec] bg-white p-6 shadow-sm sm:p-8">
+  if (session) return <main className="auth-screen flex min-h-screen items-center justify-center p-4 text-[#eef4ff]">
+    <section className="auth-panel w-full max-w-md rounded-2xl border p-6 shadow-sm sm:p-8">
       <div className="mb-7 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_gbudftgbudftgbud-6IOh1Fmz2F5ytWKVOX16A263gpQwEa.jpg" alt="Cardly logo" className="size-9 rounded-[10px] object-cover" />
-          <p className="font-serif text-2xl font-medium italic tracking-[-0.045em]">cardly</p>
+          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_gbudftgbudftgbud-6IOh1Fmz2F5ytWKVOX16A263gpQwEa.jpg" alt="Cardliy logo" className="size-9 rounded-[10px] object-cover" />
+          <p className="auth-brand font-serif text-2xl font-medium italic tracking-[-0.045em]">Cardliy</p>
         </div>
         <button type="button" onClick={() => void supabase?.auth.signOut()} className="text-xs font-semibold text-[#52606f]">{t.signOut}</button>
       </div>
@@ -222,16 +222,16 @@ export function AuthScreen({ language, onLanguageChange, session, accessError }:
     </section>
   </main>
 
-  return <main className="auth-screen flex min-h-screen items-center justify-center bg-[#f7f8fa] p-4 text-[#18202d]">
-    <section className="w-full max-w-md rounded-2xl border border-[#e5e8ec] bg-white p-6 shadow-sm sm:p-8">
+  return <main className="auth-screen flex min-h-screen items-center justify-center p-4 text-[#eef4ff]">
+    <section className="auth-panel w-full max-w-md rounded-2xl border p-6 shadow-sm sm:p-8">
       <div className="mb-7 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_gbudftgbudftgbud-6IOh1Fmz2F5ytWKVOX16A263gpQwEa.jpg" alt="Cardly logo" className="size-9 rounded-[10px] object-cover" />
-          <p className="font-serif text-2xl font-medium italic tracking-[-0.045em]">cardly</p>
+          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_gbudftgbudftgbud-6IOh1Fmz2F5ytWKVOX16A263gpQwEa.jpg" alt="Cardliy logo" className="size-9 rounded-[10px] object-cover" />
+          <p className="auth-brand font-serif text-2xl font-medium italic tracking-[-0.045em]">Cardliy</p>
         </div>
         <div className="flex gap-1 rounded-full border border-[#dfe3e8] bg-[#eef1f4] p-0.5">
-          <button type="button" onClick={() => chooseLanguage('en')} aria-pressed={language === 'en'} className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${language === 'en' ? 'bg-[#172538] text-white' : 'text-[#8994a2]'}`}>EN</button>
-          <button type="button" onClick={() => chooseLanguage('mn')} aria-pressed={language === 'mn'} className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${language === 'mn' ? 'bg-[#172538] text-white' : 'text-[#8994a2]'}`}>MN</button>
+          <button type="button" onClick={() => chooseLanguage('en')} aria-pressed={language === 'en'} className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${language === 'en' ? 'border-[#263b57] bg-[#17263a] text-white shadow-sm' : 'border-transparent bg-transparent text-[#8994a2]'}`}>EN</button>
+          <button type="button" onClick={() => chooseLanguage('mn')} aria-pressed={language === 'mn'} className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${language === 'mn' ? 'border-[#263b57] bg-[#17263a] text-white shadow-sm' : 'border-transparent bg-transparent text-[#8994a2]'}`}>MN</button>
         </div>
       </div>
 
@@ -242,24 +242,24 @@ export function AuthScreen({ language, onLanguageChange, session, accessError }:
 
       {!supabase && <p role="alert" className="mb-5 rounded-lg bg-amber-50 p-3 text-xs leading-relaxed text-amber-900">{t.missingConfig}</p>}
       <form onSubmit={submit} className="space-y-4">
-        <label className="block text-xs font-semibold text-[#4b5868]">{t.email}
-          <input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} className="mt-2 h-11 w-full rounded-xl border-2 border-[#d9dee6] bg-[#fbfcfd] px-3.5 text-base outline-none focus:border-[#93a4cb] sm:text-sm" />
+        <label className="auth-label block text-xs font-semibold">{t.email}
+          <input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} className="auth-input mt-2 h-11 w-full rounded-xl border-2 px-3.5 text-base outline-none focus:border-[#a9c8f4] sm:text-sm" />
         </label>
-        <label className="block text-xs font-semibold text-[#4b5868]">{t.password}
+        <label className="auth-label block text-xs font-semibold">{t.password}
           <span className="relative mt-2 block">
-            <input type={showPassword ? 'text' : 'password'} autoComplete={mode === 'signIn' ? 'current-password' : 'new-password'} required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} className="h-11 w-full rounded-xl border-2 border-[#d9dee6] bg-[#fbfcfd] px-3.5 pr-12 text-base outline-none focus:border-[#93a4cb] sm:text-sm" />
-            <button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? t.hidePassword : t.showPassword} aria-pressed={showPassword} className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl text-[#7c8795] hover:text-[#172538] focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-[#93a4cb]">
+            <input type={showPassword ? 'text' : 'password'} autoComplete={mode === 'signIn' ? 'current-password' : 'new-password'} required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} className="auth-input h-11 w-full rounded-xl border-2 px-3.5 pr-12 text-base outline-none focus:border-[#a9c8f4] sm:text-sm" />
+            <button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? t.hidePassword : t.showPassword} aria-pressed={showPassword} className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl text-[#7c8795] hover:text-[#172538] focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-[#a9c8f4]">
               {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
             </button>
           </span>
         </label>
-        {mode === 'signUp' && <label className="block text-xs font-semibold text-[#4b5868]">{t.promo}
-          <input type="text" required value={promoCode} onChange={(event) => setPromoCode(event.target.value)} aria-describedby="promo-hint" className="mt-2 h-11 w-full rounded-xl border-2 border-[#d9dee6] bg-[#fbfcfd] px-3.5 text-base outline-none focus:border-[#93a4cb] sm:text-sm" />
-          <span id="promo-hint" className="mt-1 block font-normal text-[#8c96a3]">{t.promoHint}</span>
+        {mode === 'signUp' && <label className="auth-label block text-xs font-semibold">{t.promo}
+          <input type="text" required value={promoCode} onChange={(event) => setPromoCode(event.target.value)} aria-describedby="promo-hint" className="auth-input mt-2 h-11 w-full rounded-xl border-2 px-3.5 text-base outline-none focus:border-[#a9c8f4] sm:text-sm" />
+          <span id="promo-hint" className="auth-muted mt-1 block font-normal">{t.promoHint}</span>
         </label>}
         {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-xs text-red-800">{error}</p>}
         {message && <p role="status" className="rounded-lg bg-green-50 p-3 text-xs text-green-800">{message}</p>}
-        <button type="submit" disabled={busy || !supabase} className="h-11 w-full rounded-xl bg-[#172538] text-sm font-semibold text-white transition hover:bg-[#24354b] disabled:cursor-not-allowed disabled:opacity-60">{busy ? t.loading : mode === 'signIn' ? t.signInButton : t.signUpButton}</button>
+        <button type="submit" disabled={busy || !supabase} className="h-11 w-full rounded-xl border border-[#263b57] bg-[#17263a] text-sm font-semibold text-white transition hover:bg-[#20344f] disabled:cursor-not-allowed disabled:opacity-60">{busy ? t.loading : mode === 'signIn' ? t.signInButton : t.signUpButton}</button>
         {googleOAuthEnabled && mode === 'signIn' && <>
           <div className="flex items-center gap-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#9aa4af]"><span className="h-px flex-1 bg-[#e5e8ec]" />{t.or}<span className="h-px flex-1 bg-[#e5e8ec]" /></div>
           <button type="button" onClick={signInWithGoogle} disabled={busy || !supabase} className="flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border border-[#d9dee6] bg-white text-sm font-semibold text-[#263343] transition hover:bg-[#f7f8fa] disabled:cursor-not-allowed disabled:opacity-60"><span aria-hidden="true" className="font-bold text-base text-[#4285f4]">G</span>{t.googleSignIn}</button>

@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { Download, Globe2, Mail, MapPin, Phone } from 'lucide-react'
+import { Camera, Download, Mail, MessageCircle, Phone, UserRound } from 'lucide-react'
+import { FlipCard } from '@/components/business-card'
+import { templateSlugs, templates } from '@/lib/card-design'
+import type { Profile, Texture } from '@/lib/card-types'
 import { supabase } from '@/lib/supabase-browser'
+import { getPublicSiteOrigin } from '@/lib/site'
 
-const publicCardHost = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cardly.com')
-  .replace(/^https?:\/\//i, '')
-  .replace(/\/$/, '')
+const publicCardHost = getPublicSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL).replace(/^https?:\/\//i, '')
 
 type PublicCard = {
   public_code: string
@@ -37,14 +39,6 @@ type PublicCard = {
   photo_url: string
   template: string
   texture: string
-}
-
-const backgrounds: Record<string, string> = {
-  'minimalist-classic': 'bg-[#eef1f4] text-[#26333a]',
-  'luxury-dark-gold': 'bg-gradient-to-br from-[#f4f1ec] via-[#ebe7df] to-[#dcd8d0] text-[#26333a]',
-  'soft-feminine-pastel': 'bg-gradient-to-br from-[#fff7f5] via-[#f8e8ea] to-[#f1d9df] text-[#573b48]',
-  'modern-executive': 'bg-gradient-to-br from-[#eef3f8] via-[#e6edf5] to-[#d8e1ec] text-[#26333a]',
-  'creative-glass': 'bg-gradient-to-br from-[#edf2ff] via-[#f4eefc] to-[#fbeaf5] text-[#3d315f]',
 }
 
 export default function PublicCardPage() {
@@ -100,6 +94,38 @@ export default function PublicCardPage() {
   const personalEmailVisible = (card.show_personal_email ?? true) && Boolean(personalEmail.trim())
   const website = (card.show_website ?? true) && websiteValue && (/^https?:\/\//i.test(websiteValue) ? websiteValue : `https://${websiteValue}`)
   const roomNumber = (card.show_room_number ?? true) ? card.room_number?.trim() || '' : ''
+  const selectedTemplate = templates[Math.max(0, templateSlugs.indexOf(card.template))]
+  const texture = (['holographic', 'arcs', 'matte', 'metal'].includes(card.texture) ? card.texture : 'arcs') as Texture
+  const profile: Profile = {
+    name: card.name,
+    title: card.title,
+    company: card.company,
+    location: card.location,
+    bio: card.bio,
+    businessEmail,
+    personalEmail,
+    showPhone: phoneVisible,
+    showBusinessEmail: businessEmailVisible,
+    showPersonalEmail: personalEmailVisible,
+    showRoomNumber: Boolean(roomNumber),
+    showWebsite: Boolean(website),
+    showInstagram: Boolean(instagram),
+    showFacebook: Boolean(facebook),
+    showViber: Boolean(viber),
+    phone,
+    roomNumber,
+    website: card.website?.trim() || '',
+    instagram,
+    facebook,
+    viber,
+    photo: card.photo_url || '',
+    companyLogo: card.company_logo_url || '',
+  }
+  const cardCopy = {
+    save: 'Save',
+    scan: 'Scan to connect',
+    flip: 'Flip card',
+  }
 
   const downloadContact = () => {
     const vcard = [
@@ -126,43 +152,39 @@ export default function PublicCardPage() {
     window.setTimeout(() => URL.revokeObjectURL(url), 2000)
   }
 
-  const theme = backgrounds[card.template] || backgrounds['minimalist-classic']
+  const actionCount = Number(phoneVisible) + Number(businessEmailVisible) + Number(personalEmailVisible)
+  const textColor = selectedTemplate.name === 'Soft Feminine Pastel' ? '#573b48' : selectedTemplate.name === 'Creative Glass' ? '#3d315f' : '#26333a'
 
-  return <main className={`flex min-h-screen items-center justify-center px-4 py-10 ${theme}`}>
-    <article className="w-full max-w-xl rounded-[28px] border border-black/10 bg-white/80 p-6 shadow-[0_22px_60px_rgba(25,35,50,.16)] backdrop-blur sm:p-10">
-      <div className="flex flex-col items-center text-center">
-        {card.photo_url ? <img src={card.photo_url} alt="" className="mb-5 size-24 rounded-full border-4 border-white object-cover shadow-md" /> : <div aria-hidden="true" className="mb-5 flex size-24 items-center justify-center rounded-full bg-[#172538] text-2xl font-semibold text-white">{card.name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2)}</div>}
-        <div className="flex items-center justify-center gap-2">
-          {card.company_logo_url && <img src={card.company_logo_url} alt="" className="size-8 rounded-full border border-current/15 object-cover" />}
-          <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-60">{card.company}</p>
+  return (
+    <main style={{ color: textColor }} className={`relative min-h-screen w-full overflow-x-hidden ${selectedTemplate.publicBackground}`}>
+      <div className="flex min-h-screen w-full flex-col items-center justify-center px-3 py-6 sm:px-8 sm:py-8">
+        <div className="flex w-full max-w-[760px] flex-col items-center">
+          <div className="mb-0 w-full">
+            <FlipCard template={selectedTemplate} profile={profile} t={cardCopy} texture={texture} publicCode={code} />
+          </div>
+          <p className="public-card-prompt mt-6 mb-6 text-center text-base font-medium text-current/55">Tap the card to see contact details</p>
+          {actionCount > 0 && (
+            <div className={`w-full max-w-[520px] grid gap-3 sm:gap-4 ${actionCount === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+              {phoneVisible && <a href={`tel:${phone}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border-2 border-white/70 bg-white px-3 text-sm font-bold"><Phone size={14} />Call now</a>}
+              {businessEmailVisible && <a href={`mailto:${businessEmail}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border-2 border-white/70 bg-white px-3 text-sm font-bold"><Mail size={14} />Email</a>}
+              {personalEmailVisible && <a href={`mailto:${personalEmail}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border-2 border-white/70 bg-white px-3 text-sm font-bold"><Mail size={14} />Email</a>}
+            </div>
+          )}
+          {Boolean(instagram || facebook || viber) && (
+            <div className="public-card-socials mt-6 flex justify-center gap-3">
+              {instagram && <a href={instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white"><Camera size={18} /></a>}
+              {viber && <a href={viber} aria-label="Viber" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white"><MessageCircle size={18} /></a>}
+              {facebook && <a href={facebook} target="_blank" rel="noreferrer" aria-label="Facebook" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white"><UserRound size={18} /></a>}
+            </div>
+          )}
+          {phoneVisible && (
+            <button type="button" onClick={downloadContact} className="public-card-save mx-auto mt-3 flex h-12 w-full max-w-[520px] items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]">
+              <Download size={16} strokeWidth={2.4} />Save Contact
+            </button>
+          )}
+          <p className="mt-3 break-all text-center text-[8px] leading-tight text-current/45">{publicCardHost}/c/{card.public_code}</p>
         </div>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight">{card.name}</h1>
-        <p className="mt-1 text-base opacity-70">{card.title}</p>
-        {card.bio && <p className="mt-5 max-w-md text-sm leading-6 opacity-75">{card.bio}</p>}
-        {card.location && <p className="mt-4 flex items-center gap-2 text-sm opacity-70"><MapPin size={15} />{card.location}</p>}
       </div>
-
-      {roomNumber && <p className="mt-4 text-center text-sm opacity-70">Room number: {roomNumber}</p>}
-
-      <div className={`mt-8 grid gap-3 ${(Number(phoneVisible) + Number(businessEmailVisible) + Number(personalEmailVisible)) === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-        {phoneVisible && <a href={`tel:${phone}`} className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[#172538] px-3 text-sm font-semibold text-white"><Phone size={16} />Call</a>}
-        {businessEmailVisible && <a href={`mailto:${businessEmail}`} className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[#172538] px-3 text-sm font-semibold text-white"><Mail size={16} />Business email</a>}
-        {personalEmailVisible && <a href={`mailto:${personalEmail}`} className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[#172538] px-3 text-sm font-semibold text-white"><Mail size={16} />Personal email</a>}
-        {website && <a href={website} target="_blank" rel="noreferrer" className="col-span-full flex h-12 items-center justify-center gap-2 rounded-xl border border-current/15 bg-white/70 px-3 text-sm font-semibold"><Globe2 size={16} />{card.website}</a>}
-      </div>
-
-      <div className="mt-5 flex flex-wrap justify-center gap-3 text-sm font-medium">
-        {instagram && <a href={instagram} target="_blank" rel="noreferrer" className="rounded-full border border-current/15 bg-white/70 px-4 py-2">Instagram</a>}
-        {viber && <a href={viber} className="rounded-full border border-current/15 bg-white/70 px-4 py-2">Viber</a>}
-        {facebook && <a href={facebook} target="_blank" rel="noreferrer" className="rounded-full border border-current/15 bg-white/70 px-4 py-2">Facebook</a>}
-      </div>
-
-      {phoneVisible && (
-        <button type="button" onClick={downloadContact} className="mt-7 flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-[#172538] text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.2)]">
-          <Download size={16} />Save contact
-        </button>
-      )}
-      <p className="mt-5 break-all text-center text-[8px] leading-tight opacity-45">{publicCardHost}/c/{card.public_code}</p>
-    </article>
-  </main>
+    </main>
+  )
 }

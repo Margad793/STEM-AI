@@ -49,6 +49,36 @@ button, input, textarea { font: inherit; }
 button { cursor: pointer; }
 ::selection { background: #dce4fb; color: #263a70; }
 
+.auth-screen {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #111b2a;
+  background-image:
+    radial-gradient(ellipse at 18% 12%, rgba(114, 151, 202, 0.22), transparent 42%),
+    radial-gradient(ellipse at 88% 82%, rgba(67, 101, 150, 0.2), transparent 38%),
+    repeating-linear-gradient(116deg, rgba(220, 233, 250, 0.045) 0 1px, transparent 1px 4px),
+    linear-gradient(135deg, #17263a, #0e1724 52%, #1b2c43);
+}
+
+.auth-panel {
+  border-color: #e5e8ec;
+  background: #fff;
+  color: #18202d;
+  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.28);
+}
+
+.auth-brand { color: #18202d; }
+.auth-label { color: #4b5868; }
+.auth-muted { color: #8c96a3; }
+.auth-input {
+  border-color: #d9dee6;
+  background: #fbfcfd;
+  color: #263343;
+}
+.auth-input::placeholder { color: #8c96a3; }
+.auth-input:focus { outline: none; border-color: #93a4cb; }
+
 @media (max-width: 639px) {
   .auth-screen input {
     font-size: 16px !important;

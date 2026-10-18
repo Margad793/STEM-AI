@@ -1,0 +1,205 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import { Globe2, Hash, Mail, Phone } from 'lucide-react'
+import QRCode from 'qrcode'
+import type { Profile, Template, Texture } from '@/lib/card-types'
+import { getPublicSiteOrigin } from '@/lib/site'
+
+const publicCardOrigin = getPublicSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL)
+const publicCardHost = publicCardOrigin.replace(/^https?:\/\//i, '')
+
+type CardCopy = {
+  save: string
+  scan: string
+  flip: string
+}
+
+function fitText(element: HTMLElement, maxLines: number) {
+  if (!element.clientWidth) return
+  element.style.fontSize = ''
+  for (let pass = 0; pass < 8; pass += 1) {
+    const style = getComputedStyle(element)
+    const fontSize = parseFloat(style.fontSize)
+    let scale = 1
+    if (element.scrollWidth > element.clientWidth + 1) scale = (element.clientWidth * 0.99) / element.scrollWidth
+    if (maxLines > 1) {
+      let lineHeight = parseFloat(style.lineHeight)
+      if (!lineHeight || lineHeight < fontSize * 0.5) lineHeight = fontSize * 1.25
+      const maxHeight = maxLines * lineHeight + 1
+      if (element.scrollHeight > maxHeight) scale = Math.min(scale, Math.sqrt(maxHeight / element.scrollHeight))
+    }
+    if (scale > 0.999) break
+    element.style.fontSize = `${fontSize * scale}px`
+  }
+}
+
+function CardQR({ url }: { url: string }) {
+  const [svg, setSvg] = useState('')
+  useEffect(() => {
+    let active = true
+    QRCode.toString(url, {
+      type: 'svg',
+      margin: 0,
+      errorCorrectionLevel: 'M',
+      color: { dark: '#172538ff', light: '#ffffffff' },
+    }).then((result) => {
+      if (active) setSvg(result)
+    }).catch((error: unknown) => {
+      console.error('Could not create card QR code.', error)
+    })
+    return () => {
+      active = false
+    }
+  }, [url])
+
+  return <div data-qr="1" className="size-[calc(48*var(--u))] shrink-0 overflow-hidden rounded-[calc(6*var(--u))] bg-white p-[calc(3*var(--u))] [&>svg]:block [&>svg]:size-full" dangerouslySetInnerHTML={{ __html: svg }} />
+}
+
+function CardFace({
+  back = false,
+  template,
+  profile,
+  t,
+  texture,
+  publicCode,
+}: {
+  back?: boolean
+  template: Template
+  profile: Profile
+  t: CardCopy
+  texture: Texture
+  publicCode: string
+}) {
+  const rootRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+    const fit = () => root.querySelectorAll<HTMLElement>('[data-fit]').forEach((element) => fitText(element, Number(element.dataset.fit) || 1))
+    fit()
+    const observer = new ResizeObserver(fit)
+    observer.observe(root)
+    return () => observer.disconnect()
+  }, [back, profile, template.name])
+
+  const textureImage = texture === 'arcs'
+    ? undefined
+    : texture === 'matte'
+      ? undefined
+      : texture === 'holographic'
+        ? template.name === 'Minimalist Classic'
+          ? 'linear-gradient(118deg, rgba(245,239,230,.95), rgba(198,185,210,.55) 38%, rgba(181,220,222,.48) 68%, rgba(247,220,190,.72)), repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.4) 0 1.5px, rgba(133,91,145,.14) 1.5px 3px, transparent 3px 5px), linear-gradient(32deg, rgba(238,160,202,.18), rgba(255,255,255,.2), rgba(91,210,211,.16))'
+          : template.name === 'Soft Feminine Pastel'
+            ? 'linear-gradient(118deg, rgba(255,220,228,.92), rgba(235,151,181,.7) 42%, rgba(250,194,211,.86) 72%, rgba(255,231,237,.9)), repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.5) 0 1.8px, rgba(150,65,105,.18) 1.8px 3.2px, transparent 3.2px 5px)'
+            : template.name === 'Creative Glass'
+              ? 'linear-gradient(118deg, rgba(65,28,112,.72), rgba(207,91,186,.46) 38%, rgba(54,190,210,.42) 70%, rgba(244,151,205,.48)), repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.34) 0 1.4px, rgba(42,20,78,.12) 1.4px 2.8px, transparent 2.8px 5px), linear-gradient(32deg, rgba(120,72,210,.2), rgba(255,255,255,.14) 48%, rgba(64,214,220,.18))'
+              : `linear-gradient(${template.name === 'Minimalist Classic' || template.name === 'Soft Feminine Pastel' ? 'rgba(28,20,52,.28)' : 'rgba(28,20,52,.14)'}, ${template.name === 'Minimalist Classic' || template.name === 'Soft Feminine Pastel' ? 'rgba(28,20,52,.28)' : 'rgba(28,20,52,.14)'}), repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.22) 0 1px, transparent 1px 5px), linear-gradient(120deg, rgba(255,105,180,.28), rgba(80,210,255,.22), rgba(255,220,110,.22))`
+        : template.name === 'Minimalist Classic'
+          ? 'linear-gradient(118deg, rgba(244,240,235,.98), rgba(235,230,224,.98) 48%, rgba(241,237,231,.98)), repeating-linear-gradient(115deg, rgba(70,48,66,1) 0 2.5px, rgba(255,255,255,.78) 2.5px 4px, transparent 4px 5px)'
+          : template.name === 'Soft Feminine Pastel'
+            ? 'linear-gradient(118deg, rgba(247,205,211,.9), rgba(224,143,169,.72) 48%, rgba(247,190,207,.86)), repeating-linear-gradient(115deg, rgba(255,255,255,.42) 0 1.5px, rgba(145,76,103,.16) 1.5px 3px, transparent 3px 5px)'
+            : template.name === 'Creative Glass'
+              ? 'linear-gradient(118deg, rgba(36,20,76,.78), rgba(187,91,190,.48) 42%, rgba(69,190,206,.42) 72%, rgba(225,128,194,.5)), repeating-linear-gradient(115deg, rgba(255,255,255,.36) 0 1.5px, rgba(35,20,70,.2) 1.5px 3px, transparent 3px 5px), repeating-linear-gradient(25deg, rgba(255,255,255,.18) 0 1px, transparent 1px 7px)'
+              : `linear-gradient(${template.name === 'Minimalist Classic' || template.name === 'Soft Feminine Pastel' ? 'rgba(18,24,32,.3)' : 'rgba(18,24,32,.16)'}, ${template.name === 'Minimalist Classic' || template.name === 'Soft Feminine Pastel' ? 'rgba(18,24,32,.3)' : 'rgba(18,24,32,.16)'}), repeating-linear-gradient(115deg, rgba(255,255,255,.2) 0 1.5px, rgba(255,255,255,.03) 1.5px 3px, transparent 3px 5px), linear-gradient(135deg, rgba(30,40,50,.22), rgba(255,255,255,.12))`
+
+  return (
+    <div
+      ref={rootRef}
+      style={{
+        backfaceVisibility: 'hidden',
+        WebkitBackfaceVisibility: 'hidden',
+        transformOrigin: 'center',
+        transform: back ? 'rotateY(180deg)' : 'rotateY(0deg)',
+        color: template.textColor,
+        backgroundImage: textureImage,
+        textShadow: texture === 'arcs' && template.name === 'Creative Glass'
+          ? '0 1px 3px rgba(24,14,38,.9), 0 0 2px rgba(255,255,255,.35)'
+          : texture === 'metal' && template.name === 'Soft Feminine Pastel'
+            ? '0 1px 2px rgba(255,255,255,.8), 0 0 1px rgba(100,45,70,.28)'
+            : texture === 'metal' && template.name === 'Creative Glass'
+              ? '0 1px 2px rgba(25,12,55,.85), 0 0 1px rgba(255,255,255,.7)'
+              : undefined,
+      }}
+      className={`absolute inset-0 isolate flex h-full w-full min-w-0 flex-col overflow-hidden rounded-[calc(18*var(--u))] border border-black/10 p-[calc(12*var(--u))] [transform-style:preserve-3d] ${template.background} ${template.ink}`}
+    >
+      <div className={`pointer-events-none absolute inset-0 rounded-[calc(18*var(--u))] ${texture === 'matte' ? 'bg-black/[0.025]' : 'bg-white/[0.03]'}`} />
+      {texture === 'arcs' && <>
+        <div className="pointer-events-none absolute right-[calc(-48*var(--u))] top-[calc(-64*var(--u))] size-[calc(160*var(--u))] rounded-full border-[calc(18*var(--u))] border-white/55" />
+        <div className="pointer-events-none absolute bottom-[calc(-80*var(--u))] left-[calc(-48*var(--u))] size-[calc(176*var(--u))] rounded-full border-[calc(22*var(--u))] border-white/45" />
+      </>}
+      {back ? (
+        <div className="relative z-10 flex h-full min-h-0 w-full flex-col">
+          <div className="mb-[calc(8*var(--u))] flex shrink-0 items-center justify-between gap-[calc(6*var(--u))] border-b border-current/15 pb-[calc(8*var(--u))]">
+            <span data-fit="1" className="min-w-0 truncate text-[calc(11*var(--u))] font-bold tracking-[0.18em]">{profile.company.toUpperCase()}</span>
+          </div>
+          <div className="flex min-h-0 flex-1 items-center justify-between gap-[calc(6*var(--u))]">
+            <div className="flex min-w-0 flex-1 flex-col gap-[calc(6*var(--u))] text-[calc(8*var(--u))] font-medium leading-tight">
+              {profile.showPhone && profile.phone.trim() && <p data-fit="1" className="flex min-w-0 items-center gap-[calc(10*var(--u))] truncate"><Phone size={12} className="size-[1.5em] shrink-0" /><span className="min-w-0">{profile.phone}</span></p>}
+              {profile.showRoomNumber && profile.roomNumber.trim() && <p data-fit="1" className="flex min-w-0 items-center gap-[calc(10*var(--u))] truncate"><Hash size={12} className="size-[1.5em] shrink-0" /><span className="min-w-0">{profile.roomNumber}</span></p>}
+              {profile.showBusinessEmail && profile.businessEmail.trim() && <p data-fit="1" className="flex min-w-0 items-center gap-[calc(10*var(--u))] truncate"><Mail size={12} className="size-[1.5em] shrink-0" /><span className="min-w-0">{profile.businessEmail}</span></p>}
+              {profile.showPersonalEmail && profile.personalEmail.trim() && <p data-fit="1" className="flex min-w-0 items-center gap-[calc(10*var(--u))] truncate"><Mail size={12} className="size-[1.5em] shrink-0" /><span className="min-w-0">{profile.personalEmail}</span></p>}
+              {profile.showWebsite && profile.website.trim() && <p data-fit="1" className="flex min-w-0 items-center gap-[calc(10*var(--u))] truncate"><Globe2 size={12} className="size-[1.5em] shrink-0" /><span className="min-w-0">{profile.website}</span></p>}
+            </div>
+            <CardQR url={`${publicCardOrigin}/c/${encodeURIComponent(publicCode)}`} />
+          </div>
+          <div className="flex min-w-0 shrink-0 items-end justify-between gap-[calc(6*var(--u))] border-t border-current/15 pt-[calc(8*var(--u))] leading-tight">
+            <p data-fit="1" className="flex min-w-0 max-w-[45%] shrink items-center gap-[calc(4*var(--u))] truncate text-[calc(8*var(--u))] font-medium opacity-65"><span className="shrink-0 text-[1.5em]">⌖</span><span className="min-w-0">{profile.location}</span></p>
+            <div className="min-w-0 flex-1 break-all text-right text-[calc(6*var(--u))] leading-tight font-medium opacity-65">{t.scan}<br />{publicCardHost}/c/{publicCode}</div>
+          </div>
+        </div>
+      ) : (
+        <div className="relative z-10 flex h-full min-h-0 w-full flex-col justify-between">
+          <div className="flex items-start justify-between gap-[calc(6*var(--u))]">
+            <span data-fit="2" className="min-w-0 break-words overflow-hidden text-[calc(12*var(--u))] font-bold tracking-[0.18em]">{profile.company.toUpperCase()}</span>
+            <div className="flex size-[calc(28*var(--u))] shrink-0 items-center justify-center overflow-hidden rounded-full border border-current/20 text-[calc(12*var(--u))] font-bold">
+              {profile.companyLogo ? <img src={profile.companyLogo} alt={`${profile.company} logo`} className="size-full object-cover" /> : (profile.company.trim()[0] || profile.name.trim()[0] || 'C').toUpperCase()}
+            </div>
+          </div>
+          <div className="flex items-end gap-[calc(12*var(--u))]">
+            <div className="flex size-[calc(48*var(--u))] shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-current/25 bg-black/10 text-[calc(18*var(--u))] font-bold">
+              {profile.photo ? <img src={profile.photo} alt={`${profile.name} photo`} className="size-full object-cover" /> : profile.name.split(' ').map((part) => part[0]).join('')}
+            </div>
+            <div className="min-w-0">
+              <p data-fit="1" className="whitespace-nowrap text-[calc(24*var(--u))] font-semibold leading-none tracking-[-0.04em]">{profile.name}</p>
+              <p className="mt-[calc(6*var(--u))] text-[calc(14*var(--u))] font-medium opacity-65">{profile.title}</p>
+            </div>
+          </div>
+          <div className="flex items-center justify-between text-[calc(10*var(--u))] font-medium opacity-60"><span>{profile.showWebsite ? profile.website : ''}</span><span>{profile.location}</span></div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function FlipCard({
+  template,
+  profile,
+  t,
+  texture,
+  publicCode,
+  compact = false,
+}: {
+  template: Template
+  profile: Profile
+  t: CardCopy
+  texture: Texture
+  publicCode: string
+  compact?: boolean
+}) {
+  const [flipped, setFlipped] = useState(false)
+  return (
+    <div className={`flex w-full min-w-0 flex-col items-center ${compact ? 'gap-1.5' : 'gap-3'}`}>
+      <button
+        type="button"
+        aria-label={t.flip}
+        onClick={() => setFlipped((value) => !value)}
+        className={`flip-card group relative aspect-[1.7] w-full min-w-0 [perspective:1200px] ${compact ? 'max-w-[225px]' : 'max-w-[520px]'}`}
+      >
+        <div style={{ transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)', transformStyle: 'preserve-3d' }} className="relative size-full min-w-0 transition-transform duration-700">
+          <CardFace template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} />
+          <CardFace back template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} />
+        </div>
+      </button>
+    </div>
+  )
+}

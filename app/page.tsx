@@ -8,50 +8,16 @@ import QRCode from 'qrcode'
 import Cropper, { type Area } from 'react-easy-crop'
 import type { Session } from '@supabase/supabase-js'
 import { AuthScreen } from '@/components/auth-screen'
+import { templates, templateSlugs, textures } from '@/lib/card-design'
+import type { Profile, Template, Texture } from '@/lib/card-types'
 import { supabase, supabaseConfigured } from '@/lib/supabase-browser'
+import { getPublicSiteOrigin } from '@/lib/site'
 
 type Language = 'en' | 'mn'
-type Profile = {
-  name: string;
-  title: string;
-  company: string;
-  location: string;
-  bio: string;
-  businessEmail: string;
-  personalEmail: string;
-  showPhone: boolean;
-  showBusinessEmail: boolean;
-  showPersonalEmail: boolean;
-  showRoomNumber: boolean;
-  showWebsite: boolean;
-  showInstagram: boolean;
-  showFacebook: boolean;
-  showViber: boolean;
-  phone: string;
-  roomNumber: string;
-  website: string;
-  instagram: string;
-  facebook: string;
-  viber: string;
-  photo: string;
-  companyLogo: string;
-};
 type CardRow = Omit<Profile, 'photo' | 'companyLogo' | 'roomNumber' | 'businessEmail' | 'personalEmail' | 'showPhone' | 'showBusinessEmail' | 'showPersonalEmail' | 'showRoomNumber' | 'showWebsite' | 'showInstagram' | 'showFacebook' | 'showViber'> & { id: string; public_code: string; is_published: boolean; template: string; texture: Texture; user_id: string; photo_url: string; company_logo_url: string; room_number: string; email: string; business_email: string; personal_email: string; show_phone: boolean; show_business_email: boolean; show_personal_email: boolean; show_room_number: boolean; show_website: boolean; show_instagram: boolean; show_facebook: boolean; show_viber: boolean }
-type Template = { name: string; mnName: string; description: string; mnDescription: string; accent: string; background: string; ink: string; textColor: string; preview: string; publicBackground: string }
-type Texture = 'holographic' | 'arcs' | 'matte' | 'metal'
-const textures: { id: Texture; name: string; mnName: string; description: string; mnDescription: string }[] = [{ id: 'holographic', name: 'CD Iridescent / Holographic', mnName: 'Солонгорсон голографик', description: 'Microscopic grooves with a soft iridescent sheen.', mnDescription: 'Нарийн ховилтой, зөөлөн солонгорсон өнгөлгөө.' }, { id: 'arcs', name: 'Geometric Arcs', mnName: 'Геометр нум', description: 'Elegant static arcs at the corners of the card.', mnDescription: 'Картын буланг чимэх дэгжин геометр нум.' }, { id: 'matte', name: 'Clean Matte', mnName: 'Матт гадаргуу', description: 'Flat, smooth, non-reflective surface.', mnDescription: 'Гөлгөр, гялбаагүй энгийн гадаргуу.' }, { id: 'metal', name: 'Carbon / Brushed Metal', mnName: 'Карбон / металл', description: 'Luxury brushed steel or carbon micro-texture.', mnDescription: 'Сойздон өнгөлсөн ган эсвэл карбоны тансаг бичил хээ.' }]
-
-const templates: Template[] = [
-  { name: 'Minimalist Classic', mnName: 'Минималист сонгодог', description: 'Crisp paper and quiet elegance', mnDescription: 'Цэвэр цэмцгэр цаас, даруухан дэгжин төрх.', accent: '#9b6038', background: 'bg-[#f4f0eb]', ink: 'text-[#26333a]', textColor: '#26333a', preview: 'bg-[#f4f0eb]', publicBackground: 'bg-[#eef1f4]' },
-  { name: 'Luxury Dark & Gold', mnName: 'Тансаг хар ба алт', description: 'Obsidian depth with gold details', mnDescription: 'Гүн хар өнгө, алтлаг чимэглэл.', accent: '#e2c27b', background: 'bg-[#15171b]', ink: 'text-[#f7efe1]', textColor: '#f7efe1', preview: 'bg-[#15171b]', publicBackground: 'bg-gradient-to-br from-[#f4f1ec] via-[#ebe7df] to-[#dcd8d0]' },
-  { name: 'Soft Feminine Pastel', mnName: 'Зөөлөн пастел', description: 'Blush tones and rounded warmth', mnDescription: 'Ягаан туяа, зөөлөн дулаан өнгө.', accent: '#b86173', background: 'bg-[#f7e5e5]', ink: 'text-[#573b48]', textColor: '#573b48', preview: 'bg-[#f7e5e5]', publicBackground: 'bg-gradient-to-br from-[#fff7f5] via-[#f8e8ea] to-[#f1d9df]' },
-  { name: 'Modern Executive', mnName: 'Орчин үеийн удирдлага', description: 'Sharp navy structure for leaders', mnDescription: 'Удирдах албан тушаалтанд зориулсан цэгцтэй хөх загвар.', accent: '#a9c8f4', background: 'bg-[#1d2b42]', ink: 'text-white', textColor: '#ffffff', preview: 'bg-[#1d2b42]', publicBackground: 'bg-gradient-to-br from-[#eef3f8] via-[#e6edf5] to-[#d8e1ec]' },
-  { name: 'Creative Glass', mnName: 'Бүтээлч шилэн', description: 'Vibrant gradient with glass texture', mnDescription: 'Шилэн хээтэй, тод өнгийн уусалт.', accent: '#b8fff1', background: 'bg-gradient-to-br from-[#5142a4] to-[#e58bca]', ink: 'text-white', textColor: '#ffffff', preview: 'bg-gradient-to-br from-[#5142a4] to-[#e58bca]', publicBackground: 'bg-gradient-to-br from-[#edf2ff] via-[#f4eefc] to-[#fbeaf5]' },
-]
 const initialProfile: Profile = { name: 'Alex Morgan', title: 'Creative Director', company: 'Northstar Studio', location: 'Brooklyn, NY', bio: 'Building brands with a little more soul. I help ambitious teams turn good ideas into work people remember.', businessEmail: 'alex@northstar.co', personalEmail: '', showPhone: true, showBusinessEmail: true, showPersonalEmail: false, showRoomNumber: true, showWebsite: true, showInstagram: true, showFacebook: true, showViber: true, phone: '+1 917 555 0184', roomNumber: '', website: 'alexmorgan.co', instagram: 'https://instagram.com/', facebook: 'https://facebook.com/', viber: 'viber://chat?number=%2B19175550184', photo: '', companyLogo: '' }
 const emptyProfile: Profile = { name: '', title: '', company: '', location: '', bio: '', businessEmail: '', personalEmail: '', showPhone: true, showBusinessEmail: true, showPersonalEmail: true, showRoomNumber: true, showWebsite: true, showInstagram: true, showFacebook: true, showViber: true, phone: '', roomNumber: '', website: '', instagram: '', facebook: '', viber: '', photo: '', companyLogo: '' }
-const templateSlugs = ['minimalist-classic', 'luxury-dark-gold', 'soft-feminine-pastel', 'modern-executive', 'creative-glass']
-const publicCardOrigin = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cardly.com').replace(/\/$/, '')
+const publicCardOrigin = getPublicSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL)
 const publicCardHost = publicCardOrigin.replace(/^https?:\/\//i, '')
 const publicCardUrl = (code: string) => `${publicCardOrigin}/c/${encodeURIComponent(code)}`
 const getErrorMessage = (error: unknown, fallback: string) => {
@@ -486,13 +452,13 @@ export default function Page() {
           <div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-[#f7f4ed]">
             <img
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_gbudftgbudftgbud-6IOh1Fmz2F5ytWKVOX16A263gpQwEa.jpg"
-              alt="Cardly logo"
+              alt="Cardliy logo"
               className="size-full object-cover"
             />
           </div>
           <div>
             <p className="font-serif text-[18px] font-medium italic tracking-[-0.045em] text-[#18202d]">
-              cardly
+              Cardliy
             </p>
           </div>
         </div>
