@@ -15,7 +15,7 @@ import { supabase, supabaseConfigured } from '@/lib/supabase-browser'
 import { getPublicSiteOrigin } from '@/lib/site'
 
 type Language = 'en' | 'mn'
-type CardRow = Omit<Profile, 'photo' | 'companyLogo' | 'roomNumber' | 'businessEmail' | 'personalEmail' | 'showPhone' | 'showBusinessEmail' | 'showPersonalEmail' | 'showRoomNumber' | 'showWebsite' | 'showInstagram' | 'showFacebook' | 'showViber'> & { id: string; public_code: string; is_published: boolean; template: string; texture: Texture; user_id: string; photo_url: string; company_logo_url: string; room_number: string; email: string; business_email: string; personal_email: string; show_phone: boolean; show_business_email: boolean; show_personal_email: boolean; show_room_number: boolean; show_website: boolean; show_instagram: boolean; show_facebook: boolean; show_viber: boolean }
+type CardRow = Omit<Profile, 'photo' | 'companyLogo' | 'roomNumber' | 'businessEmail' | 'personalEmail' | 'showPhone' | 'showBusinessEmail' | 'showPersonalEmail' | 'showRoomNumber' | 'showWebsite' | 'showInstagram' | 'showFacebook' | 'showViber'> & { id: string; public_code: string; is_published: boolean; template: string; texture: Texture; language: Language; user_id: string; photo_url: string; company_logo_url: string; room_number: string; email: string; business_email: string; personal_email: string; show_phone: boolean; show_business_email: boolean; show_personal_email: boolean; show_room_number: boolean; show_website: boolean; show_instagram: boolean; show_facebook: boolean; show_viber: boolean }
 const initialProfile: Profile = { name: 'Alex Morgan', title: 'Creative Director', company: 'Northstar Studio', location: 'Brooklyn, NY', bio: 'Building brands with a little more soul. I help ambitious teams turn good ideas into work people remember.', businessEmail: 'alex@northstar.co', personalEmail: '', showPhone: true, showBusinessEmail: true, showPersonalEmail: false, showRoomNumber: true, showWebsite: true, showInstagram: true, showFacebook: true, showViber: true, phone: '+1 917 555 0184', roomNumber: '', website: 'alexmorgan.co', instagram: 'https://instagram.com/', facebook: 'https://facebook.com/', viber: 'viber://chat?number=%2B19175550184', photo: '', companyLogo: '' }
 const emptyProfile: Profile = { name: '', title: '', company: '', location: '', bio: '', businessEmail: '', personalEmail: '', showPhone: true, showBusinessEmail: true, showPersonalEmail: true, showRoomNumber: true, showWebsite: true, showInstagram: true, showFacebook: true, showViber: true, phone: '', roomNumber: '', website: '', instagram: '', facebook: '', viber: '', photo: '', companyLogo: '' }
 const publicCardOrigin = getPublicSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL)
@@ -171,7 +171,7 @@ export default function Page() {
       try {
         const { data, error } = await supabase
           .from('cards')
-          .select('id, user_id, public_code, is_published, name, title, company, company_logo_url, location, bio, email, business_email, personal_email, show_phone, show_business_email, show_personal_email, show_room_number, show_website, show_instagram, show_facebook, show_viber, phone, room_number, website, instagram, facebook, viber, photo_url, template, texture')
+          .select('id, user_id, public_code, is_published, name, title, company, company_logo_url, location, bio, email, business_email, personal_email, show_phone, show_business_email, show_personal_email, show_room_number, show_website, show_instagram, show_facebook, show_viber, phone, room_number, website, instagram, facebook, viber, photo_url, template, texture, language')
           .eq('user_id', session.user.id)
           .maybeSingle()
         if (!active) return
@@ -291,6 +291,7 @@ export default function Page() {
         company_logo_url: companyLogoUrl,
         template: templateSlugs[selectedTemplate],
         texture: selectedTexture,
+        language,
         is_published: true,
       }
       const result = cardId
@@ -1640,8 +1641,8 @@ function PreviewPanel({ template, profile, t, language, texture, publicCode }: {
           </div>
           {(hasPhone || emails.length > 0) && (
             <div className={`order-3 mt-3 grid w-full min-w-0 max-w-[205px] gap-2 ${Number(hasPhone) + emails.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-              {hasPhone && <a href={`tel:${profile.phone}`} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg border border-[#dfe3e8] bg-white px-1 text-[9px] font-bold text-[#26333a]"><Phone size={10} className="shrink-0" /><span className="truncate">{t.call}</span></a>}
-              {emails.map((email) => <a key={email} href={`mailto:${email}`} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg border border-[#dfe3e8] bg-white px-1 text-[9px] font-bold text-[#26333a]"><Mail size={10} className="shrink-0" /><span className="truncate">{t.emailAction}</span></a>)}
+              {hasPhone && <a href={`tel:${profile.phone}`} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg bg-[#172538] px-1 text-[9px] font-bold text-white transition hover:bg-[#24354b]"><Phone size={10} className="shrink-0" /><span className="truncate">{t.call}</span></a>}
+              {emails.map((email) => <a key={email} href={`mailto:${email}`} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg bg-[#172538] px-1 text-[9px] font-bold text-white transition hover:bg-[#24354b]"><Mail size={10} className="shrink-0" /><span className="truncate">{t.emailAction}</span></a>)}
             </div>
           )}
           {Boolean((profile.showInstagram && profile.instagram.trim()) || (profile.showViber && profile.viber.trim()) || (profile.showFacebook && profile.facebook.trim())) && (
@@ -1687,7 +1688,7 @@ function PublicCard({ onBack, template, profile, language, t, texture, publicCod
           >
             <X size={14} /> {t.backEditor}
           </button>
-          <div className="mb-0 w-full">
+          <div className="public-card-flip mt-3 mb-0 w-full">
             <FlipCard template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} />
           </div>
           <p className="public-card-prompt mt-6 mb-6 text-center text-base font-medium text-current/55">{t.tapPublic}</p>
@@ -1695,12 +1696,12 @@ function PublicCard({ onBack, template, profile, language, t, texture, publicCod
             {actionCount > 0 && (
               <div className={`mx-auto grid w-full max-w-[520px] gap-3 sm:gap-4 ${actionCount === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                 {hasPhone && (
-                  <a href={`tel:${profile.phone}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border border-2 border-white/70 bg-white px-3 text-sm font-bold">
+                  <a href={`tel:${profile.phone}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]">
                     <Phone size={14} /> {t.call}
                   </a>
                 )}
                 {emails.map((email) => (
-                  <a key={email} href={`mailto:${email}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border border-2 border-white/70 bg-white px-3 text-sm font-bold">
+                  <a key={email} href={`mailto:${email}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]">
                     <Mail size={14} /> {t.emailAction}
                   </a>
                 ))}
@@ -1708,7 +1709,7 @@ function PublicCard({ onBack, template, profile, language, t, texture, publicCod
             )}
           </div>
           {Boolean((profile.showInstagram && profile.instagram.trim()) || (profile.showViber && profile.viber.trim()) || (profile.showFacebook && profile.facebook.trim())) && (
-            <div className="public-card-socials mt-6 flex justify-center gap-3">
+            <div className="public-card-socials mt-3 flex justify-center gap-3">
               {profile.showInstagram && profile.instagram.trim() && <a href={profile.instagram.trim()} target="_blank" rel="noreferrer" aria-label="Instagram" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white"><InstagramGlyph size={18} /></a>}
               {profile.showViber && profile.viber.trim() && <a href={profile.viber.trim()} target="_blank" rel="noreferrer" aria-label="Viber" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white"><ViberGlyph size={18} /></a>}
               {profile.showFacebook && profile.facebook.trim() && <a href={profile.facebook.trim()} target="_blank" rel="noreferrer" aria-label="Facebook" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white"><FacebookGlyph size={18} /></a>}

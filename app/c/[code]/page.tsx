@@ -41,6 +41,7 @@ type PublicCard = {
   photo_url: string
   template: string
   texture: string
+  language: 'en' | 'mn' | null
 }
 
 export default function PublicCardPage() {
@@ -62,7 +63,7 @@ export default function PublicCardPage() {
       try {
         const { data, error: queryError } = await supabase
           .from('cards')
-          .select('public_code, name, title, company, company_logo_url, location, bio, email, business_email, personal_email, show_phone, show_business_email, show_personal_email, show_room_number, show_website, show_instagram, show_facebook, show_viber, phone, room_number, website, instagram, facebook, viber, photo_url, template, texture')
+          .select('public_code, name, title, company, company_logo_url, location, bio, email, business_email, personal_email, show_phone, show_business_email, show_personal_email, show_room_number, show_website, show_instagram, show_facebook, show_viber, phone, room_number, website, instagram, facebook, viber, photo_url, template, texture, language')
           .eq('public_code', code)
           .eq('is_published', true)
           .maybeSingle()
@@ -98,6 +99,7 @@ export default function PublicCardPage() {
   const roomNumber = (card.show_room_number ?? true) ? card.room_number?.trim() || '' : ''
   const selectedTemplate = templates[Math.max(0, templateSlugs.indexOf(card.template))]
   const texture = (['holographic', 'arcs', 'matte', 'metal'].includes(card.texture) ? card.texture : 'arcs') as Texture
+  const language = card.language === 'mn' ? 'mn' : 'en'
   const profile: Profile = {
     name: card.name,
     title: card.title,
@@ -124,9 +126,9 @@ export default function PublicCardPage() {
     companyLogo: card.company_logo_url || '',
   }
   const cardCopy = {
-    save: 'Save',
-    scan: 'Scan to connect',
-    flip: 'Flip card',
+    save: language === 'mn' ? 'Хадгалах' : 'Save',
+    scan: language === 'mn' ? 'Холбогдохын тулд уншуулна уу' : 'Scan to connect',
+    flip: language === 'mn' ? 'Карт эргүүлэх' : 'Flip card',
   }
 
   const downloadContact = () => {
@@ -161,19 +163,19 @@ export default function PublicCardPage() {
     <main style={{ color: textColor }} className={`relative min-h-screen w-full overflow-x-hidden ${selectedTemplate.publicBackground}`}>
       <div className="flex min-h-screen w-full flex-col items-center justify-center px-3 py-6 sm:px-8 sm:py-8">
         <div className="flex w-full max-w-[760px] flex-col items-center">
-          <div className="mb-0 w-full">
+          <div className="public-card-flip mt-3 mb-0 w-full">
             <FlipCard template={selectedTemplate} profile={profile} t={cardCopy} texture={texture} publicCode={code} />
           </div>
-          <p className="public-card-prompt mt-6 mb-6 text-center text-base font-medium text-current/55">Tap the card to see contact details</p>
+          <p className="public-card-prompt mt-6 mb-6 text-center text-base font-medium text-current/55">{language === 'mn' ? 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.' : 'Tap the card to see contact details'}</p>
           {actionCount > 0 && (
             <div className={`w-full max-w-[520px] grid gap-3 sm:gap-4 ${actionCount === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-              {phoneVisible && <a href={`tel:${phone}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]"><Phone size={14} />Call now</a>}
-              {businessEmailVisible && <a href={`mailto:${businessEmail}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]"><Mail size={14} />Email</a>}
-              {personalEmailVisible && <a href={`mailto:${personalEmail}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]"><Mail size={14} />Email</a>}
+              {phoneVisible && <a href={`tel:${phone}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]"><Phone size={14} />{language === 'mn' ? 'Залгах' : 'Call now'}</a>}
+              {businessEmailVisible && <a href={`mailto:${businessEmail}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]"><Mail size={14} />{language === 'mn' ? 'Имэйл бичих' : 'Email'}</a>}
+              {personalEmailVisible && <a href={`mailto:${personalEmail}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]"><Mail size={14} />{language === 'mn' ? 'Имэйл бичих' : 'Email'}</a>}
             </div>
           )}
           {Boolean(instagram || facebook || viber) && (
-            <div className="public-card-socials mt-6 flex justify-center gap-3">
+            <div className="public-card-socials mt-3 flex justify-center gap-3">
               {instagram && <a href={instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white text-[#536273]"><InstagramGlyph size={18} /></a>}
               {viber && <a href={viber} target="_blank" rel="noreferrer" aria-label="Viber" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white text-[#536273]"><ViberGlyph size={18} /></a>}
               {facebook && <a href={facebook} target="_blank" rel="noreferrer" aria-label="Facebook" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white text-[#536273]"><FacebookGlyph size={18} /></a>}
@@ -181,10 +183,10 @@ export default function PublicCardPage() {
           )}
           {phoneVisible && (
             <button type="button" onClick={downloadContact} className="public-card-save mx-auto mt-3 flex h-12 w-full max-w-[520px] items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]">
-              <Download size={16} strokeWidth={2.4} />Save Contact
+              <Download size={16} strokeWidth={2.4} />{language === 'mn' ? 'Харилцагчийн жагсаалтад хадгалах' : 'Save Contact'}
             </button>
           )}
-          <PublicCardAssetActions profile={profile} template={selectedTemplate} texture={texture} publicCode={code} />
+          <PublicCardAssetActions profile={profile} template={selectedTemplate} texture={texture} publicCode={code} language={language} />
           <p className="mt-3 break-all text-center text-[8px] leading-tight text-current/45">{publicCardHost}/c/{card.public_code}</p>
         </div>
       </div>

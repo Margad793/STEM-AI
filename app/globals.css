@@ -118,10 +118,10 @@ button { cursor: pointer; }
   }
 
   main:has(> div > div > div > div > button.flip-card) .public-card-socials {
-    margin-top: 1.5rem;
+    margin-top: 0.75rem;
   }
 
   main:has(> div > div > div > div > button.flip-card) .public-card-save {
-    margin-top: 2rem;
+    margin-top: 0.75rem;
   }
 }

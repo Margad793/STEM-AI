@@ -178,13 +178,17 @@ export function CardFacesExport({
   profile,
   texture,
   publicCode,
+  language = 'en',
 }: {
   template: Template
   profile: Profile
   texture: Texture
   publicCode: string
+  language?: 'en' | 'mn'
 }) {
-  const copy = { save: 'Save', scan: 'Scan to connect', flip: 'Flip card' }
+  const copy = language === 'mn'
+    ? { save: 'Хадгалах', scan: 'Холбогдохын тулд уншуулна уу', flip: 'Карт эргүүлэх' }
+    : { save: 'Save', scan: 'Scan to connect', flip: 'Flip card' }
   return (
     <>
       <div className="flip-card relative isolate aspect-[1.7] w-full overflow-hidden">
