@@ -185,9 +185,9 @@ export default function PublicCardPage() {
           )}
           {Boolean(instagram || facebook || viber) && (
             <div className="public-card-socials mt-3 flex justify-center gap-3">
-              {instagram && <a href={instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white text-[#536273]"><InstagramGlyph size={18} /></a>}
-              {viber && <a href={viber} target="_blank" rel="noreferrer" aria-label="Viber" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white text-[#536273]"><ViberGlyph size={18} /></a>}
-              {facebook && <a href={facebook} target="_blank" rel="noreferrer" aria-label="Facebook" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white text-[#536273]"><FacebookGlyph size={18} /></a>}
+              {instagram && <a href={instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="flex size-11 items-center justify-center"><InstagramGlyph size={30} /></a>}
+              {viber && <a href={viber} target="_blank" rel="noreferrer" aria-label="Viber" className="flex size-11 items-center justify-center"><ViberGlyph size={30} /></a>}
+              {facebook && <a href={facebook} target="_blank" rel="noreferrer" aria-label="Facebook" className="flex size-11 items-center justify-center"><FacebookGlyph size={30} /></a>}
             </div>
           )}
           {phoneVisible && (

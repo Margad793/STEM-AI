@@ -1644,9 +1644,9 @@ function PreviewPanel({ template, profile, t, language, texture, publicCode }: {
           )}
           {Boolean((profile.showInstagram && profile.instagram.trim()) || (profile.showViber && profile.viber.trim()) || (profile.showFacebook && profile.facebook.trim())) && (
             <div className="order-4 mt-3 flex gap-2">
-              {profile.showInstagram && profile.instagram.trim() && <a href={profile.instagram.trim()} target="_blank" rel="noreferrer" aria-label="Instagram" className="flex size-6 items-center justify-center rounded-full border border-[#dfe3e8] bg-white text-[#536273]"><InstagramGlyph size={13} /></a>}
-              {profile.showViber && profile.viber.trim() && <a href={profile.viber.trim()} target="_blank" rel="noreferrer" aria-label="Viber" className="flex size-6 items-center justify-center rounded-full border border-[#dfe3e8] bg-white text-[#536273]"><ViberGlyph size={13} /></a>}
-              {profile.showFacebook && profile.facebook.trim() && <a href={profile.facebook.trim()} target="_blank" rel="noreferrer" aria-label="Facebook" className="flex size-6 items-center justify-center rounded-full border border-[#dfe3e8] bg-white text-[#536273]"><FacebookGlyph size={13} /></a>}
+              {profile.showInstagram && profile.instagram.trim() && <a href={profile.instagram.trim()} target="_blank" rel="noreferrer" aria-label="Instagram" className="flex size-6 items-center justify-center"><InstagramGlyph size={20} /></a>}
+              {profile.showViber && profile.viber.trim() && <a href={profile.viber.trim()} target="_blank" rel="noreferrer" aria-label="Viber" className="flex size-6 items-center justify-center"><ViberGlyph size={20} /></a>}
+              {profile.showFacebook && profile.facebook.trim() && <a href={profile.facebook.trim()} target="_blank" rel="noreferrer" aria-label="Facebook" className="flex size-6 items-center justify-center"><FacebookGlyph size={20} /></a>}
             </div>
           )}
           <p className="order-2 mt-3 max-w-[185px] text-center text-[8px] leading-tight text-[#8996a8]">{t.tap}</p>
@@ -1707,9 +1707,9 @@ function PublicCard({ onBack, template, profile, language, t, texture, publicCod
           </div>
           {Boolean((profile.showInstagram && profile.instagram.trim()) || (profile.showViber && profile.viber.trim()) || (profile.showFacebook && profile.facebook.trim())) && (
             <div className="public-card-socials mt-3 flex justify-center gap-3">
-              {profile.showInstagram && profile.instagram.trim() && <a href={profile.instagram.trim()} target="_blank" rel="noreferrer" aria-label="Instagram" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white"><InstagramGlyph size={18} /></a>}
-              {profile.showViber && profile.viber.trim() && <a href={profile.viber.trim()} target="_blank" rel="noreferrer" aria-label="Viber" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white"><ViberGlyph size={18} /></a>}
-              {profile.showFacebook && profile.facebook.trim() && <a href={profile.facebook.trim()} target="_blank" rel="noreferrer" aria-label="Facebook" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white"><FacebookGlyph size={18} /></a>}
+              {profile.showInstagram && profile.instagram.trim() && <a href={profile.instagram.trim()} target="_blank" rel="noreferrer" aria-label="Instagram" className="flex size-11 items-center justify-center"><InstagramGlyph size={30} /></a>}
+              {profile.showViber && profile.viber.trim() && <a href={profile.viber.trim()} target="_blank" rel="noreferrer" aria-label="Viber" className="flex size-11 items-center justify-center"><ViberGlyph size={30} /></a>}
+              {profile.showFacebook && profile.facebook.trim() && <a href={profile.facebook.trim()} target="_blank" rel="noreferrer" aria-label="Facebook" className="flex size-11 items-center justify-center"><FacebookGlyph size={30} /></a>}
             </div>
           )}
           {hasPhone && (
