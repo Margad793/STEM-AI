@@ -1453,6 +1453,18 @@ async function imageBlobToDataUrl(blob: Blob): Promise<string> {
     reader.readAsDataURL(blob)
   })
 }
+async function imageBlobToPngDataUrl(blob: Blob): Promise<string> {
+  const image = new Image()
+  image.src = await imageBlobToDataUrl(blob)
+  await image.decode()
+  const canvas = document.createElement('canvas')
+  canvas.width = image.naturalWidth
+  canvas.height = image.naturalHeight
+  const context = canvas.getContext('2d')
+  if (!context) throw new Error('Could not prepare an image for export.')
+  context.drawImage(image, 0, 0)
+  return canvas.toDataURL('image/png')
+}
 async function createImageReadyExportNode(source: HTMLElement): Promise<{ node: HTMLElement; cleanup: () => void }> {
   const node = source.cloneNode(true) as HTMLElement
   node.style.position = 'fixed'
@@ -1472,13 +1484,12 @@ async function createImageReadyExportNode(source: HTMLElement): Promise<{ node: 
       }
       if (!image.naturalWidth) throw new Error(`Unable to load image: ${image.src}`)
       await image.decode()
-      if (!image.src.startsWith('data:')) {
-        const response = await fetch(image.currentSrc || image.src, { mode: 'cors', cache: 'force-cache' })
-        if (!response.ok) throw new Error(`Unable to fetch image: ${image.src}`)
-        image.srcset = ''
-        image.src = await imageBlobToDataUrl(await response.blob())
-        await image.decode()
-      }
+      const imageUrl = image.currentSrc || image.src
+      const response = await fetch(imageUrl, { mode: 'cors', cache: 'force-cache' })
+      if (!response.ok) throw new Error(`Unable to fetch image: ${imageUrl}`)
+      image.srcset = ''
+      image.src = await imageBlobToPngDataUrl(await response.blob())
+      await image.decode()
     }))
     await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
     return { node, cleanup: () => node.remove() }
@@ -1546,12 +1557,23 @@ function CardAssetActions({
       await document.fonts.ready
       const { node: exportNode, cleanup } = await createImageReadyExportNode(imageExportRef.current)
       try {
-        const blob = await toBlob(exportNode, {
+        const captureOptions = {
           backgroundColor: '#eef1f4',
           cacheBust: false,
           pixelRatio: 2,
           style: { position: 'relative', left: '0px', top: '0px', zIndex: 'auto', opacity: '1' },
-        })
+        } as const
+        const hasPhotos = exportNode.querySelector('img') !== null
+        let blob: Blob | null = null
+        for (let attempt = 0; attempt < (hasPhotos ? 3 : 1); attempt += 1) {
+          const images = Array.from(exportNode.querySelectorAll('img'))
+          await Promise.all(images.map((image) => image.decode()))
+          blob = await toBlob(exportNode, captureOptions)
+          if (!blob) throw new Error('Image export returned no data.')
+          if (attempt < (hasPhotos ? 2 : 0)) {
+            await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+          }
+        }
         if (!blob) throw new Error('Image export returned no data.')
         await saveImageFile(blob, `${(profile.name.trim() || 'card').replace(/[^a-z0-9-_]+/gi, '-')}-card.png`, profile.name || t.digital, 'card')
       } finally {
