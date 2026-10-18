@@ -95,6 +95,11 @@ export default function Page() {
     const timeout = window.setTimeout(() => setSaveNotice(''), 2000)
     return () => window.clearTimeout(timeout)
   }, [saveNotice])
+  useEffect(() => {
+    if (!saveError) return
+    const timeout = window.setTimeout(() => setSaveError(''), 6000)
+    return () => window.clearTimeout(timeout)
+  }, [saveError])
 
   useEffect(() => {
     if (!supabase) {
