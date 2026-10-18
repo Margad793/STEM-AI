@@ -18,7 +18,7 @@ import { getPublicSiteOrigin } from '@/lib/site'
 type Language = 'en' | 'mn'
 type CardRow = Omit<Profile, 'photo' | 'companyLogo' | 'roomNumber' | 'businessEmail' | 'personalEmail' | 'showPhone' | 'showBusinessEmail' | 'showPersonalEmail' | 'showRoomNumber' | 'showWebsite' | 'showInstagram' | 'showFacebook' | 'showViber'> & { id: string; public_code: string; is_published: boolean; template: string; texture: Texture; language: Language; user_id: string; photo_url: string; company_logo_url: string; room_number: string; email: string; business_email: string; personal_email: string; show_phone: boolean; show_business_email: boolean; show_personal_email: boolean; show_room_number: boolean; show_website: boolean; show_instagram: boolean; show_facebook: boolean; show_viber: boolean }
 const initialProfile: Profile = { name: 'Alex Morgan', title: 'Creative Director', company: 'Northstar Studio', location: 'Brooklyn, NY', bio: 'Building brands with a little more soul. I help ambitious teams turn good ideas into work people remember.', businessEmail: 'alex@northstar.co', personalEmail: '', showPhone: true, showBusinessEmail: true, showPersonalEmail: false, showRoomNumber: true, showWebsite: true, showInstagram: true, showFacebook: true, showViber: true, phone: '+1 917 555 0184', roomNumber: '', website: 'alexmorgan.co', instagram: 'https://instagram.com/', facebook: 'https://facebook.com/', viber: 'viber://chat?number=%2B19175550184', photo: '', companyLogo: '' }
-const emptyProfile: Profile = { name: '', title: '', company: '', location: '', bio: '', businessEmail: '', personalEmail: '', showPhone: true, showBusinessEmail: true, showPersonalEmail: true, showRoomNumber: true, showWebsite: true, showInstagram: true, showFacebook: true, showViber: true, phone: '', roomNumber: '', website: '', instagram: '', facebook: '', viber: '', photo: '', companyLogo: '' }
+const emptyProfile: Profile = { name: '', title: '', company: '', location: '', bio: '', businessEmail: '', personalEmail: '', showPhone: true, showBusinessEmail: true, showPersonalEmail: false, showRoomNumber: true, showWebsite: true, showInstagram: true, showFacebook: true, showViber: true, phone: '', roomNumber: '', website: '', instagram: '', facebook: '', viber: '', photo: '', companyLogo: '' }
 const publicCardOrigin = getPublicSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL)
 const publicCardHost = publicCardOrigin.replace(/^https?:\/\//i, '')
 const publicCardUrl = (code: string) => `${publicCardOrigin}/c/${encodeURIComponent(code)}`
@@ -281,7 +281,7 @@ export default function Page() {
         personal_email: profile.personalEmail,
         show_phone: profile.showPhone,
         show_business_email: profile.showBusinessEmail,
-        show_personal_email: profile.showPersonalEmail,
+        show_personal_email: profile.showPersonalEmail && !profile.showBusinessEmail,
         show_room_number: profile.showRoomNumber,
         show_website: profile.showWebsite,
         show_instagram: profile.showInstagram,

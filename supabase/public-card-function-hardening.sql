@@ -6,7 +6,7 @@ alter table public.cards
   add column if not exists personal_email text,
   add column if not exists show_phone boolean not null default true,
   add column if not exists show_business_email boolean not null default true,
-  add column if not exists show_personal_email boolean not null default true,
+  add column if not exists show_personal_email boolean not null default false,
   add column if not exists show_room_number boolean not null default true,
   add column if not exists show_website boolean not null default true,
   add column if not exists show_instagram boolean not null default true,
