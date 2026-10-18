@@ -58,6 +58,7 @@ function CardQR({ url }: { url: string }) {
 
 function CardFace({
   back = false,
+  exportMode = false,
   template,
   profile,
   t,
@@ -65,6 +66,7 @@ function CardFace({
   publicCode,
 }: {
   back?: boolean
+  exportMode?: boolean
   template: Template
   profile: Profile
   t: CardCopy
@@ -106,10 +108,10 @@ function CardFace({
     <div
       ref={rootRef}
       style={{
-        backfaceVisibility: 'hidden',
-        WebkitBackfaceVisibility: 'hidden',
+        backfaceVisibility: exportMode ? 'visible' : 'hidden',
+        WebkitBackfaceVisibility: exportMode ? 'visible' : 'hidden',
         transformOrigin: 'center',
-        transform: back ? 'rotateY(180deg)' : 'rotateY(0deg)',
+        transform: exportMode ? 'none' : back ? 'rotateY(180deg)' : 'rotateY(0deg)',
         color: template.textColor,
         backgroundImage: textureImage,
         textShadow: texture === 'arcs' && template.name === 'Creative Glass'
@@ -120,7 +122,7 @@ function CardFace({
               ? '0 1px 2px rgba(25,12,55,.85), 0 0 1px rgba(255,255,255,.7)'
               : undefined,
       }}
-      className={`absolute inset-0 isolate flex h-full w-full min-w-0 flex-col overflow-hidden rounded-[calc(18*var(--u))] border border-black/10 p-[calc(12*var(--u))] [transform-style:preserve-3d] ${template.background} ${template.ink}`}
+      className={`${exportMode ? 'relative' : 'absolute inset-0'} isolate flex h-full w-full min-w-0 flex-col overflow-hidden rounded-[calc(18*var(--u))] border border-black/10 p-[calc(12*var(--u))] [transform-style:preserve-3d] ${template.background} ${template.ink}`}
     >
       <div className={`pointer-events-none absolute inset-0 rounded-[calc(18*var(--u))] ${texture === 'matte' ? 'bg-black/[0.025]' : 'bg-white/[0.03]'}`} />
       {texture === 'arcs' && <>
@@ -168,6 +170,30 @@ function CardFace({
         </div>
       )}
     </div>
+  )
+}
+
+export function CardFacesExport({
+  template,
+  profile,
+  texture,
+  publicCode,
+}: {
+  template: Template
+  profile: Profile
+  texture: Texture
+  publicCode: string
+}) {
+  const copy = { save: 'Save', scan: 'Scan to connect', flip: 'Flip card' }
+  return (
+    <>
+      <div className="flip-card relative isolate aspect-[1.7] w-full overflow-hidden">
+        <CardFace exportMode template={template} profile={profile} t={copy} texture={texture} publicCode={publicCode} />
+      </div>
+      <div className="flip-card relative isolate aspect-[1.7] w-full overflow-hidden">
+        <CardFace exportMode back template={template} profile={profile} t={copy} texture={texture} publicCode={publicCode} />
+      </div>
+    </>
   )
 }
 

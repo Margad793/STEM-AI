@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { Camera, Download, Mail, MessageCircle, Phone, UserRound } from 'lucide-react'
+import { Download, Mail, Phone } from 'lucide-react'
 import { FlipCard } from '@/components/business-card'
+import { PublicCardAssetActions } from '@/components/public-card-asset-actions'
+import { FacebookGlyph, InstagramGlyph, ViberGlyph } from '@/components/social-icons'
 import { templateSlugs, templates } from '@/lib/card-design'
 import type { Profile, Texture } from '@/lib/card-types'
 import { supabase } from '@/lib/supabase-browser'
@@ -172,9 +174,9 @@ export default function PublicCardPage() {
           )}
           {Boolean(instagram || facebook || viber) && (
             <div className="public-card-socials mt-6 flex justify-center gap-3">
-              {instagram && <a href={instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white"><Camera size={18} /></a>}
-              {viber && <a href={viber} aria-label="Viber" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white"><MessageCircle size={18} /></a>}
-              {facebook && <a href={facebook} target="_blank" rel="noreferrer" aria-label="Facebook" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white"><UserRound size={18} /></a>}
+              {instagram && <a href={instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white text-[#536273]"><InstagramGlyph size={18} /></a>}
+              {viber && <a href={viber} target="_blank" rel="noreferrer" aria-label="Viber" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white text-[#536273]"><ViberGlyph size={18} /></a>}
+              {facebook && <a href={facebook} target="_blank" rel="noreferrer" aria-label="Facebook" className="flex size-11 items-center justify-center rounded-full border border-white/70 bg-white text-[#536273]"><FacebookGlyph size={18} /></a>}
             </div>
           )}
           {phoneVisible && (
@@ -182,6 +184,7 @@ export default function PublicCardPage() {
               <Download size={16} strokeWidth={2.4} />Save Contact
             </button>
           )}
+          <PublicCardAssetActions profile={profile} template={selectedTemplate} texture={texture} publicCode={code} />
           <p className="mt-3 break-all text-center text-[8px] leading-tight text-current/45">{publicCardHost}/c/{card.public_code}</p>
         </div>
       </div>
