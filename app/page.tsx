@@ -14,7 +14,7 @@ import type { Profile, Template, Texture } from '@/lib/card-types'
 import { fitText } from '@/lib/fit-text'
 import { supabase, supabaseConfigured } from '@/lib/supabase-browser'
 import { getPublicSiteOrigin } from '@/lib/site'
-import { createContactVCard } from '@/lib/vcard'
+import { createContactVCard, encodeContactPhoto } from '@/lib/vcard'
 
 type Language = 'en' | 'mn'
 type CardRow = Omit<Profile, 'photo' | 'companyLogo' | 'roomNumber' | 'businessEmail' | 'personalEmail' | 'showPhone' | 'showBusinessEmail' | 'showPersonalEmail' | 'showRoomNumber' | 'showWebsite' | 'showInstagram' | 'showFacebook' | 'showViber'> & { id: string; public_code: string; is_published: boolean; template: string; texture: Texture; language: Language; user_id: string; photo_url: string; company_logo_url: string; room_number: string; email: string; business_email: string; personal_email: string; show_phone: boolean; show_business_email: boolean; show_personal_email: boolean; show_room_number: boolean; show_website: boolean; show_instagram: boolean; show_facebook: boolean; show_viber: boolean }
@@ -953,28 +953,36 @@ export default function Page() {
   );
 }
 
-function downloadVCard(profile: Profile) {
-  const website = profile.website.trim()
-  const vcard = createContactVCard({
-    name: profile.name,
-    company: profile.company,
-    title: profile.title,
-    phone: profile.showPhone ? profile.phone : undefined,
-    businessEmail: profile.showBusinessEmail ? profile.businessEmail : undefined,
-    personalEmail: profile.showPersonalEmail ? profile.personalEmail : undefined,
-    website: profile.showWebsite && website ? (/^https?:\/\//i.test(website) ? website : `https://${website}`) : undefined,
-    street: profile.showRoomNumber ? profile.roomNumber : undefined,
-    locality: profile.location,
-  })
-  const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `${profile.name.replace(/\s+/g, '-')}.vcf`
-  document.body.appendChild(link)
-  link.click()
-  link.remove()
-  setTimeout(() => URL.revokeObjectURL(url), 2000)
+async function downloadVCard(profile: Profile, language: Language) {
+  try {
+    const website = profile.website.trim()
+    const photo = profile.photo ? await encodeContactPhoto(profile.photo) : undefined
+    const vcard = createContactVCard({
+      name: profile.name,
+      company: profile.company,
+      title: profile.title,
+      phone: profile.showPhone ? profile.phone : undefined,
+      businessEmail: profile.showBusinessEmail ? profile.businessEmail : undefined,
+      personalEmail: profile.showPersonalEmail ? profile.personalEmail : undefined,
+      website: profile.showWebsite && website ? (/^https?:\/\//i.test(website) ? website : `https://${website}`) : undefined,
+      street: profile.showRoomNumber ? profile.roomNumber : undefined,
+      locality: profile.location,
+    }, photo)
+    const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${profile.name.replace(/\s+/g, '-')}.vcf`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 2000)
+  } catch (error) {
+    console.error('Unable to create contact card:', error)
+    window.alert(language === 'mn'
+      ? 'Харилцагчийн зурагтай файлыг бэлтгэж чадсангүй. Зургийн файлаа шалгаад дахин оролдоно уу.'
+      : 'Could not prepare the contact photo. Please check the image and try again.')
+  }
 }
 const useIsoLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect
 function PhotoField({ profile, update, t }: { profile: Profile; update: (key: keyof Profile) => (value: string) => void; t: typeof copy.en }) {
@@ -1643,7 +1651,7 @@ function PreviewPanel({ template, profile, t, language, texture, publicCode }: {
           )}
           <p className="order-2 mt-3 max-w-[185px] text-center text-[8px] leading-tight text-[#8996a8]">{t.tap}</p>
           {hasPhone && (
-            <button type="button" onClick={() => downloadVCard(profile)} style={getCardActionStyle(template, texture)} className="order-5 mt-4 flex h-7 w-full max-w-[205px] shrink-0 items-center justify-center gap-1.5 rounded-lg border text-[9px] font-bold shadow-sm transition hover:brightness-105">
+            <button type="button" onClick={() => void downloadVCard(profile, language)} style={getCardActionStyle(template, texture)} className="order-5 mt-4 flex h-7 w-full max-w-[205px] shrink-0 items-center justify-center gap-1.5 rounded-lg border text-[9px] font-bold shadow-sm transition hover:brightness-105">
               <Download size={11} /> <span className="text-[9px] font-bold leading-none">{language === 'en' ? 'Save Contact' : t.saveContact}</span>
             </button>
           )}
@@ -1707,7 +1715,7 @@ function PublicCard({ onBack, template, profile, language, t, texture, publicCod
           {hasPhone && (
             <button
               type="button"
-              onClick={() => downloadVCard(profile)}
+              onClick={() => void downloadVCard(profile, language)}
               style={getCardActionStyle(template, texture)}
               className="mx-auto mt-3 flex h-12 w-full max-w-[520px] items-center justify-center gap-2.5 rounded-xl border px-5 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]"
             >
