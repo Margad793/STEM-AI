@@ -105,30 +105,17 @@ export function PublicCardAssetActions({
 }) {
   const exportRef = useRef<HTMLDivElement>(null)
   const [activeAction, setActiveAction] = useState<'qr' | 'card' | null>(null)
-  const [feedback, setFeedback] = useState<{ action: 'qr' | 'card'; message: string } | null>(null)
   const cardBaseName = (profile.name.trim() || 'card').replace(/[^a-z0-9-_]+/gi, '-')
   const copy = language === 'mn'
     ? {
         preparing: 'Зураг бэлдэж байна...',
         saveQr: 'QR хадгалах',
         saveCard: 'Карт хадгалах',
-        qrShared: 'QR зургийг хуваалцлаа. Хадгалахын тулд Save Image сонгоно уу.',
-        qrDownloaded: 'QR зураг татагдлаа.',
-        cardShared: 'Картын зургийг хуваалцлаа. Хадгалахын тулд Save Image сонгоно уу.',
-        cardDownloaded: 'Картын зураг татагдлаа.',
-        qrError: 'QR зураг үүсгэж чадсангүй.',
-        cardError: 'Картын зураг үүсгэж чадсангүй. Дахин оролдоно уу.',
       }
     : {
         preparing: 'Preparing image...',
         saveQr: 'Save QR',
         saveCard: 'Save card',
-        qrShared: 'QR image shared. Choose Save Image to keep it.',
-        qrDownloaded: 'QR image downloaded.',
-        cardShared: 'Card image shared. Choose Save Image to keep it.',
-        cardDownloaded: 'Card image downloaded. Open it and choose Save Image to add it to Photos.',
-        qrError: 'Could not create the QR image.',
-        cardError: 'Could not create the card image. Please try again.',
       }
 
   const saveImage = async (blob: Blob, fileName: string, title: string) => {
@@ -136,7 +123,7 @@ export function PublicCardAssetActions({
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
     if (isMobile && navigator.share && navigator.canShare?.({ files: [file] })) {
       await navigator.share({ files: [file], title })
-      return 'shared'
+      return
     }
     const imageUrl = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -146,12 +133,10 @@ export function PublicCardAssetActions({
     link.click()
     link.remove()
     window.setTimeout(() => URL.revokeObjectURL(imageUrl), 60_000)
-    return 'downloaded'
   }
 
   const saveQr = async () => {
     setActiveAction('qr')
-    setFeedback(null)
     try {
       const dataUrl = await QRCode.toDataURL(`${publicCardOrigin}/c/${encodeURIComponent(publicCode)}`, {
         width: 1024,
@@ -161,12 +146,10 @@ export function PublicCardAssetActions({
       })
       const response = await fetch(dataUrl)
       if (!response.ok) throw new Error('Could not prepare the QR image.')
-      const outcome = await saveImage(await response.blob(), `${cardBaseName}-qr.png`, `${profile.name || 'Business card'} QR`)
-      setFeedback({ action: 'qr', message: outcome === 'shared' ? copy.qrShared : copy.qrDownloaded })
+      await saveImage(await response.blob(), `${cardBaseName}-qr.png`, `${profile.name || 'Business card'} QR`)
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') return
       console.error('Could not save the public card QR code.', error)
-      setFeedback({ action: 'qr', message: copy.qrError })
     } finally {
       setActiveAction(null)
     }
@@ -175,7 +158,6 @@ export function PublicCardAssetActions({
   const saveCard = async () => {
     if (!exportRef.current) return
     setActiveAction('card')
-    setFeedback(null)
     try {
       await document.fonts.ready
       const { node, cleanup } = await prepareImagesForExport(exportRef.current)
@@ -197,15 +179,13 @@ export function PublicCardAssetActions({
           }
         }
         if (!blob) throw new Error('Image export returned no data.')
-        const outcome = await saveImage(blob, `${cardBaseName}-card.png`, profile.name || 'Business card')
-        setFeedback({ action: 'card', message: outcome === 'shared' ? copy.cardShared : copy.cardDownloaded })
+        await saveImage(blob, `${cardBaseName}-card.png`, profile.name || 'Business card')
       } finally {
         cleanup()
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') return
       console.error('Could not save the public card image.', error)
-      setFeedback({ action: 'card', message: copy.cardError })
     } finally {
       setActiveAction(null)
     }
@@ -219,14 +199,12 @@ export function PublicCardAssetActions({
             <QrCode size={17} className="shrink-0" />
             <span className="truncate">{activeAction === 'qr' ? copy.preparing : copy.saveQr}</span>
           </button>
-          {feedback?.action === 'qr' && <p aria-live="polite" className="mt-1 text-center text-xs opacity-65">{feedback.message}</p>}
         </div>
         <div className="min-w-0">
           <button type="button" onClick={() => void saveCard()} disabled={activeAction !== null} className="flex h-12 w-full min-w-0 items-center justify-center gap-2 rounded-xl border border-current/15 bg-white/75 px-3 text-sm font-semibold transition hover:bg-white disabled:cursor-wait disabled:opacity-60">
             <Share2 size={17} className="shrink-0" />
             <span className="truncate">{activeAction === 'card' ? copy.preparing : copy.saveCard}</span>
           </button>
-          {feedback?.action === 'card' && <p aria-live="polite" className="mt-1 text-center text-xs opacity-65">{feedback.message}</p>}
         </div>
       </div>
       <div ref={exportRef} aria-hidden="true" className="flip-card pointer-events-none fixed left-[-10000px] top-0 z-[-1] flex w-[600px] flex-col gap-3 bg-[#eef1f4] p-10 text-[#26333a]">

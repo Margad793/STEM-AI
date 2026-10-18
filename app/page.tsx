@@ -1491,24 +1491,12 @@ function CardAssetActions({
   const imageExportRef = useRef<HTMLDivElement>(null)
   const [savingImage, setSavingImage] = useState(false)
   const [activeAction, setActiveAction] = useState<'qr' | 'card' | null>(null)
-  const [imageFeedback, setImageFeedback] = useState<{ action: 'qr' | 'card'; message: string } | null>(null)
-  const actionMessage = (action: 'qr' | 'card', outcome: 'shared' | 'downloaded' | 'error') => {
-    if (language === 'en') {
-      if (outcome === 'error') return action === 'qr' ? 'Could not create the QR image.' : t.cardImageError
-      if (action === 'qr') return outcome === 'shared' ? 'QR image shared. Choose Save Image to keep it.' : 'QR image downloaded.'
-      return outcome === 'shared' ? 'Card image shared. Choose Save Image to keep it.' : t.cardImageDownloaded
-    }
-    if (outcome === 'error') return action === 'qr' ? 'QR зураг үүсгэж чадсангүй.' : t.cardImageError
-    if (action === 'qr') return outcome === 'shared' ? 'QR зургийг хуваалцлаа. Хадгалахын тулд Save Image сонгоно уу.' : 'QR зураг татагдлаа.'
-    return outcome === 'shared' ? 'Картын зургийг хуваалцлаа. Хадгалахын тулд Save Image сонгоно уу.' : 'Картын зураг татагдлаа.'
-  }
-  const saveImageFile = async (blob: Blob, filename: string, title: string, action: 'qr' | 'card') => {
+  const saveImageFile = async (blob: Blob, filename: string, title: string) => {
     const file = new File([blob], filename, { type: 'image/png' })
     const isMobileDevice = navigator.userAgentData?.mobile
       ?? /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
     if (isMobileDevice && navigator.share && navigator.canShare?.({ files: [file] })) {
       await navigator.share({ files: [file], title })
-      setImageFeedback({ action, message: actionMessage(action, 'shared') })
       return
     }
     const imageUrl = URL.createObjectURL(blob)
@@ -1519,13 +1507,11 @@ function CardAssetActions({
     link.click()
     link.remove()
     window.setTimeout(() => URL.revokeObjectURL(imageUrl), 60_000)
-    setImageFeedback({ action, message: actionMessage(action, 'downloaded') })
   }
   const saveCardImage = async () => {
     if (!imageExportRef.current || savingImage) return
     setSavingImage(true)
     setActiveAction('card')
-    setImageFeedback(null)
     try {
       await document.fonts.ready
       const { node: exportNode, cleanup } = await createImageReadyExportNode(imageExportRef.current)
@@ -1548,13 +1534,13 @@ function CardAssetActions({
           }
         }
         if (!blob) throw new Error('Image export returned no data.')
-        await saveImageFile(blob, `${(profile.name.trim() || 'card').replace(/[^a-z0-9-_]+/gi, '-')}-card.png`, profile.name || t.digital, 'card')
+        await saveImageFile(blob, `${(profile.name.trim() || 'card').replace(/[^a-z0-9-_]+/gi, '-')}-card.png`, profile.name || t.digital)
       } finally {
         cleanup()
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') return
-      setImageFeedback({ action: 'card', message: actionMessage('card', 'error') })
+      console.error('Could not save the card image.', error)
     } finally {
       setSavingImage(false)
       setActiveAction(null)
@@ -1564,7 +1550,6 @@ function CardAssetActions({
     if (!publicCode || savingImage) return
     setSavingImage(true)
     setActiveAction('qr')
-    setImageFeedback(null)
     try {
       const dataUrl = await QRCode.toDataURL(publicCardUrl(publicCode), {
         width: 1024,
@@ -1574,10 +1559,10 @@ function CardAssetActions({
       })
       const response = await fetch(dataUrl)
       if (!response.ok) throw new Error('Could not prepare the QR image.')
-      await saveImageFile(await response.blob(), `${(profile.name.trim() || 'card').replace(/[^a-z0-9-_]+/gi, '-')}-qr.png`, `${profile.name || t.digital} QR`, 'qr')
+      await saveImageFile(await response.blob(), `${(profile.name.trim() || 'card').replace(/[^a-z0-9-_]+/gi, '-')}-qr.png`, `${profile.name || t.digital} QR`)
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') return
-      setImageFeedback({ action: 'qr', message: actionMessage('qr', 'error') })
+      console.error('Could not save the QR image.', error)
     } finally {
       setSavingImage(false)
       setActiveAction(null)
@@ -1599,7 +1584,6 @@ function CardAssetActions({
               <QrCode size={compact ? 10 : 17} className="shrink-0" />
               <span style={compact ? { fontSize: '9px', lineHeight: 1, WebkitTextSizeAdjust: 'none' } : undefined} className="min-w-0 truncate">{activeAction === 'qr' ? t.savingCardImage : compact && language === 'mn' ? 'QR хадгалах' : language === 'en' ? 'Save QR' : 'QR хадгалах'}</span>
             </button>
-            {imageFeedback?.action === 'qr' && <p aria-live="polite" className={`${compact ? 'text-[7px]' : 'text-xs'} mt-1 text-center opacity-65`}>{imageFeedback.message}</p>}
           </div>
         )}
         <div className="min-w-0">
@@ -1614,7 +1598,6 @@ function CardAssetActions({
             <Share2 size={compact ? 10 : 17} className="shrink-0" />
             <span style={compact ? { fontSize: '9px', lineHeight: 1, WebkitTextSizeAdjust: 'none' } : undefined} className="min-w-0 truncate">{activeAction === 'card' ? t.savingCardImage : compact ? language === 'en' ? 'Save card' : 'Карт хадгалах' : t.saveCardImage}</span>
           </button>
-          {imageFeedback?.action === 'card' && <p aria-live="polite" className={`${compact ? 'text-[7px]' : 'text-xs'} mt-1 text-center opacity-65`}>{imageFeedback.message}</p>}
         </div>
       </div>
       <div
