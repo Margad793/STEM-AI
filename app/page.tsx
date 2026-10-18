@@ -9,7 +9,7 @@ import Cropper, { type Area } from 'react-easy-crop'
 import type { Session } from '@supabase/supabase-js'
 import { AuthScreen } from '@/components/auth-screen'
 import { FacebookGlyph, InstagramGlyph, ViberGlyph } from '@/components/social-icons'
-import { getCarbonWaveTextureImage, templates, templateSlugs, textures } from '@/lib/card-design'
+import { getCardActionStyle, getCarbonWaveTextureImage, templates, templateSlugs, textures } from '@/lib/card-design'
 import type { Profile, Template, Texture } from '@/lib/card-types'
 import { fitText } from '@/lib/fit-text'
 import { supabase, supabaseConfigured } from '@/lib/supabase-browser'
@@ -1400,7 +1400,7 @@ function CardFace({
               >
                 {profile.name.toUpperCase()}
               </p>
-              <p className="mt-[calc(6*var(--u))] text-[calc(14*var(--u))] font-medium opacity-65">
+              <p className="card-handwritten mt-[calc(6*var(--u))] text-[calc(14*var(--u))] font-medium opacity-75">
                 {profile.title}
               </p>
             </div>
@@ -1631,8 +1631,8 @@ function PreviewPanel({ template, profile, t, language, texture, publicCode }: {
           </div>
           {(hasPhone || emails.length > 0) && (
             <div className={`order-3 mt-3 grid w-full min-w-0 max-w-[205px] gap-2 ${Number(hasPhone) + emails.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-              {hasPhone && <a href={`tel:${profile.phone}`} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg bg-[#172538] px-1 text-[9px] font-bold text-white transition hover:bg-[#24354b]"><Phone size={10} className="shrink-0" /><span className="truncate">{t.call}</span></a>}
-              {emails.map((email) => <a key={email} href={`mailto:${email}`} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg bg-[#172538] px-1 text-[9px] font-bold text-white transition hover:bg-[#24354b]"><Mail size={10} className="shrink-0" /><span className="truncate">{t.emailAction}</span></a>)}
+              {hasPhone && <a href={`tel:${profile.phone}`} style={getCardActionStyle(template, texture)} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg border px-1 text-[9px] font-bold shadow-sm transition hover:brightness-105"><Phone size={10} className="shrink-0" /><span className="truncate">{t.call}</span></a>}
+              {emails.map((email) => <a key={email} href={`mailto:${email}`} style={getCardActionStyle(template, texture)} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg border px-1 text-[9px] font-bold shadow-sm transition hover:brightness-105"><Mail size={10} className="shrink-0" /><span className="truncate">{t.emailAction}</span></a>)}
             </div>
           )}
           {Boolean((profile.showInstagram && profile.instagram.trim()) || (profile.showViber && profile.viber.trim()) || (profile.showFacebook && profile.facebook.trim())) && (
@@ -1644,7 +1644,7 @@ function PreviewPanel({ template, profile, t, language, texture, publicCode }: {
           )}
           <p className="order-2 mt-3 max-w-[185px] text-center text-[8px] leading-tight text-[#8996a8]">{t.tap}</p>
           {hasPhone && (
-            <button type="button" onClick={() => downloadVCard(profile)} className="order-5 mt-4 flex h-7 w-full max-w-[205px] shrink-0 items-center justify-center gap-1.5 rounded-lg bg-[#172538] text-[9px] font-bold text-white transition hover:bg-[#24354b]">
+            <button type="button" onClick={() => downloadVCard(profile)} style={getCardActionStyle(template, texture)} className="order-5 mt-4 flex h-7 w-full max-w-[205px] shrink-0 items-center justify-center gap-1.5 rounded-lg border text-[9px] font-bold shadow-sm transition hover:brightness-105">
               <Download size={11} /> <span className="text-[9px] font-bold leading-none">{language === 'en' ? 'Save Contact' : t.saveContact}</span>
             </button>
           )}
@@ -1686,12 +1686,12 @@ function PublicCard({ onBack, template, profile, language, t, texture, publicCod
             {actionCount > 0 && (
               <div className={`mx-auto grid w-full max-w-[520px] gap-3 sm:gap-4 ${actionCount === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                 {hasPhone && (
-                  <a href={`tel:${profile.phone}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]">
+                  <a href={`tel:${profile.phone}`} style={getCardActionStyle(template, texture)} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border px-3 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]">
                     <Phone size={14} /> {t.call}
                   </a>
                 )}
                 {emails.map((email) => (
-                  <a key={email} href={`mailto:${email}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]">
+                  <a key={email} href={`mailto:${email}`} style={getCardActionStyle(template, texture)} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border px-3 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]">
                     <Mail size={14} /> {t.emailAction}
                   </a>
                 ))}
@@ -1709,7 +1709,8 @@ function PublicCard({ onBack, template, profile, language, t, texture, publicCod
             <button
               type="button"
               onClick={() => downloadVCard(profile)}
-              className="mx-auto mt-3 flex h-12 w-full max-w-[520px] items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]"
+              style={getCardActionStyle(template, texture)}
+              className="mx-auto mt-3 flex h-12 w-full max-w-[520px] items-center justify-center gap-2.5 rounded-xl border px-5 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]"
             >
               <Download size={16} strokeWidth={2.4} /> {language === 'en' ? 'Save Contact' : t.saveContact}
             </button>

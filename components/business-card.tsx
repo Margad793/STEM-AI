@@ -148,7 +148,7 @@ function CardFace({
             </div>
             <div className="min-w-0 flex-1">
               <p data-fit="1" className="w-full overflow-hidden whitespace-nowrap text-[calc(15*var(--u))] font-semibold leading-none tracking-[0.18em]">{profile.name.toUpperCase()}</p>
-              <p className="mt-[calc(6*var(--u))] text-[calc(14*var(--u))] font-medium opacity-65">{profile.title}</p>
+              <p className="card-handwritten mt-[calc(6*var(--u))] text-[calc(14*var(--u))] font-medium opacity-75">{profile.title}</p>
             </div>
           </div>
           <div className="flex items-center justify-between text-[calc(10*var(--u))] font-medium opacity-60"><span>{profile.showWebsite ? profile.website : ''}</span><span>{profile.location}</span></div>
