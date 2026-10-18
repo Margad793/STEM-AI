@@ -37,4 +37,4 @@ export type Template = {
   publicBackground: string
 }
 
-export type Texture = 'holographic' | 'arcs' | 'matte' | 'metal'
+export type Texture = 'holographic' | 'arcs' | 'matte' | 'metal' | 'carbon-wave'

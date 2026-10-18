@@ -5,7 +5,10 @@ export const textures: { id: Texture; name: string; mnName: string; description:
   { id: 'arcs', name: 'Geometric Arcs', mnName: 'Геометр нум', description: 'Elegant static arcs at the corners of the card.', mnDescription: 'Картын буланг чимэх дэгжин геометр нум.' },
   { id: 'matte', name: 'Clean Matte', mnName: 'Матт гадаргуу', description: 'Flat, smooth, non-reflective surface.', mnDescription: 'Гөлгөр, гялбаагүй энгийн гадаргуу.' },
   { id: 'metal', name: 'Carbon / Brushed Metal', mnName: 'Карбон / металл', description: 'Luxury brushed steel or carbon micro-texture.', mnDescription: 'Сойздон өнгөлсөн ган эсвэл карбоны тансаг бичил хээ.' },
+  { id: 'carbon-wave', name: 'Carbon Wave Lines', mnName: 'Карбон долгионт зураас', description: 'Flowing engraved lines over a carbon finish.', mnDescription: 'Карбон гадаргуу дээрх урсгал мэт долгионт сийлбэртэй зураас.' },
 ]
+
+export const carbonWaveTextureImage = 'repeating-radial-gradient(ellipse 180% 90% at 0% 50%, transparent 0 9px, rgba(255,255,255,.17) 10px 11px, transparent 12px 19px), repeating-linear-gradient(115deg, rgba(0,0,0,.1) 0 2px, rgba(255,255,255,.07) 2px 3px, transparent 3px 7px)'
 
 export const templates: Template[] = [
   { name: 'Minimalist Classic', mnName: 'Минималист сонгодог', description: 'Crisp paper and quiet elegance', mnDescription: 'Цэвэр цэмцгэр цаас, даруухан дэгжин төрх.', accent: '#9b6038', background: 'bg-[#f4f0eb]', ink: 'text-[#26333a]', textColor: '#26333a', preview: 'bg-[#f4f0eb]', publicBackground: 'bg-[#eef1f4]' },

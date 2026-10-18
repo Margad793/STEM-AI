@@ -9,4 +9,5 @@ alter table public.cards
   check (language in ('en', 'mn'));
 
 grant select (language) on table public.cards to anon, authenticated;
+grant insert on table public.cards to authenticated;
 grant update (language) on table public.cards to authenticated;

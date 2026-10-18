@@ -98,7 +98,7 @@ export default function PublicCardPage() {
   const website = (card.show_website ?? true) && websiteValue && (/^https?:\/\//i.test(websiteValue) ? websiteValue : `https://${websiteValue}`)
   const roomNumber = (card.show_room_number ?? true) ? card.room_number?.trim() || '' : ''
   const selectedTemplate = templates[Math.max(0, templateSlugs.indexOf(card.template))]
-  const texture = (['holographic', 'arcs', 'matte', 'metal'].includes(card.texture) ? card.texture : 'arcs') as Texture
+  const texture = (['holographic', 'arcs', 'matte', 'metal', 'carbon-wave'].includes(card.texture) ? card.texture : 'arcs') as Texture
   const language = card.language === 'mn' ? 'mn' : 'en'
   const profile: Profile = {
     name: card.name,

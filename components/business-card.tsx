@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Globe2, Hash, Mail, Phone } from 'lucide-react'
 import QRCode from 'qrcode'
+import { carbonWaveTextureImage } from '@/lib/card-design'
 import type { Profile, Template, Texture } from '@/lib/card-types'
+import { fitText } from '@/lib/fit-text'
 import { getPublicSiteOrigin } from '@/lib/site'
 
 const publicCardOrigin = getPublicSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL)
@@ -13,25 +15,6 @@ type CardCopy = {
   save: string
   scan: string
   flip: string
-}
-
-function fitText(element: HTMLElement, maxLines: number) {
-  if (!element.clientWidth) return
-  element.style.fontSize = ''
-  for (let pass = 0; pass < 8; pass += 1) {
-    const style = getComputedStyle(element)
-    const fontSize = parseFloat(style.fontSize)
-    let scale = 1
-    if (element.scrollWidth > element.clientWidth + 1) scale = (element.clientWidth * 0.99) / element.scrollWidth
-    if (maxLines > 1) {
-      let lineHeight = parseFloat(style.lineHeight)
-      if (!lineHeight || lineHeight < fontSize * 0.5) lineHeight = fontSize * 1.25
-      const maxHeight = maxLines * lineHeight + 1
-      if (element.scrollHeight > maxHeight) scale = Math.min(scale, Math.sqrt(maxHeight / element.scrollHeight))
-    }
-    if (scale > 0.999) break
-    element.style.fontSize = `${fontSize * scale}px`
-  }
 }
 
 function CardQR({ url }: { url: string }) {
@@ -84,7 +67,9 @@ function CardFace({
     return () => observer.disconnect()
   }, [back, profile, template.name])
 
-  const textureImage = texture === 'arcs'
+  const textureImage = texture === 'carbon-wave'
+    ? `${carbonWaveTextureImage}, linear-gradient(135deg, rgba(22,30,40,.18), rgba(255,255,255,.04))`
+    : texture === 'arcs'
     ? undefined
     : texture === 'matte'
       ? undefined
@@ -161,8 +146,8 @@ function CardFace({
             <div className="flex size-[calc(48*var(--u))] shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-current/25 bg-black/10 text-[calc(18*var(--u))] font-bold">
               {profile.photo ? <img src={profile.photo} alt={`${profile.name} photo`} className="size-full object-cover" /> : profile.name.split(' ').map((part) => part[0]).join('')}
             </div>
-            <div className="min-w-0">
-              <p data-fit="1" className="whitespace-nowrap text-[calc(24*var(--u))] font-semibold leading-none tracking-[-0.04em]">{profile.name}</p>
+            <div className="min-w-0 flex-1">
+              <p data-fit="1" className="w-full overflow-hidden whitespace-nowrap text-[calc(15*var(--u))] font-semibold leading-none tracking-[0.18em]">{profile.name.toUpperCase()}</p>
               <p className="mt-[calc(6*var(--u))] text-[calc(14*var(--u))] font-medium opacity-65">{profile.title}</p>
             </div>
           </div>
@@ -223,7 +208,7 @@ export function FlipCard({
         type="button"
         aria-label={t.flip}
         onClick={() => setFlipped((value) => !value)}
-        className={`flip-card group relative aspect-[1.7] w-full min-w-0 [perspective:1200px] ${compact ? 'max-w-[225px]' : 'max-w-[520px]'}`}
+        className={`flip-card group relative aspect-[1.7] w-full min-w-0 [perspective:1200px] drop-shadow-[0_15px_23px_rgba(15,23,42,0.28)] ${compact ? 'max-w-[225px]' : 'max-w-[520px]'}`}
       >
         <div style={{ transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)', transformStyle: 'preserve-3d' }} className="relative size-full min-w-0 transition-transform duration-700">
           <CardFace template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} />

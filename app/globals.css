@@ -57,7 +57,8 @@ button { cursor: pointer; }
   background-image:
     radial-gradient(ellipse at 18% 12%, rgba(114, 151, 202, 0.22), transparent 42%),
     radial-gradient(ellipse at 88% 82%, rgba(67, 101, 150, 0.2), transparent 38%),
-    repeating-linear-gradient(116deg, rgba(220, 233, 250, 0.045) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(116deg, rgba(220, 233, 250, 0.085) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(24deg, rgba(5, 11, 19, 0.12) 0 2px, transparent 2px 7px),
     linear-gradient(135deg, #17263a, #0e1724 52%, #1b2c43);
 }
 
