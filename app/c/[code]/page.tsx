@@ -10,6 +10,7 @@ import { getCardActionStyle, templateSlugs, templates } from '@/lib/card-design'
 import type { Profile, Texture } from '@/lib/card-types'
 import { supabase } from '@/lib/supabase-browser'
 import { getPublicSiteOrigin } from '@/lib/site'
+import { createContactVCard } from '@/lib/vcard'
 
 const publicCardHost = getPublicSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL).replace(/^https?:\/\//i, '')
 
@@ -132,19 +133,17 @@ export default function PublicCardPage() {
   }
 
   const downloadContact = () => {
-    const vcard = [
-      'BEGIN:VCARD',
-      'VERSION:3.0',
-      `FN:${card.name}`,
-      `ORG:${card.company}`,
-      `TITLE:${card.title}`,
-      ...(phoneVisible ? [`TEL;TYPE=CELL:${phone}`] : []),
-      ...(businessEmailVisible ? [`EMAIL;TYPE=WORK:${businessEmail}`] : []),
-      ...(personalEmailVisible ? [`EMAIL;TYPE=HOME:${personalEmail}`] : []),
-      ...(roomNumber || card.location ? [`ADR;TYPE=WORK:;;${roomNumber};${card.location}`] : []),
-      ...(website ? [`URL:${website}`] : []),
-      'END:VCARD',
-    ].join('\r\n')
+    const vcard = createContactVCard({
+      name: card.name,
+      company: card.company,
+      title: card.title,
+      phone: phoneVisible ? phone : undefined,
+      businessEmail: businessEmailVisible ? businessEmail : undefined,
+      personalEmail: personalEmailVisible ? personalEmail : undefined,
+      website: website || undefined,
+      street: roomNumber,
+      locality: card.location,
+    })
     const file = new Blob([vcard], { type: 'text/vcard;charset=utf-8' })
     const url = URL.createObjectURL(file)
     const link = document.createElement('a')

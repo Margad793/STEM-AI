@@ -14,6 +14,7 @@ import type { Profile, Template, Texture } from '@/lib/card-types'
 import { fitText } from '@/lib/fit-text'
 import { supabase, supabaseConfigured } from '@/lib/supabase-browser'
 import { getPublicSiteOrigin } from '@/lib/site'
+import { createContactVCard } from '@/lib/vcard'
 
 type Language = 'en' | 'mn'
 type CardRow = Omit<Profile, 'photo' | 'companyLogo' | 'roomNumber' | 'businessEmail' | 'personalEmail' | 'showPhone' | 'showBusinessEmail' | 'showPersonalEmail' | 'showRoomNumber' | 'showWebsite' | 'showInstagram' | 'showFacebook' | 'showViber'> & { id: string; public_code: string; is_published: boolean; template: string; texture: Texture; language: Language; user_id: string; photo_url: string; company_logo_url: string; room_number: string; email: string; business_email: string; personal_email: string; show_phone: boolean; show_business_email: boolean; show_personal_email: boolean; show_room_number: boolean; show_website: boolean; show_instagram: boolean; show_facebook: boolean; show_viber: boolean }
@@ -954,19 +955,17 @@ export default function Page() {
 
 function downloadVCard(profile: Profile) {
   const website = profile.website.trim()
-  const vcard = [
-    'BEGIN:VCARD',
-    'VERSION:3.0',
-    `FN:${profile.name}`,
-    `ORG:${profile.company}`,
-    `TITLE:${profile.title}`,
-    ...(profile.showPhone && profile.phone.trim() ? [`TEL;TYPE=CELL:${profile.phone}`] : []),
-    ...(profile.showBusinessEmail && profile.businessEmail.trim() ? [`EMAIL;TYPE=WORK:${profile.businessEmail}`] : []),
-    ...(profile.showPersonalEmail && profile.personalEmail.trim() ? [`EMAIL;TYPE=HOME:${profile.personalEmail}`] : []),
-    ...(profile.showWebsite && website ? [`URL:${/^https?:\/\//i.test(website) ? website : `https://${website}`}`] : []),
-    ...(profile.showRoomNumber && (profile.roomNumber || profile.location) ? [`ADR;TYPE=WORK:;;${profile.roomNumber};${profile.location}`] : profile.location ? [`ADR;TYPE=WORK:;;;${profile.location}`] : []),
-    'END:VCARD',
-  ].join('\r\n')
+  const vcard = createContactVCard({
+    name: profile.name,
+    company: profile.company,
+    title: profile.title,
+    phone: profile.showPhone ? profile.phone : undefined,
+    businessEmail: profile.showBusinessEmail ? profile.businessEmail : undefined,
+    personalEmail: profile.showPersonalEmail ? profile.personalEmail : undefined,
+    website: profile.showWebsite && website ? (/^https?:\/\//i.test(website) ? website : `https://${website}`) : undefined,
+    street: profile.showRoomNumber ? profile.roomNumber : undefined,
+    locality: profile.location,
+  })
   const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
