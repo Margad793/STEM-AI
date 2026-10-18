@@ -29,6 +29,41 @@ async function imageBlobToPngDataUrl(blob: Blob) {
   return canvas.toDataURL('image/png')
 }
 
+async function waitForImage(image: HTMLImageElement) {
+  image.loading = 'eager'
+  image.decoding = 'sync'
+  if (!image.complete) {
+    await new Promise<void>((resolve, reject) => {
+      const cleanup = () => {
+        window.clearTimeout(timeout)
+        image.removeEventListener('load', onLoad)
+        image.removeEventListener('error', onError)
+      }
+      const onLoad = () => {
+        cleanup()
+        resolve()
+      }
+      const onError = () => {
+        cleanup()
+        reject(new Error(`Unable to load image: ${image.src}`))
+      }
+      const timeout = window.setTimeout(() => {
+        cleanup()
+        reject(new Error(`Timed out loading image: ${image.src}`))
+      }, 15_000)
+      image.addEventListener('load', onLoad, { once: true })
+      image.addEventListener('error', onError, { once: true })
+      if (image.complete) {
+        cleanup()
+        if (image.naturalWidth) resolve()
+        else reject(new Error(`Unable to load image: ${image.src}`))
+      }
+    })
+  }
+  if (!image.naturalWidth) throw new Error(`Unable to load image: ${image.src}`)
+  await image.decode()
+}
+
 async function prepareImagesForExport(source: HTMLElement) {
   const node = source.cloneNode(true) as HTMLElement
   node.style.position = 'fixed'
@@ -39,20 +74,13 @@ async function prepareImagesForExport(source: HTMLElement) {
   document.body.appendChild(node)
   try {
     await Promise.all(Array.from(node.querySelectorAll('img')).map(async (image) => {
-      if (!image.complete) {
-        await new Promise<void>((resolve, reject) => {
-          image.addEventListener('load', () => resolve(), { once: true })
-          image.addEventListener('error', () => reject(new Error(`Unable to load image: ${image.src}`)), { once: true })
-        })
-      }
-      if (!image.naturalWidth) throw new Error(`Unable to load image: ${image.src}`)
-      await image.decode()
+      await waitForImage(image)
       const imageUrl = image.currentSrc || image.src
-      const response = await fetch(imageUrl, { mode: 'cors', cache: 'force-cache' })
+      const response = await fetch(imageUrl, { mode: 'cors', cache: 'no-store' })
       if (!response.ok) throw new Error(`Unable to fetch image: ${imageUrl}`)
       image.srcset = ''
       image.src = await imageBlobToPngDataUrl(await response.blob())
-      await image.decode()
+      await waitForImage(image)
     }))
     await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
     return { node, cleanup: () => node.remove() }
@@ -127,12 +155,22 @@ export function PublicCardAssetActions({
       await document.fonts.ready
       const { node, cleanup } = await prepareImagesForExport(exportRef.current)
       try {
-        const blob = await toBlob(node, {
+        const options = {
           backgroundColor: '#eef1f4',
           cacheBust: false,
           pixelRatio: 2,
           style: { position: 'relative', left: '0px', top: '0px', zIndex: 'auto', opacity: '1' },
-        })
+        } as const
+        const hasImages = node.querySelector('img') !== null
+        let blob: Blob | null = null
+        for (let attempt = 0; attempt < (hasImages ? 3 : 1); attempt += 1) {
+          await Promise.all(Array.from(node.querySelectorAll('img')).map(waitForImage))
+          blob = await toBlob(node, options)
+          if (!blob) throw new Error('Image export returned no data.')
+          if (attempt < (hasImages ? 2 : 0)) {
+            await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+          }
+        }
         if (!blob) throw new Error('Image export returned no data.')
         const message = await saveImage(blob, `${cardBaseName}-card.png`, profile.name || 'Business card')
         setFeedback({ action: 'card', message: message.replace('Image', 'Card image') })

@@ -167,9 +167,9 @@ export default function PublicCardPage() {
           <p className="public-card-prompt mt-6 mb-6 text-center text-base font-medium text-current/55">Tap the card to see contact details</p>
           {actionCount > 0 && (
             <div className={`w-full max-w-[520px] grid gap-3 sm:gap-4 ${actionCount === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-              {phoneVisible && <a href={`tel:${phone}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border-2 border-white/70 bg-white px-3 text-sm font-bold"><Phone size={14} />Call now</a>}
-              {businessEmailVisible && <a href={`mailto:${businessEmail}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border-2 border-white/70 bg-white px-3 text-sm font-bold"><Mail size={14} />Email</a>}
-              {personalEmailVisible && <a href={`mailto:${personalEmail}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border-2 border-white/70 bg-white px-3 text-sm font-bold"><Mail size={14} />Email</a>}
+              {phoneVisible && <a href={`tel:${phone}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]"><Phone size={14} />Call now</a>}
+              {businessEmailVisible && <a href={`mailto:${businessEmail}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]"><Mail size={14} />Email</a>}
+              {personalEmailVisible && <a href={`mailto:${personalEmail}`} className="flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#172538] px-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:bg-[#24354b] active:scale-[0.99]"><Mail size={14} />Email</a>}
             </div>
           )}
           {Boolean(instagram || facebook || viber) && (
