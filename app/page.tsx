@@ -11,7 +11,7 @@ import { AuthScreen } from '@/components/auth-screen'
 import { FacebookGlyph, InstagramGlyph, ViberGlyph } from '@/components/social-icons'
 import { getCardActionStyle, getCarbonWaveTextureImage, getOrganizationAssets, ORGANIZATION_AVATAR_HEIGHT, ORGANIZATION_AVATAR_RIGHT, ORGANIZATION_AVATAR_TOP, ORGANIZATION_BACK_CONTENT_LEFT, ORGANIZATION_COMPANY_HEIGHT, ORGANIZATION_COMPANY_LEFT, ORGANIZATION_COMPANY_RIGHT, ORGANIZATION_COMPANY_TOP, ORGANIZATION_CONTACTS_BOTTOM, ORGANIZATION_CONTACTS_TOP, ORGANIZATION_LOGO_DIAMETER, ORGANIZATION_LOGO_LEFT, ORGANIZATION_LOGO_TOP, ORGANIZATION_PATTERN_WIDTH, ORGANIZATION_PERSON_NAME_TOP, ORGANIZATION_TEXT_LEFT, ORGANIZATION_TEXT_RIGHT, ORGANIZATION_TITLE_TOP, templates, templateSlugs, textures } from '@/lib/card-design'
 import type { CardDesign, Profile, Template, Texture } from '@/lib/card-types'
-import { fitText } from '@/lib/fit-text'
+import { fitText, packContactRows } from '@/lib/fit-text'
 import { supabase, supabaseConfigured } from '@/lib/supabase-browser'
 import { getPublicSiteOrigin } from '@/lib/site'
 import { createContactVCard, encodeContactPhoto } from '@/lib/vcard'
@@ -1304,10 +1304,13 @@ function CardFace({
   useIsoLayoutEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const fit = () =>
+    const fit = () => {
       root
         .querySelectorAll<HTMLElement>("[data-fit]")
         .forEach((el) => fitText(el, Number(el.dataset.fit) || 1));
+      const contacts = root.querySelector<HTMLElement>("[data-contacts]");
+      if (contacts) packContactRows(contacts);
+    };
     fit();
     const observer = new ResizeObserver(fit);
     observer.observe(root);
@@ -1450,11 +1453,12 @@ function CardFace({
             {profile.title}
           </p>
           <div
+            data-contacts="1"
             style={{
               top: ORGANIZATION_CONTACTS_TOP,
               bottom: ORGANIZATION_CONTACTS_BOTTOM,
             }}
-            className="absolute inset-x-0 flex flex-col justify-between overflow-hidden text-[calc(7.4*var(--u))] font-normal leading-[1.12] opacity-70"
+            className="absolute inset-x-0 flex flex-col justify-center overflow-hidden text-[calc(7.4*var(--u))] font-normal leading-[1.12] opacity-70"
           >
             {profile.location.trim() && (
               <p data-fit="2" className="line-clamp-2 min-w-0 break-words">

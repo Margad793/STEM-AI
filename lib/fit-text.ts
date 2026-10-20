@@ -1,3 +1,40 @@
+// The organization card's contact block has room for a fixed number of rows,
+// but the rows themselves come and go — an empty field or a hidden toggle
+// (phone, room number, email, website) simply drops out. Rows therefore keep
+// a shared, modest spacing and the whole group stays centered in its band:
+// whatever is present reads as one even block with equal room above and
+// below, instead of leaving a hole where a missing row used to be.
+const CONTACT_ROW_GAP_RATIO = 0.35
+
+export function packContactRows(container: HTMLElement) {
+  const rows = Array.from(container.children) as HTMLElement[]
+  if (!rows.length) return
+  // Measure the rows at their natural height first. A gap left over from a
+  // previous pass makes flexbox squeeze the rows, and measuring that squeezed
+  // height would hide the overflow and keep a gap that no longer fits.
+  // Heights come from getBoundingClientRect (fractional) because offsetHeight
+  // rounds down — a fraction of a pixel per row adds up to real overflow on a
+  // small card. clientHeight of the band is floored, which is the safe
+  // direction: it can only make the block a touch tighter, never larger.
+  rows.forEach((row) => { row.style.flexShrink = '0' })
+  const rowSize = parseFloat(getComputedStyle(container).fontSize) || 0
+  const contentHeight = rows.reduce((total, row) => total + row.getBoundingClientRect().height, 0)
+  const free = container.clientHeight - contentHeight
+  if (free < 0) {
+    // The rows alone do not fit the band (a full block, or a wrapped
+    // location): no gap, packed from the top, and the rows compress exactly
+    // like they always did when the block was full.
+    container.style.justifyContent = 'flex-start'
+    container.style.gap = '0px'
+    rows.forEach((row) => { row.style.flexShrink = '' })
+    return
+  }
+  container.style.justifyContent = 'center'
+  container.style.gap = rows.length > 1
+    ? `${Math.min(CONTACT_ROW_GAP_RATIO * rowSize, free / (rows.length - 1))}px`
+    : '0px'
+}
+
 export function fitText(element: HTMLElement, maxLines: number) {
   if (!element.clientWidth) return
   element.style.fontSize = ''

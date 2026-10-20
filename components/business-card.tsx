@@ -5,7 +5,7 @@ import { Globe2, Hash, Mail, Phone } from 'lucide-react'
 import QRCode from 'qrcode'
 import { getCarbonWaveTextureImage, getOrganizationAssets, ORGANIZATION_AVATAR_HEIGHT, ORGANIZATION_AVATAR_RIGHT, ORGANIZATION_AVATAR_TOP, ORGANIZATION_BACK_CONTENT_LEFT, ORGANIZATION_COMPANY_HEIGHT, ORGANIZATION_COMPANY_LEFT, ORGANIZATION_COMPANY_RIGHT, ORGANIZATION_COMPANY_TOP, ORGANIZATION_CONTACTS_BOTTOM, ORGANIZATION_CONTACTS_TOP, ORGANIZATION_LOGO_DIAMETER, ORGANIZATION_LOGO_LEFT, ORGANIZATION_LOGO_TOP, ORGANIZATION_PATTERN_WIDTH, ORGANIZATION_PERSON_NAME_TOP, ORGANIZATION_TEXT_LEFT, ORGANIZATION_TEXT_RIGHT, ORGANIZATION_TITLE_TOP } from '@/lib/card-design'
 import type { CardDesign, Profile, Template, Texture } from '@/lib/card-types'
-import { fitText } from '@/lib/fit-text'
+import { fitText, packContactRows } from '@/lib/fit-text'
 import { getPublicSiteOrigin } from '@/lib/site'
 
 const publicCardOrigin = getPublicSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL)
@@ -62,7 +62,11 @@ function CardFace({
   useEffect(() => {
     const root = rootRef.current
     if (!root) return
-    const fit = () => root.querySelectorAll<HTMLElement>('[data-fit]').forEach((element) => fitText(element, Number(element.dataset.fit) || 1))
+    const fit = () => {
+      root.querySelectorAll<HTMLElement>('[data-fit]').forEach((element) => fitText(element, Number(element.dataset.fit) || 1))
+      const contacts = root.querySelector<HTMLElement>('[data-contacts]')
+      if (contacts) packContactRows(contacts)
+    }
     fit()
     const observer = new ResizeObserver(fit)
     observer.observe(root)
@@ -163,7 +167,7 @@ function CardFace({
           >
             <p data-fit="2" style={{ top: ORGANIZATION_PERSON_NAME_TOP }} className="line-clamp-2 absolute inset-x-0 break-words whitespace-pre-line text-[calc(11.8*var(--u))] font-bold leading-[1.18]">{personNameLines}</p>
             <p data-fit="1" style={{ top: ORGANIZATION_TITLE_TOP }} className="absolute inset-x-0 truncate text-[calc(7.7*var(--u))] font-normal leading-tight opacity-75">{profile.title}</p>
-            <div style={{ top: ORGANIZATION_CONTACTS_TOP, bottom: ORGANIZATION_CONTACTS_BOTTOM }} className="absolute inset-x-0 flex flex-col justify-between overflow-hidden text-[calc(7.4*var(--u))] font-normal leading-[1.12] opacity-70">
+            <div data-contacts="1" style={{ top: ORGANIZATION_CONTACTS_TOP, bottom: ORGANIZATION_CONTACTS_BOTTOM }} className="absolute inset-x-0 flex flex-col justify-center overflow-hidden text-[calc(7.4*var(--u))] font-normal leading-[1.12] opacity-70">
               {profile.location.trim() && <p data-fit="2" className="line-clamp-2 min-w-0 break-words">{profile.location}</p>}
               {profile.showPhone && profile.phone.trim() && <p data-fit="1" className="min-w-0 truncate">{profile.phone}</p>}
               {profile.showBusinessEmail && profile.businessEmail.trim() && <p data-fit="1" className="min-w-0 truncate">{profile.businessEmail}</p>}
