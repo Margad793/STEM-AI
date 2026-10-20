@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Globe2, Hash, Mail, Phone } from 'lucide-react'
 import QRCode from 'qrcode'
-import { getCarbonWaveTextureImage } from '@/lib/card-design'
-import type { Profile, Template, Texture } from '@/lib/card-types'
+import { getCarbonWaveTextureImage, getOrganizationAssets, ORGANIZATION_AVATAR_HEIGHT, ORGANIZATION_AVATAR_RIGHT, ORGANIZATION_AVATAR_TOP, ORGANIZATION_BACK_CONTENT_LEFT, ORGANIZATION_COMPANY_HEIGHT, ORGANIZATION_COMPANY_LEFT, ORGANIZATION_COMPANY_RIGHT, ORGANIZATION_COMPANY_TOP, ORGANIZATION_CONTACTS_BOTTOM, ORGANIZATION_CONTACTS_TOP, ORGANIZATION_LOGO_DIAMETER, ORGANIZATION_LOGO_LEFT, ORGANIZATION_LOGO_TOP, ORGANIZATION_PATTERN_WIDTH, ORGANIZATION_PERSON_NAME_TOP, ORGANIZATION_TEXT_LEFT, ORGANIZATION_TEXT_RIGHT, ORGANIZATION_TITLE_TOP } from '@/lib/card-design'
+import type { CardDesign, Profile, Template, Texture } from '@/lib/card-types'
 import { fitText } from '@/lib/fit-text'
 import { getPublicSiteOrigin } from '@/lib/site'
 
@@ -47,6 +47,7 @@ function CardFace({
   t,
   texture,
   publicCode,
+  design,
 }: {
   back?: boolean
   exportMode?: boolean
@@ -55,6 +56,7 @@ function CardFace({
   t: CardCopy
   texture: Texture
   publicCode: string
+  design?: CardDesign
 }) {
   const rootRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -67,7 +69,10 @@ function CardFace({
     return () => observer.disconnect()
   }, [back, profile, template.name])
 
-  const textureImage = texture === 'carbon-wave'
+  const organization = getOrganizationAssets(design)
+  const nameParts = profile.name.trim().split(/\s+/).filter(Boolean)
+  const personNameLines = nameParts.length > 1 ? `${nameParts[0]}\n${nameParts.slice(1).join(' ')}` : profile.name
+  const textureImage = organization ? undefined : texture === 'carbon-wave'
     ? getCarbonWaveTextureImage(template.name)
     : texture === 'arcs'
     ? undefined
@@ -97,9 +102,10 @@ function CardFace({
         WebkitBackfaceVisibility: exportMode ? 'visible' : 'hidden',
         transformOrigin: 'center',
         transform: exportMode ? 'none' : back ? 'rotateY(180deg)' : 'rotateY(0deg)',
-        color: template.textColor,
+        color: organization ? '#26333a' : template.textColor,
+        backgroundColor: organization ? '#ffffff' : undefined,
         backgroundImage: textureImage,
-        textShadow: texture === 'arcs' && template.name === 'Creative Glass'
+        textShadow: organization ? undefined : texture === 'arcs' && template.name === 'Creative Glass'
           ? '0 1px 3px rgba(24,14,38,.9), 0 0 2px rgba(255,255,255,.35)'
           : texture === 'metal' && template.name === 'Soft Feminine Pastel'
             ? '0 1px 2px rgba(255,255,255,.8), 0 0 1px rgba(100,45,70,.28)'
@@ -109,15 +115,69 @@ function CardFace({
       }}
       className={`${exportMode ? 'relative' : 'absolute inset-0'} isolate flex h-full w-full min-w-0 flex-col overflow-hidden rounded-[calc(18*var(--u))] border border-black/10 p-[calc(12*var(--u))] [transform-style:preserve-3d] ${template.background} ${template.ink}`}
     >
-      <div className={`pointer-events-none absolute inset-0 rounded-[calc(18*var(--u))] ${texture === 'matte' ? 'bg-black/[0.025]' : 'bg-white/[0.03]'}`} />
-      {texture === 'arcs' && <>
+      {!organization && <div className={`pointer-events-none absolute inset-0 rounded-[calc(18*var(--u))] ${texture === 'matte' ? 'bg-black/[0.025]' : 'bg-white/[0.03]'}`} />}
+      {!organization && texture === 'arcs' && <>
         <div className="pointer-events-none absolute right-[calc(-48*var(--u))] top-[calc(-64*var(--u))] size-[calc(160*var(--u))] rounded-full border-[calc(18*var(--u))] border-white/55" />
         <div className="pointer-events-none absolute bottom-[calc(-80*var(--u))] left-[calc(-48*var(--u))] size-[calc(176*var(--u))] rounded-full border-[calc(22*var(--u))] border-white/45" />
       </>}
+      {organization && (
+        <div
+          data-organization-pattern="1"
+          style={{ width: ORGANIZATION_PATTERN_WIDTH }}
+          className="pointer-events-none absolute inset-y-0 left-0 z-0 overflow-hidden"
+        >
+          <img src={organization.patternSrc} alt="" className="size-full object-cover" />
+        </div>
+      )}
+      {organization && !back && (
+        <>
+          {profile.companyLogo && (
+            <div
+              data-organization-logo="1"
+              style={{ left: ORGANIZATION_LOGO_LEFT, top: ORGANIZATION_LOGO_TOP, width: ORGANIZATION_LOGO_DIAMETER }}
+              className="absolute z-10 flex aspect-square items-center justify-center overflow-hidden rounded-full border border-current/20 bg-white"
+            >
+              <img src={profile.companyLogo} alt={`${profile.company} logo`} className="size-full object-cover" />
+            </div>
+          )}
+          <div
+            data-organization-header="1"
+            style={{ top: ORGANIZATION_COMPANY_TOP, height: ORGANIZATION_COMPANY_HEIGHT, left: ORGANIZATION_COMPANY_LEFT, right: ORGANIZATION_COMPANY_RIGHT, color: organization.nameColor }}
+            className="absolute z-10 flex items-center text-left"
+          >
+            <p data-fit="2" data-fit-split="2" className="line-clamp-2 min-w-0 break-words text-[calc(10.5*var(--u))] font-bold leading-[1.05] tracking-[0.04em]">{profile.company.toUpperCase()}</p>
+          </div>
+          {profile.photo && (
+            <div
+              data-organization-avatar="1"
+              style={{ top: ORGANIZATION_AVATAR_TOP, height: ORGANIZATION_AVATAR_HEIGHT, right: ORGANIZATION_AVATAR_RIGHT }}
+              className="absolute z-10 flex aspect-square items-center justify-center overflow-hidden rounded-full border border-current/25 bg-black/10"
+            >
+              <img src={profile.photo} alt={`${profile.name} photo`} className="size-full object-cover" />
+            </div>
+          )}
+          <div
+            data-organization-content="1"
+            style={{ left: ORGANIZATION_TEXT_LEFT, right: ORGANIZATION_TEXT_RIGHT }}
+            className="absolute inset-y-0 z-10 text-left"
+          >
+            <p data-fit="2" style={{ top: ORGANIZATION_PERSON_NAME_TOP }} className="line-clamp-2 absolute inset-x-0 break-words whitespace-pre-line text-[calc(11.8*var(--u))] font-bold leading-[1.18]">{personNameLines}</p>
+            <p data-fit="1" style={{ top: ORGANIZATION_TITLE_TOP }} className="absolute inset-x-0 truncate text-[calc(7.7*var(--u))] font-normal leading-tight opacity-75">{profile.title}</p>
+            <div style={{ top: ORGANIZATION_CONTACTS_TOP, bottom: ORGANIZATION_CONTACTS_BOTTOM }} className="absolute inset-x-0 flex flex-col justify-between overflow-hidden text-[calc(7.4*var(--u))] font-normal leading-[1.12] opacity-70">
+              {profile.location.trim() && <p data-fit="2" className="line-clamp-2 min-w-0 break-words">{profile.location}</p>}
+              {profile.showPhone && profile.phone.trim() && <p data-fit="1" className="min-w-0 truncate">{profile.phone}</p>}
+              {profile.showBusinessEmail && profile.businessEmail.trim() && <p data-fit="1" className="min-w-0 truncate">{profile.businessEmail}</p>}
+              {profile.showPersonalEmail && profile.personalEmail.trim() && <p data-fit="1" className="min-w-0 truncate">{profile.personalEmail}</p>}
+              {profile.showRoomNumber && profile.roomNumber.trim() && <p data-fit="1" className="min-w-0 truncate">{profile.roomNumber}</p>}
+              {profile.showWebsite && profile.website.trim() && <p data-fit="1" className="min-w-0 truncate">{profile.website}</p>}
+            </div>
+          </div>
+        </>
+      )}
       {back ? (
-        <div className="relative z-10 flex h-full min-h-0 w-full flex-col">
+        <div style={organization ? { paddingLeft: ORGANIZATION_BACK_CONTENT_LEFT } : undefined} className="relative z-10 flex h-full min-h-0 w-full flex-col">
           <div className="mb-[calc(8*var(--u))] flex shrink-0 items-center justify-between gap-[calc(6*var(--u))] border-b border-current/15 pb-[calc(8*var(--u))]">
-            <span data-fit="1" className="min-w-0 truncate text-[calc(11*var(--u))] font-bold tracking-[0.18em]">{profile.company.toUpperCase()}</span>
+            <span data-fit="2" data-fit-split="2" className="line-clamp-2 min-w-0 break-words text-[calc(11*var(--u))] font-bold tracking-[0.18em]">{profile.company.toUpperCase()}</span>
           </div>
           <div className="flex min-h-0 flex-1 items-center justify-between gap-[calc(6*var(--u))]">
             <div className="flex min-w-0 flex-1 flex-col gap-[calc(6*var(--u))] text-[calc(8*var(--u))] font-medium leading-tight">
@@ -130,11 +190,11 @@ function CardFace({
             <CardQR url={`${publicCardOrigin}/c/${encodeURIComponent(publicCode)}`} />
           </div>
           <div className="flex min-w-0 shrink-0 items-end justify-between gap-[calc(6*var(--u))] border-t border-current/15 pt-[calc(8*var(--u))] leading-tight">
-            <p data-fit="1" className="flex min-w-0 max-w-[45%] shrink items-center gap-[calc(4*var(--u))] truncate text-[calc(8*var(--u))] font-medium opacity-65"><span className="shrink-0 text-[1.5em]">⌖</span><span className="min-w-0">{profile.location}</span></p>
+            <p className="flex min-w-0 max-w-[45%] shrink items-center gap-[calc(4*var(--u))] text-[calc(8*var(--u))] font-medium opacity-65"><span className="shrink-0 text-[1.5em]">⌖</span><span data-fit="2" className="line-clamp-2 min-w-0 break-words">{profile.location}</span></p>
             <div className="min-w-0 flex-1 break-all text-right text-[calc(6*var(--u))] leading-tight font-medium opacity-65">{t.scan}<br />{publicCardHost}/c/{publicCode}</div>
           </div>
         </div>
-      ) : (
+      ) : organization ? null : (
         <div className="relative z-10 flex h-full min-h-0 w-full flex-col justify-between">
           <div className="flex items-start justify-between gap-[calc(6*var(--u))]">
             <span className="line-clamp-2 min-w-0 flex-1 break-words text-center text-[calc(12*var(--u))] font-bold leading-tight tracking-[0.18em]">{profile.company.toUpperCase()}</span>
@@ -163,12 +223,14 @@ export function CardFacesExport({
   profile,
   texture,
   publicCode,
+  design,
   language = 'en',
 }: {
   template: Template
   profile: Profile
   texture: Texture
   publicCode: string
+  design?: CardDesign
   language?: 'en' | 'mn'
 }) {
   const copy = language === 'mn'
@@ -177,10 +239,10 @@ export function CardFacesExport({
   return (
     <>
       <div className="flip-card relative isolate aspect-[1.7] w-full overflow-hidden">
-        <CardFace exportMode template={template} profile={profile} t={copy} texture={texture} publicCode={publicCode} />
+        <CardFace exportMode template={template} profile={profile} t={copy} texture={texture} publicCode={publicCode} design={design} />
       </div>
       <div className="flip-card relative isolate aspect-[1.7] w-full overflow-hidden">
-        <CardFace exportMode back template={template} profile={profile} t={copy} texture={texture} publicCode={publicCode} />
+        <CardFace exportMode back template={template} profile={profile} t={copy} texture={texture} publicCode={publicCode} design={design} />
       </div>
     </>
   )
@@ -192,6 +254,7 @@ export function FlipCard({
   t,
   texture,
   publicCode,
+  design,
   compact = false,
 }: {
   template: Template
@@ -199,6 +262,7 @@ export function FlipCard({
   t: CardCopy
   texture: Texture
   publicCode: string
+  design?: CardDesign
   compact?: boolean
 }) {
   const [flipped, setFlipped] = useState(false)
@@ -211,8 +275,8 @@ export function FlipCard({
         className={`flip-card group relative aspect-[1.7] w-full min-w-0 [perspective:1200px] drop-shadow-[0_15px_23px_rgba(15,23,42,0.28)] ${compact ? 'max-w-[225px]' : 'max-w-[520px]'}`}
       >
         <div style={{ transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)', transformStyle: 'preserve-3d' }} className="relative size-full min-w-0 transition-transform duration-700">
-          <CardFace template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} />
-          <CardFace back template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} />
+          <CardFace template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} design={design} />
+          <CardFace back template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} design={design} />
         </div>
       </button>
     </div>

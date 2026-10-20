@@ -9,15 +9,15 @@ import Cropper, { type Area } from 'react-easy-crop'
 import type { Session } from '@supabase/supabase-js'
 import { AuthScreen } from '@/components/auth-screen'
 import { FacebookGlyph, InstagramGlyph, ViberGlyph } from '@/components/social-icons'
-import { getCardActionStyle, getCarbonWaveTextureImage, templates, templateSlugs, textures } from '@/lib/card-design'
-import type { Profile, Template, Texture } from '@/lib/card-types'
+import { getCardActionStyle, getCarbonWaveTextureImage, getOrganizationAssets, ORGANIZATION_AVATAR_HEIGHT, ORGANIZATION_AVATAR_RIGHT, ORGANIZATION_AVATAR_TOP, ORGANIZATION_BACK_CONTENT_LEFT, ORGANIZATION_COMPANY_HEIGHT, ORGANIZATION_COMPANY_LEFT, ORGANIZATION_COMPANY_RIGHT, ORGANIZATION_COMPANY_TOP, ORGANIZATION_CONTACTS_BOTTOM, ORGANIZATION_CONTACTS_TOP, ORGANIZATION_LOGO_DIAMETER, ORGANIZATION_LOGO_LEFT, ORGANIZATION_LOGO_TOP, ORGANIZATION_PATTERN_WIDTH, ORGANIZATION_PERSON_NAME_TOP, ORGANIZATION_TEXT_LEFT, ORGANIZATION_TEXT_RIGHT, ORGANIZATION_TITLE_TOP, templates, templateSlugs, textures } from '@/lib/card-design'
+import type { CardDesign, Profile, Template, Texture } from '@/lib/card-types'
 import { fitText } from '@/lib/fit-text'
 import { supabase, supabaseConfigured } from '@/lib/supabase-browser'
 import { getPublicSiteOrigin } from '@/lib/site'
 import { createContactVCard, encodeContactPhoto } from '@/lib/vcard'
 
 type Language = 'en' | 'mn'
-type CardRow = Omit<Profile, 'photo' | 'companyLogo' | 'roomNumber' | 'businessEmail' | 'personalEmail' | 'showPhone' | 'showBusinessEmail' | 'showPersonalEmail' | 'showRoomNumber' | 'showWebsite' | 'showInstagram' | 'showFacebook' | 'showViber'> & { id: string; public_code: string; is_published: boolean; template: string; texture: Texture; language: Language; user_id: string; photo_url: string; company_logo_url: string; room_number: string; email: string; business_email: string; personal_email: string; show_phone: boolean; show_business_email: boolean; show_personal_email: boolean; show_room_number: boolean; show_website: boolean; show_instagram: boolean; show_facebook: boolean; show_viber: boolean }
+type CardRow = Omit<Profile, 'photo' | 'companyLogo' | 'roomNumber' | 'businessEmail' | 'personalEmail' | 'showPhone' | 'showBusinessEmail' | 'showPersonalEmail' | 'showRoomNumber' | 'showWebsite' | 'showInstagram' | 'showFacebook' | 'showViber'> & { id: string; public_code: string; is_published: boolean; template: string; texture: Texture; language: Language; organization_code: string | null; user_id: string; photo_url: string; company_logo_url: string; room_number: string; email: string; business_email: string; personal_email: string; show_phone: boolean; show_business_email: boolean; show_personal_email: boolean; show_room_number: boolean; show_website: boolean; show_instagram: boolean; show_facebook: boolean; show_viber: boolean }
 const initialProfile: Profile = { name: 'Alex Morgan', title: 'Creative Director', company: 'Northstar Studio', location: 'Brooklyn, NY', bio: 'Building brands with a little more soul. I help ambitious teams turn good ideas into work people remember.', businessEmail: 'alex@northstar.co', personalEmail: '', showPhone: true, showBusinessEmail: true, showPersonalEmail: false, showRoomNumber: true, showWebsite: true, showInstagram: true, showFacebook: true, showViber: true, phone: '+1 917 555 0184', roomNumber: '', website: 'alexmorgan.co', instagram: 'https://instagram.com/', facebook: 'https://facebook.com/', viber: 'viber://chat?number=%2B19175550184', photo: '', companyLogo: '' }
 const emptyProfile: Profile = { name: '', title: '', company: '', location: '', bio: '', businessEmail: '', personalEmail: '', showPhone: true, showBusinessEmail: true, showPersonalEmail: false, showRoomNumber: true, showWebsite: true, showInstagram: true, showFacebook: true, showViber: true, phone: '', roomNumber: '', website: '', instagram: '', facebook: '', viber: '', photo: '', companyLogo: '' }
 const publicCardOrigin = getPublicSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL)
@@ -49,8 +49,8 @@ const getOwnedCardPhotoPath = (photoUrl: string, userId: string) => {
 }
 const googleOAuthEnabled = false
 const copy = {
-  en: { workspace: 'Workspace', manage: 'Manage', myCard: 'My card', contacts: 'Contacts', analytics: 'Analytics', settings: 'Settings', pro: 'Pro plan', proDesc: 'Unlimited cards and custom domains.', managePlan: 'Manage plan', edit: 'Edit your card', view: 'View card', save: 'Save', saved: 'Saved', profile: 'Your profile', memorable: 'Make it memorable.', personal: 'Personal details', essentials: 'The essentials people need to know.', fullName: 'Full name', jobTitle: 'Job title', company: 'Company', location: 'Location', bio: 'Short bio', contact: 'Contact details', reach: 'Make it easy for people to reach you.', email: 'Email address', phone: 'Phone number', website: 'Website', templates: 'Card style', live: 'Preview', looks: 'How your card looks', tap: 'Tap the card to see contact details', open: 'Open public card', flip: 'Flip card', front: 'Show front', back: 'Contact details', saveContact: 'Save to contacts', saveCardImage: 'Save card image', savingCardImage: 'Preparing image...', cardImageHelp: 'Choose “Save Image” in the share menu to add it to Photos.', cardImageReady: 'Image shared. If you chose Save Image, it is now in Photos.', cardImageDownloaded: 'Image downloaded. Open it and choose Save Image to add it to Photos.', cardImageError: 'Could not create the card image. Please try again.', frontSide: 'Front', backSide: 'Back', call: 'Call now', emailAction: 'Email', digital: 'Digital business card', backEditor: 'Back', scan: 'Scan to connect', changeLanguage: 'Change language', switchToEnglish: 'Would you like to change the website language to English?', switchToMongolian: 'Would you like to change the website language to Mongolian?', yes: 'Yes', no: 'No', cancel: 'Cancel', pattern: 'Pattern & texture', patternDescription: 'Add a subtle surface treatment to your card.', chooseIdentity: 'Choose a polished visual identity for your card.', chooseStyle: 'Choose a visual direction for your card.', socialLinks: 'Social links', instagramUrl: 'Instagram URL', facebookUrl: 'Facebook URL', viberLink: 'Viber link', whatsappLink: 'WhatsApp link', photoPreview: 'Photo preview', profilePhoto: 'Profile photo', changePhoto: 'Change photo', uploadPhoto: 'Upload photo', companyLogo: 'Company logo', uploadCompanyLogo: 'Upload logo', changeCompanyLogo: 'Change logo', remove: 'Remove', photoHint: 'Shows in the circle beside your name on the card.', cropPhoto: 'Crop your photo', cropHint: 'Drag to reposition and slide to zoom, then apply.', zoomPhoto: 'Zoom photo', saving: 'Saving...', applyPhoto: 'Apply photo', tapPublic: 'Tap the card to see contact details' },
-  mn: { workspace: 'Ажлын орчин', manage: 'Удирдах', myCard: 'Миний карт', contacts: 'Харилцагчид', analytics: 'Статистик', settings: 'Тохиргоо', pro: 'Pro багц', proDesc: 'Хязгааргүй карт болон өөрийн домэйн ашиглах боломж.', managePlan: 'Багцыг удирдах', edit: 'Картаа засах', view: 'Карт харах', save: 'Хадгалах', saved: 'Хадгаллаа', profile: 'Таны профайл', memorable: 'Мартагдашгүй болгоорой.', personal: 'Хувийн мэдээлэл', essentials: 'Таны тухай мэдэх шаардлагатай үндсэн мэдээлэл.', fullName: 'Овог, нэр', jobTitle: 'Албан тушаал', company: 'Байгууллага', location: 'Байршил', bio: 'Товч танилцуулга', contact: 'Холбоо барих мэдээлэл', reach: 'Тантай холбогдоход хялбар болгоорой.', email: 'Имэйл хаяг', phone: 'Утасны дугаар', website: 'Вэбсайт', templates: 'Картын загвар', live: 'Урьдчилан харах', looks: 'Картын харагдах байдал', tap: 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.', open: 'Нийтийн картыг нээх', flip: 'Карт эргүүлэх', front: 'Нүүрэн талыг харуулах', back: 'Холбоо барих мэдээлэл', saveContact: 'Харилцагчийн жагсаалтад хадгалах', saveCardImage: 'Карт хадгалах', savingCardImage: 'Зураг бэлдэж байна...', cardImageHelp: 'Photos руу хадгалахын тулд хуваалцах цэснээс “Save Image”-ийг сонгоно уу.', cardImageReady: 'Зургийг хуваалцлаа. “Save Image” сонгосон бол Photos-д хадгалагдсан.', cardImageDownloaded: 'Зураг татагдлаа. Photos-д оруулахын тулд зургийг нээгээд Save Image сонгоно уу.', cardImageError: 'Картын зураг үүсгэж чадсангүй. Дахин оролдоно уу.', frontSide: 'Нүүр тал', backSide: 'Ар тал', call: 'Залгах', emailAction: 'Имэйл бичих', digital: 'Дижитал нэрийн хуудас', backEditor: 'Буцах', scan: 'Холбогдохын тулд уншуулна уу', changeLanguage: 'Хэл солих', switchToEnglish: 'Вэбсайтын хэлийг англи хэл рүү өөрчлөх үү?', switchToMongolian: 'Вэбсайтын хэлийг монгол хэл рүү өөрчлөх үү?', yes: 'Тийм', no: 'Үгүй', cancel: 'Болих', pattern: 'Хээ ба гадаргуу', patternDescription: 'Картын гадаргууд нарийн хээ, өнгөлгөө нэмнэ.', chooseIdentity: 'Картаа тохирсон өнгө төрхийг сонгоно уу.', chooseStyle: 'Картаа тохирсон загвар сонгоно уу.', socialLinks: 'Сошиал холбоосууд', instagramUrl: 'Instagram холбоос', facebookUrl: 'Facebook холбоос', viberLink: 'Viber холбоос', whatsappLink: 'WhatsApp холбоос', photoPreview: 'Зургийг урьдчилан харах', profilePhoto: 'Профайл зураг', changePhoto: 'Зураг солих', uploadPhoto: 'Зураг оруулах', companyLogo: 'Компанийн лого', uploadCompanyLogo: 'Лого оруулах', changeCompanyLogo: 'Лого солих', remove: 'Устгах', photoHint: 'Таны нэрийн хажуу дахь дугуй дүрсэнд харагдана.', cropPhoto: 'Зургийг тайрах', cropHint: 'Зургийг чирж байрлалыг тохируулан, томруулж эсвэл жижгэрүүлээд хэрэглэнэ үү.', zoomPhoto: 'Зургийг томруулах', saving: 'Хадгалж байна...', applyPhoto: 'Зураг хэрэглэх', tapPublic: 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.' },
+  en: { workspace: 'Workspace', manage: 'Manage', myCard: 'My card', contacts: 'Contacts', analytics: 'Analytics', settings: 'Settings', pro: 'Pro plan', proDesc: 'Unlimited cards and custom domains.', managePlan: 'Manage plan', edit: 'Edit your card', view: 'View card', save: 'Save', saved: 'Saved', profile: 'Your profile', memorable: 'Make it memorable.', personal: 'Personal details', essentials: 'The essentials people need to know.', fullName: 'Full name', jobTitle: 'Job title', company: 'Company', location: 'Location', bio: 'Short bio', contact: 'Contact details', reach: 'Make it easy for people to reach you.', email: 'Email address', phone: 'Phone number', website: 'Website', templates: 'Card style', live: 'Preview', looks: 'How your card looks', tap: 'Tap the card to see contact details', open: 'Open public card', flip: 'Flip card', front: 'Show front', back: 'Contact details', saveContact: 'Save to contacts', saveCardImage: 'Save card image', savingCardImage: 'Preparing image...', cardImageHelp: 'Choose “Save Image” in the share menu to add it to Photos.', cardImageReady: 'Image shared. If you chose Save Image, it is now in Photos.', cardImageDownloaded: 'Image downloaded. Open it and choose Save Image to add it to Photos.', cardImageError: 'Could not create the card image. Please try again.', frontSide: 'Front', backSide: 'Back', call: 'Call now', emailAction: 'Email', digital: 'Digital business card', backEditor: 'Back', scan: 'Scan to connect', changeLanguage: 'Change language', switchToEnglish: 'Would you like to change the website language to English?', switchToMongolian: 'Would you like to change the website language to Mongolian?', yes: 'Yes', no: 'No', cancel: 'Cancel', pattern: 'Pattern & texture', patternDescription: 'Add a subtle surface treatment to your card.', chooseIdentity: 'Choose a polished visual identity for your card.', chooseStyle: 'Choose a visual direction for your card.', socialLinks: 'Social links', instagramUrl: 'Instagram URL', facebookUrl: 'Facebook URL', viberLink: 'Viber link', whatsappLink: 'WhatsApp link', photoPreview: 'Photo preview', profilePhoto: 'Profile photo', changePhoto: 'Change photo', uploadPhoto: 'Upload photo', companyLogo: 'Company logo', uploadCompanyLogo: 'Upload logo', changeCompanyLogo: 'Change logo', remove: 'Remove', photoHint: 'Shows in the circle beside your name on the card.', cropPhoto: 'Crop your photo', cropHint: 'Drag to reposition and slide to zoom, then apply.', zoomPhoto: 'Zoom photo', saving: 'Saving...', applyPhoto: 'Apply photo', tapPublic: 'Tap the card to see contact details', orgDesign: 'Organization design', orgDesignDescription: 'Enter your organization code to apply its unique card design.', orgCode: 'Organization code', orgCodeApplied: 'Organization design applied.', orgCodeUnknown: 'This code is not registered yet.', orgApply: 'Apply', orgApplyHint: 'Press Apply to activate this design.' },
+  mn: { workspace: 'Ажлын орчин', manage: 'Удирдах', myCard: 'Миний карт', contacts: 'Харилцагчид', analytics: 'Статистик', settings: 'Тохиргоо', pro: 'Pro багц', proDesc: 'Хязгааргүй карт болон өөрийн домэйн ашиглах боломж.', managePlan: 'Багцыг удирдах', edit: 'Картаа засах', view: 'Карт харах', save: 'Хадгалах', saved: 'Хадгаллаа', profile: 'Таны профайл', memorable: 'Мартагдашгүй болгоорой.', personal: 'Хувийн мэдээлэл', essentials: 'Таны тухай мэдэх шаардлагатай үндсэн мэдээлэл.', fullName: 'Овог, нэр', jobTitle: 'Албан тушаал', company: 'Байгууллага', location: 'Байршил', bio: 'Товч танилцуулга', contact: 'Холбоо барих мэдээлэл', reach: 'Тантай холбогдоход хялбар болгоорой.', email: 'Имэйл хаяг', phone: 'Утасны дугаар', website: 'Вэбсайт', templates: 'Картын загвар', live: 'Урьдчилан харах', looks: 'Картын харагдах байдал', tap: 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.', open: 'Нийтийн картыг нээх', flip: 'Карт эргүүлэх', front: 'Нүүрэн талыг харуулах', back: 'Холбоо барих мэдээлэл', saveContact: 'Харилцагчийн жагсаалтад хадгалах', saveCardImage: 'Карт хадгалах', savingCardImage: 'Зураг бэлдэж байна...', cardImageHelp: 'Photos руу хадгалахын тулд хуваалцах цэснээс “Save Image”-ийг сонгоно уу.', cardImageReady: 'Зургийг хуваалцлаа. “Save Image” сонгосон бол Photos-д хадгалагдсан.', cardImageDownloaded: 'Зураг татагдлаа. Photos-д оруулахын тулд зургийг нээгээд Save Image сонгоно уу.', cardImageError: 'Картын зураг үүсгэж чадсангүй. Дахин оролдоно уу.', frontSide: 'Нүүр тал', backSide: 'Ар тал', call: 'Залгах', emailAction: 'Имэйл бичих', digital: 'Дижитал нэрийн хуудас', backEditor: 'Буцах', scan: 'Холбогдохын тулд уншуулна уу', changeLanguage: 'Хэл солих', switchToEnglish: 'Вэбсайтын хэлийг англи хэл рүү өөрчлөх үү?', switchToMongolian: 'Вэбсайтын хэлийг монгол хэл рүү өөрчлөх үү?', yes: 'Тийм', no: 'Үгүй', cancel: 'Болих', pattern: 'Хээ ба гадаргуу', patternDescription: 'Картын гадаргууд нарийн хээ, өнгөлгөө нэмнэ.', chooseIdentity: 'Картаа тохирсон өнгө төрхийг сонгоно уу.', chooseStyle: 'Картаа тохирсон загвар сонгоно уу.', socialLinks: 'Сошиал холбоосууд', instagramUrl: 'Instagram холбоос', facebookUrl: 'Facebook холбоос', viberLink: 'Viber холбоос', whatsappLink: 'WhatsApp холбоос', photoPreview: 'Зургийг урьдчилан харах', profilePhoto: 'Профайл зураг', changePhoto: 'Зураг солих', uploadPhoto: 'Зураг оруулах', companyLogo: 'Компанийн лого', uploadCompanyLogo: 'Лого оруулах', changeCompanyLogo: 'Лого солих', remove: 'Устгах', photoHint: 'Таны нэрийн хажуу дахь дугуй дүрсэнд харагдана.', cropPhoto: 'Зургийг тайрах', cropHint: 'Зургийг чирж байрлалыг тохируулан, томруулж эсвэл жижгэрүүлээд хэрэглэнэ үү.', zoomPhoto: 'Зургийг томруулах', saving: 'Хадгалж байна...', applyPhoto: 'Зураг хэрэглэх', tapPublic: 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.', orgDesign: 'Байгууллагын дизайн', orgDesignDescription: 'Байгууллагын кодоо оруулж онцгой картын дизайн идэвхижүүлнэ үү.', orgCode: 'Байгууллагын код', orgCodeApplied: 'Байгууллагын дизайн идэвхижлээ.', orgCodeUnknown: 'Энэ код бүртгэлгүй байна.', orgApply: 'Идэвхижүүлэх', orgApplyHint: 'Энэ дизайныг идэвхижүүлэхийн тулд товчийг дарна уу.' },
 }
 
 export default function Page() {
@@ -77,12 +77,34 @@ export default function Page() {
   const [linkCopied, setLinkCopied] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState(0)
   const [selectedTexture, setSelectedTexture] = useState<Texture>('arcs')
+  const [organizationCode, setOrganizationCode] = useState('')
+  const [appliedOrganizationCode, setAppliedOrganizationCode] = useState('')
   const [publicView, setPublicView] = useState(false)
   const [saved, setSaved] = useState(false)
   const [languageConfirmation, setLanguageConfirmation] = useState<Language | null>(null)
   const [profile, setProfile] = useState(initialProfile)
   const t = copy[language]
   const template = templates[selectedTemplate]
+  const design: CardDesign = { colorId: null, patternId: null, organizationCode: appliedOrganizationCode }
+  const organizationApplied = Boolean(getOrganizationAssets(design))
+  // The organization design only switches on after Apply is pressed — typing
+  // a code on its own must not restyle the card. Editing the field again
+  // clears the applied code until the user applies it once more.
+  const organizationMatch = organizationCode.trim()
+    ? getOrganizationAssets({ colorId: null, patternId: null, organizationCode })
+    : null
+  const organizationReady = Boolean(
+    organizationMatch && organizationMatch.code !== appliedOrganizationCode.trim().toLowerCase(),
+  )
+  const updateOrganizationCode = (value: string) => {
+    setOrganizationCode(value)
+    if (value.trim().toLowerCase() !== appliedOrganizationCode.trim().toLowerCase()) {
+      setAppliedOrganizationCode('')
+    }
+  }
+  const applyOrganizationCode = () => {
+    if (organizationMatch) setAppliedOrganizationCode(organizationMatch.code)
+  }
   useEffect(() => {
     const storedLanguage = window.localStorage.getItem('cardly-language')
     if (storedLanguage === 'en' || storedLanguage === 'mn') setLanguage(storedLanguage)
@@ -178,7 +200,7 @@ export default function Page() {
       try {
         const { data, error } = await supabase
           .from('cards')
-          .select('id, user_id, public_code, is_published, name, title, company, company_logo_url, location, bio, email, business_email, personal_email, show_phone, show_business_email, show_personal_email, show_room_number, show_website, show_instagram, show_facebook, show_viber, phone, room_number, website, instagram, facebook, viber, photo_url, template, texture, language')
+          .select('id, user_id, public_code, is_published, name, title, company, company_logo_url, location, bio, email, business_email, personal_email, show_phone, show_business_email, show_personal_email, show_room_number, show_website, show_instagram, show_facebook, show_viber, phone, room_number, website, instagram, facebook, viber, photo_url, template, texture, language, organization_code')
           .eq('user_id', session.user.id)
           .maybeSingle()
         if (!active) return
@@ -219,6 +241,11 @@ export default function Page() {
           const templateIndex = templateSlugs.indexOf(row.template)
           setSelectedTemplate(templateIndex < 0 ? 0 : templateIndex)
           setSelectedTexture(row.texture)
+          // A saved organization design comes back applied: the code is both
+          // typed into the field and activated, so the card renders with it.
+          const savedOrganizationCode = row.organization_code ?? ''
+          setOrganizationCode(savedOrganizationCode)
+          setAppliedOrganizationCode(savedOrganizationCode)
         } else {
           setCardId(null)
           setPublicCode(null)
@@ -229,6 +256,8 @@ export default function Page() {
           setProfile({ ...emptyProfile, businessEmail: session.user.email ?? '' })
           setSelectedTemplate(0)
           setSelectedTexture('arcs')
+          setOrganizationCode('')
+          setAppliedOrganizationCode('')
         }
       } catch (error) {
         if (active) setSaveError(error instanceof Error ? error.message : 'Unable to load your card.')
@@ -247,7 +276,8 @@ export default function Page() {
   }
   const update = (key: keyof Profile) => (value: string) => setProfile((current) => ({ ...current, [key]: value }))
   const saveCard = async () => {
-    if (!supabase || !session || savingCard) return
+    const client = supabase
+    if (!client || !session || savingCard) return
     setSavingCard(true)
     setSaved(false)
     setSaveError('')
@@ -260,13 +290,13 @@ export default function Page() {
         if (imageBlob.size > 5 * 1024 * 1024) throw new Error(`${label} must be 5 MB or smaller.`)
         const extension = imageBlob.type === 'image/png' ? 'png' : imageBlob.type === 'image/webp' ? 'webp' : 'jpg'
         const imagePath = `${session.user.id}/${crypto.randomUUID()}.${extension}`
-        const { error: uploadError } = await supabase.storage.from('card-photos').upload(imagePath, imageBlob, {
+        const { error: uploadError } = await client.storage.from('card-photos').upload(imagePath, imageBlob, {
           contentType: imageBlob.type || 'image/jpeg',
           upsert: false,
         })
         if (uploadError) throw uploadError
         uploadedImagePaths.push(imagePath)
-        return supabase.storage.from('card-photos').getPublicUrl(imagePath).data.publicUrl
+        return client.storage.from('card-photos').getPublicUrl(imagePath).data.publicUrl
       }
       const photoUrl = profile.photo.startsWith('data:') ? await uploadImage(profile.photo, 'Profile photo') : profile.photo
       const companyLogoUrl = profile.companyLogo.startsWith('data:') ? await uploadImage(profile.companyLogo, 'Company logo') : profile.companyLogo
@@ -299,11 +329,12 @@ export default function Page() {
         template: templateSlugs[selectedTemplate],
         texture: selectedTexture,
         language,
+        organization_code: appliedOrganizationCode.trim() || null,
         is_published: true,
       }
       const result = cardId
-        ? await supabase.from('cards').update(values).eq('id', cardId).select('id, public_code').single()
-        : await supabase.from('cards').insert({ ...values, user_id: session.user.id }).select('id, public_code').single()
+        ? await client.from('cards').update(values).eq('id', cardId).select('id, public_code').single()
+        : await client.from('cards').insert({ ...values, user_id: session.user.id }).select('id, public_code').single()
       if (result.error) throw result.error
 
       setCardId(result.data.id)
@@ -322,7 +353,7 @@ export default function Page() {
         ...(savedCompanyLogoUrl !== companyLogoUrl && previousCompanyLogoPath && !uploadedImagePaths.includes(previousCompanyLogoPath) ? [previousCompanyLogoPath] : []),
       ])]
       if (pathsToDelete.length > 0) {
-        const { error: deleteError } = await supabase.storage.from('card-photos').remove(pathsToDelete)
+        const { error: deleteError } = await client.storage.from('card-photos').remove(pathsToDelete)
         if (deleteError) {
           const photoPaths = pathsToDelete.filter((path) => path === previousPhotoPath || pendingPhotoDeletions.includes(path))
           const logoPaths = pathsToDelete.filter((path) => path === previousCompanyLogoPath || pendingCompanyLogoDeletions.includes(path))
@@ -341,7 +372,7 @@ export default function Page() {
     } catch (error) {
       const detail = getErrorMessage(error, 'Unable to save your card.')
       if (uploadedImagePaths.length > 0) {
-        const { error: cleanupError } = await supabase.storage.from('card-photos').remove(uploadedImagePaths)
+        const { error: cleanupError } = await client.storage.from('card-photos').remove(uploadedImagePaths)
         if (cleanupError) {
           setSaveError(`${detail} Newly uploaded images could not be cleaned up: ${cleanupError.message}`)
           return
@@ -387,7 +418,7 @@ export default function Page() {
   if (authLoading || (session && (!accessChecked || (hasAccess && cardLoading)))) return <main className="flex min-h-screen items-center justify-center bg-[#f7f8fa] text-sm text-[#52606f]">{language === 'en' ? 'Loading your account...' : 'Бүртгэлийг ачаалж байна...'}</main>
   if (!session || !supabaseConfigured) return <AuthScreen language={language} onLanguageChange={setLanguage} />
   if (!hasAccess) return <AuthScreen language={language} onLanguageChange={setLanguage} session={session} accessError={authError} />
-  if (publicView) return <PublicCard language={language} t={t} onBack={() => setPublicView(false)} template={template} profile={profile} texture={selectedTexture} publicCode={publicCode} />
+  if (publicView) return <PublicCard language={language} t={t} onBack={() => setPublicView(false)} template={template} profile={profile} texture={selectedTexture} publicCode={publicCode} design={design} />
   return (
     <main className="min-h-screen w-full min-w-0 overflow-x-hidden bg-[#f7f8fa] text-[#18202d]">
       {saveNotice && (
@@ -655,7 +686,9 @@ export default function Page() {
             </Button>
           </div>
           <div className="flex flex-col gap-5">
-            <section className="order-5 rounded-2xl border border-[#e5e8ec] bg-white p-5 sm:p-7">
+            <section
+              className={`order-5 rounded-2xl border border-[#e5e8ec] bg-white p-5 sm:p-7 ${organizationApplied ? "pointer-events-none opacity-45" : ""}`}
+            >
               <SectionHeader
                 icon={Sparkles}
                 title={t.pattern}
@@ -667,8 +700,12 @@ export default function Page() {
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => setSelectedTexture(item.id)}
+                      onClick={() => {
+                        if (organizationApplied) return
+                        setSelectedTexture(item.id)
+                      }}
                       aria-pressed={selectedTexture === item.id}
+                      aria-disabled={organizationApplied}
                       className={`rounded-xl border p-3 text-left transition hover:-translate-y-0.5 hover:border-[#9cadd0] ${selectedTexture === item.id ? "border-[#6d82bf] bg-[#f6f8fc] ring-2 ring-[#e5eafa]" : "border-[#e5e8ec] bg-white"}`}
                     >
                       <div
@@ -693,7 +730,43 @@ export default function Page() {
                 </div>
               </div>
             </section>
-            <section className="hidden rounded-2xl border border-[#e5e8ec] bg-white p-5 sm:p-7">
+            <section className="order-6 rounded-2xl border border-[#e5e8ec] bg-white p-5 sm:p-7">
+              <SectionHeader
+                icon={Hash}
+                title={t.orgDesign}
+                description={t.orgDesignDescription}
+              />
+              <div className="mt-5">
+                <div className="mt-3 flex items-end gap-2">
+                  <div className="min-w-0 flex-1">
+                    <Field
+                      label={t.orgCode}
+                      value={organizationCode}
+                      onChange={updateOrganizationCode}
+                      icon={Hash}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={applyOrganizationCode}
+                    disabled={!organizationReady}
+                    className="mb-0 h-11 shrink-0 rounded-xl bg-[#172538] px-4 text-xs hover:bg-[#24354b]"
+                  >
+                    <Check size={13} /> {t.orgApply}
+                  </Button>
+                </div>
+                {organizationApplied ? (
+                  <p className="mt-2 text-xs font-medium text-[#2f9e5f]">{t.orgCodeApplied}</p>
+                ) : organizationReady ? (
+                  <p className="mt-2 text-xs text-[#8c96a3]">{t.orgApplyHint}</p>
+                ) : organizationCode.trim() ? (
+                  <p className="mt-2 text-xs text-[#8c96a3]">{t.orgCodeUnknown}</p>
+                ) : null}
+              </div>
+            </section>
+            <section
+              className={`hidden rounded-2xl border border-[#e5e8ec] bg-white p-5 sm:p-7 ${organizationApplied ? "pointer-events-none opacity-45" : ""}`}
+            >
               <div className="flex items-start justify-between gap-4">
                 <SectionHeader
                   icon={PaletteIcon}
@@ -710,8 +783,12 @@ export default function Page() {
                     <button
                       key={item.name}
                       type="button"
-                      onClick={() => setSelectedTemplate(index)}
+                      onClick={() => {
+                        if (organizationApplied) return
+                        setSelectedTemplate(index)
+                      }}
                       aria-pressed={selectedTemplate === index}
+                      aria-disabled={organizationApplied}
                       className={`group relative overflow-hidden rounded-xl border p-3 text-left transition ${selectedTemplate === index ? "border-[#6d82bf] bg-[#f6f8fc] ring-2 ring-[#e5eafa]" : "border-[#e5e8ec] bg-white hover:border-[#bdc7d8]"}`}
                     >
                       <div
@@ -947,6 +1024,7 @@ export default function Page() {
           profile={profile}
           language={language}
           publicCode={publicCode}
+          design={design}
         />
       </div>
     </main>
@@ -1210,6 +1288,7 @@ function CardFace({
   t,
   texture = "arcs",
   publicCode,
+  design,
   exportMode = false,
 }: {
   back?: boolean;
@@ -1218,6 +1297,7 @@ function CardFace({
   t: typeof copy.en;
   texture?: Texture;
   publicCode: string | null;
+  design?: CardDesign;
   exportMode?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -1233,6 +1313,9 @@ function CardFace({
     observer.observe(root);
     return () => observer.disconnect();
   }, [back, profile, template.name]);
+  const organization = getOrganizationAssets(design);
+  const nameParts = profile.name.trim().split(/\s+/).filter(Boolean);
+  const personNameLines = nameParts.length > 1 ? `${nameParts[0]}\n${nameParts.slice(1).join(' ')}` : profile.name;
   return (
     <div
       ref={rootRef}
@@ -1241,9 +1324,12 @@ function CardFace({
         WebkitBackfaceVisibility: exportMode ? "visible" : "hidden",
         transformOrigin: "center",
         transform: exportMode ? "none" : back ? "rotateY(180deg)" : "rotateY(0deg)",
-        color: template.textColor,
+        color: organization ? "#26333a" : template.textColor,
+        backgroundColor: organization ? "#ffffff" : undefined,
         textShadow:
-          texture === "arcs" && template.name === "Creative Glass"
+          organization
+            ? undefined
+            : texture === "arcs" && template.name === "Creative Glass"
             ? "0 1px 3px rgba(24,14,38,.9), 0 0 2px rgba(255,255,255,.35)"
             : texture === "metal" && template.name === "Soft Feminine Pastel"
               ? "0 1px 2px rgba(255,255,255,.8), 0 0 1px rgba(100,45,70,.28)"
@@ -1251,7 +1337,9 @@ function CardFace({
                 ? "0 1px 2px rgba(25,12,55,.85), 0 0 1px rgba(255,255,255,.7)"
                 : undefined,
         backgroundImage:
-          texture === "carbon-wave"
+          organization
+            ? undefined
+            : texture === "carbon-wave"
             ? getCarbonWaveTextureImage(template.name)
             : texture === "holographic"
             ? template.name === "Minimalist Classic"
@@ -1273,19 +1361,145 @@ function CardFace({
       }}
       className={`${exportMode ? "relative" : "absolute inset-0"} isolate flex h-full w-full min-w-0 flex-col overflow-hidden rounded-[calc(18*var(--u))] border border-black/10 p-[calc(12*var(--u))] [transform-style:preserve-3d] ${template.background} ${template.ink}`}
     >
-      <div className="pointer-events-none absolute inset-0 rounded-[calc(18*var(--u))] bg-white/[0.03]" />
-      {texture === "arcs" && (
+      {!organization && <div className="pointer-events-none absolute inset-0 rounded-[calc(18*var(--u))] bg-white/[0.03]" />}
+      {!organization && texture === "arcs" && (
         <>
           <div className="pointer-events-none absolute right-[calc(-48*var(--u))] top-[calc(-64*var(--u))] size-[calc(160*var(--u))] rounded-full border-[calc(18*var(--u))] border-white/55" />
           <div className="pointer-events-none absolute bottom-[calc(-80*var(--u))] left-[calc(-48*var(--u))] size-[calc(176*var(--u))] rounded-full border-[calc(22*var(--u))] border-white/45" />
         </>
       )}
+      {organization && (
+        <div
+          data-organization-pattern="1"
+          style={{ width: ORGANIZATION_PATTERN_WIDTH }}
+          className="pointer-events-none absolute inset-y-0 left-0 z-0 overflow-hidden"
+        >
+          <img src={organization.patternSrc} alt="" className="size-full object-cover" />
+        </div>
+      )}
+      {organization && !back && (
+        <>
+          {profile.companyLogo && (
+            <div
+              data-organization-logo="1"
+              style={{
+                left: ORGANIZATION_LOGO_LEFT,
+                top: ORGANIZATION_LOGO_TOP,
+                width: ORGANIZATION_LOGO_DIAMETER,
+              }}
+              className="absolute z-10 flex aspect-square items-center justify-center overflow-hidden rounded-full border border-current/20 bg-white"
+            >
+              <img
+                src={profile.companyLogo}
+                alt={`${profile.company} logo`}
+                className="size-full object-cover"
+              />
+            </div>
+          )}
+          <div
+            data-organization-header="1"
+            style={{
+              top: ORGANIZATION_COMPANY_TOP,
+              height: ORGANIZATION_COMPANY_HEIGHT,
+              left: ORGANIZATION_COMPANY_LEFT,
+              right: ORGANIZATION_COMPANY_RIGHT,
+              color: organization.nameColor,
+            }}
+            className="absolute z-10 flex items-center text-left"
+          >
+            <p data-fit="2" data-fit-split="2" className="line-clamp-2 min-w-0 break-words text-[calc(10.5*var(--u))] font-bold leading-[1.05] tracking-[0.04em]">
+              {profile.company.toUpperCase()}
+            </p>
+          </div>          {profile.photo && (
+            <div
+              data-organization-avatar="1"
+              style={{
+                top: ORGANIZATION_AVATAR_TOP,
+                height: ORGANIZATION_AVATAR_HEIGHT,
+                right: ORGANIZATION_AVATAR_RIGHT,
+              }}
+              className="absolute z-10 flex aspect-square items-center justify-center overflow-hidden rounded-full border border-current/25 bg-black/10"
+            >
+              <img
+                src={profile.photo}
+                alt={`${profile.name} photo`}
+                className="size-full object-cover"
+              />
+            </div>
+          )}
+          <div
+            data-organization-content="1"
+            style={{
+              left: ORGANIZATION_TEXT_LEFT,
+              right: ORGANIZATION_TEXT_RIGHT,
+            }}
+            className="absolute inset-y-0 z-10 text-left"
+          >
+            <p
+              data-fit="2"
+              style={{ top: ORGANIZATION_PERSON_NAME_TOP }}
+              className="line-clamp-2 absolute inset-x-0 break-words whitespace-pre-line text-[calc(11.8*var(--u))] font-bold leading-[1.18]"
+            >
+              {personNameLines}
+            </p>
+          <p
+            data-fit="1"
+            style={{ top: ORGANIZATION_TITLE_TOP }}
+            className="absolute inset-x-0 truncate text-[calc(7.7*var(--u))] font-normal leading-tight opacity-75"
+          >
+            {profile.title}
+          </p>
+          <div
+            style={{
+              top: ORGANIZATION_CONTACTS_TOP,
+              bottom: ORGANIZATION_CONTACTS_BOTTOM,
+            }}
+            className="absolute inset-x-0 flex flex-col justify-between overflow-hidden text-[calc(7.4*var(--u))] font-normal leading-[1.12] opacity-70"
+          >
+            {profile.location.trim() && (
+              <p data-fit="2" className="line-clamp-2 min-w-0 break-words">
+                {profile.location}
+              </p>
+            )}
+            {profile.showPhone && profile.phone.trim() && (
+              <p data-fit="1" className="min-w-0 truncate">
+                {profile.phone}
+              </p>
+            )}
+            {profile.showBusinessEmail && profile.businessEmail.trim() && (
+              <p data-fit="1" className="min-w-0 truncate">
+                {profile.businessEmail}
+              </p>
+            )}
+            {profile.showPersonalEmail && profile.personalEmail.trim() && (
+              <p data-fit="1" className="min-w-0 truncate">
+                {profile.personalEmail}
+              </p>
+            )}
+            {profile.showRoomNumber && profile.roomNumber.trim() && (
+              <p data-fit="1" className="min-w-0 truncate">
+                {profile.roomNumber}
+              </p>
+            )}
+            {profile.showWebsite && profile.website.trim() && (
+              <p data-fit="1" className="min-w-0 truncate">
+                {profile.website}
+              </p>
+            )}
+          </div>
+          </div>
+        </>
+      )}
       {back ? (
-        <div className="relative z-10 flex h-full min-h-0 w-full flex-col">
+        <div
+          style={organization ? { paddingLeft: ORGANIZATION_BACK_CONTENT_LEFT } : undefined}
+          className="relative z-10 flex h-full min-h-0 w-full flex-col"
+        >
           <div className="mb-[calc(8*var(--u))] flex shrink-0 items-center justify-between gap-[calc(6*var(--u))] border-b border-current/15 pb-[calc(8*var(--u))]">
             <span
-              data-fit="1"
-              className="min-w-0 truncate text-[calc(11*var(--u))] font-bold tracking-[0.18em]"
+              data-fit="2"
+              data-fit-split="2"
+              className="line-clamp-2 min-w-0 break-words text-[calc(11*var(--u))] font-bold tracking-[0.18em]"
             >
               {profile.company.toUpperCase()}
             </span>
@@ -1348,11 +1562,12 @@ function CardFace({
           </div>
           <div className="flex min-w-0 shrink-0 items-end justify-between gap-[calc(6*var(--u))] border-t border-current/15 pt-[calc(8*var(--u))] leading-tight">
             <p
-              data-fit="1"
-              className="flex min-w-0 max-w-[45%] shrink items-center gap-[calc(4*var(--u))] truncate text-[calc(8*var(--u))] font-medium opacity-65"
+              className="flex min-w-0 max-w-[45%] shrink items-center gap-[calc(4*var(--u))] text-[calc(8*var(--u))] font-medium opacity-65"
             >
               <span className="shrink-0 text-[1.5em]">⌖</span>
-              <span className="min-w-0">{profile.location}</span>
+              <span data-fit="2" className="line-clamp-2 min-w-0 break-words">
+                {profile.location}
+              </span>
             </p>
             <div className="min-w-0 flex-1 break-all text-right text-[calc(6*var(--u))] leading-tight font-medium opacity-65">
               {t.scan}
@@ -1361,8 +1576,10 @@ function CardFace({
             </div>
           </div>
         </div>
-      ) : (
-        <div className="relative z-10 flex h-full min-h-0 w-full flex-col justify-between">
+      ) : organization ? null : (
+        <div
+          className="relative z-10 flex h-full min-h-0 w-full flex-col justify-between"
+        >
           <div className="flex items-start justify-between gap-[calc(6*var(--u))]">
             <span
               className="line-clamp-2 min-w-0 flex-1 break-words text-center text-[calc(12*var(--u))] font-bold leading-tight tracking-[0.18em]"
@@ -1412,7 +1629,9 @@ function CardFace({
               </p>
             </div>
           </div>
-          <div className="flex items-center justify-between text-[calc(10*var(--u))] font-medium opacity-60">
+          <div
+            className="flex items-center justify-between text-[calc(10*var(--u))] font-medium opacity-60"
+          >
             <span>{profile.showWebsite ? profile.website : ''}</span>
             <span>{profile.location}</span>
           </div>
@@ -1421,7 +1640,7 @@ function CardFace({
     </div>
   );
 }
-function FlipCard({ template, profile, t, compact = false, texture = 'arcs', publicCode = null }: { template: Template; profile: Profile; t: typeof copy.en; compact?: boolean; texture?: Texture; publicCode?: string | null }) { const [flipped, setFlipped] = useState(false); return <div className={`flex w-full min-w-0 flex-col items-center ${compact ? 'gap-1.5' : 'gap-3'}`}><button type="button" aria-label={t.flip} onClick={() => setFlipped((value) => !value)} className={`flip-card group relative aspect-[1.7] w-full min-w-0 [perspective:1200px] drop-shadow-[0_15px_23px_rgba(15,23,42,0.28)] ${compact ? 'max-w-[225px]' : 'max-w-[520px]'}`}><div style={{ transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)', transformStyle: 'preserve-3d' }} className="relative size-full min-w-0 transition-transform duration-700"><CardFace template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} /><CardFace back template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} /></div></button></div> }
+function FlipCard({ template, profile, t, compact = false, texture = 'arcs', publicCode = null, design }: { template: Template; profile: Profile; t: typeof copy.en; compact?: boolean; texture?: Texture; publicCode?: string | null; design?: CardDesign }) { const [flipped, setFlipped] = useState(false); return <div className={`flex w-full min-w-0 flex-col items-center ${compact ? 'gap-1.5' : 'gap-3'}`}><button type="button" aria-label={t.flip} onClick={() => setFlipped((value) => !value)} className={`flip-card group relative aspect-[1.7] w-full min-w-0 [perspective:1200px] drop-shadow-[0_15px_23px_rgba(15,23,42,0.28)] ${compact ? 'max-w-[225px]' : 'max-w-[520px]'}`}><div style={{ transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)', transformStyle: 'preserve-3d' }} className="relative size-full min-w-0 transition-transform duration-700"><CardFace template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} design={design} /><CardFace back template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} design={design} /></div></button></div> }
 function SocialIcon({ icon: Icon, tone }: { icon: typeof Camera; tone: string }) { return <span className={`inline-flex size-5 items-center justify-center rounded-md text-white ${tone}`}><Icon size={13} strokeWidth={2.4} /></span> }
 function SocialGlyph({ name }: { name: 'instagram' | 'facebook' | 'linkedin' | 'viber' | 'whatsapp' }) { const Icon = name === 'instagram' ? Camera : name === 'facebook' ? UserRound : MessageCircle; return <Icon aria-hidden="true" size={16} strokeWidth={2.2} /> }
 async function imageBlobToDataUrl(blob: Blob): Promise<string> {
@@ -1484,6 +1703,7 @@ function CardAssetActions({
   texture,
   template,
   publicCode,
+  design,
   compact = false,
 }: {
   profile: Profile
@@ -1492,6 +1712,7 @@ function CardAssetActions({
   texture: Texture
   template: Template
   publicCode: string | null
+  design?: CardDesign
   compact?: boolean
 }) {
   const imageExportRef = useRef<HTMLDivElement>(null)
@@ -1499,7 +1720,8 @@ function CardAssetActions({
   const [activeAction, setActiveAction] = useState<'qr' | 'card' | null>(null)
   const saveImageFile = async (blob: Blob, filename: string, title: string) => {
     const file = new File([blob], filename, { type: 'image/png' })
-    const isMobileDevice = navigator.userAgentData?.mobile
+    const userAgentData = (navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData
+    const isMobileDevice = userAgentData?.mobile
       ?? /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
     if (isMobileDevice && navigator.share && navigator.canShare?.({ files: [file] })) {
       await navigator.share({ files: [file], title })
@@ -1612,16 +1834,16 @@ function CardAssetActions({
         className="flip-card pointer-events-none fixed left-[-10000px] top-0 z-[-1] flex w-[600px] flex-col gap-3 bg-[#eef1f4] p-10 text-[#26333a]"
       >
         <div className="flip-card relative isolate aspect-[1.7] w-full overflow-hidden">
-          <CardFace exportMode template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} />
+          <CardFace exportMode template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} design={design} />
         </div>
         <div className="flip-card relative isolate aspect-[1.7] w-full overflow-hidden">
-          <CardFace exportMode back template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} />
+          <CardFace exportMode back template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} design={design} />
         </div>
       </div>
     </>
   )
 }
-function PreviewPanel({ template, profile, t, language, texture, publicCode }: { template: Template; profile: Profile; t: typeof copy.en; language: Language; texture: Texture; publicCode: string | null }) {
+function PreviewPanel({ template, profile, t, language, texture, publicCode, design }: { template: Template; profile: Profile; t: typeof copy.en; language: Language; texture: Texture; publicCode: string | null; design?: CardDesign }) {
   const hasPhone = profile.showPhone && Boolean(profile.phone.trim())
   const emails = [
     profile.showBusinessEmail ? profile.businessEmail.trim() : '',
@@ -1634,12 +1856,12 @@ function PreviewPanel({ template, profile, t, language, texture, publicCode }: {
         <div className="absolute left-1/2 top-0 z-20 h-4 w-24 -translate-x-1/2 rounded-b-2xl bg-[#303e51]" />
         <div className={`flex min-h-[430px] w-full min-w-0 flex-col items-center justify-center overflow-hidden rounded-[24px] px-2.5 py-5 ${template.publicBackground}`}>
           <div className="order-1 mb-0 flex w-full min-w-0 max-w-[205px] shrink-0 justify-center overflow-hidden">
-            <FlipCard compact template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} />
+            <FlipCard compact template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} design={design} />
           </div>
           {(hasPhone || emails.length > 0) && (
             <div className={`order-3 mt-3 grid w-full min-w-0 max-w-[205px] gap-2 ${Number(hasPhone) + emails.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-              {hasPhone && <a href={`tel:${profile.phone}`} style={getCardActionStyle(template, texture)} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg border px-1 text-[9px] font-bold shadow-sm transition hover:brightness-105"><Phone size={10} className="shrink-0" /><span className="truncate">{t.call}</span></a>}
-              {emails.map((email) => <a key={email} href={`mailto:${email}`} style={getCardActionStyle(template, texture)} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg border px-1 text-[9px] font-bold shadow-sm transition hover:brightness-105"><Mail size={10} className="shrink-0" /><span className="truncate">{t.emailAction}</span></a>)}
+              {hasPhone && <a href={`tel:${profile.phone}`} style={getCardActionStyle(template, texture, design)} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg border px-1 text-[9px] font-bold shadow-sm transition hover:brightness-105"><Phone size={10} className="shrink-0" /><span className="truncate">{t.call}</span></a>}
+              {emails.map((email) => <a key={email} href={`mailto:${email}`} style={getCardActionStyle(template, texture, design)} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg border px-1 text-[9px] font-bold shadow-sm transition hover:brightness-105"><Mail size={10} className="shrink-0" /><span className="truncate">{t.emailAction}</span></a>)}
             </div>
           )}
           {Boolean((profile.showInstagram && profile.instagram.trim()) || (profile.showViber && profile.viber.trim()) || (profile.showFacebook && profile.facebook.trim())) && (
@@ -1651,19 +1873,19 @@ function PreviewPanel({ template, profile, t, language, texture, publicCode }: {
           )}
           <p className="order-2 mt-3 max-w-[185px] text-center text-[8px] leading-tight text-[#8996a8]">{t.tap}</p>
           {hasPhone && (
-            <button type="button" onClick={() => void downloadVCard(profile, language)} style={getCardActionStyle(template, texture)} className="order-5 mt-4 flex h-7 w-full max-w-[205px] shrink-0 items-center justify-center gap-1.5 rounded-lg border text-[9px] font-bold shadow-sm transition hover:brightness-105">
+            <button type="button" onClick={() => void downloadVCard(profile, language)} style={getCardActionStyle(template, texture, design)} className="order-5 mt-4 flex h-7 w-full max-w-[205px] shrink-0 items-center justify-center gap-1.5 rounded-lg border text-[9px] font-bold shadow-sm transition hover:brightness-105">
               <Download size={11} /> <span className="text-[9px] font-bold leading-none">{language === 'en' ? 'Save Contact' : t.saveContact}</span>
             </button>
           )}
           <div className="order-6 mt-2 w-full max-w-[205px]">
-            <CardAssetActions compact profile={profile} t={t} language={language} texture={texture} template={template} publicCode={publicCode} />
+            <CardAssetActions compact profile={profile} t={t} language={language} texture={texture} template={template} publicCode={publicCode} design={design} />
           </div>
         </div>
       </div>
     </aside>
   )
 }
-function PublicCard({ onBack, template, profile, language, t, texture, publicCode }: { onBack: () => void; template: Template; profile: Profile; language: Language; t: typeof copy.en; texture: Texture; publicCode: string | null }) {
+function PublicCard({ onBack, template, profile, language, t, texture, publicCode, design }: { onBack: () => void; template: Template; profile: Profile; language: Language; t: typeof copy.en; texture: Texture; publicCode: string | null; design?: CardDesign }) {
   const publicTextColor = template.name === 'Soft Feminine Pastel' ? '#573b48' : template.name === 'Creative Glass' ? '#3d315f' : '#26333a'
   const hasPhone = profile.showPhone && Boolean(profile.phone.trim())
   const emails = [
@@ -1686,19 +1908,19 @@ function PublicCard({ onBack, template, profile, language, t, texture, publicCod
             <X size={14} /> {t.backEditor}
           </button>
           <div className="public-card-flip mt-3 mb-0 w-full">
-            <FlipCard template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} />
+            <FlipCard template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} design={design} />
           </div>
           <p className="public-card-prompt mt-6 mb-6 text-center text-base font-medium text-current/55">{t.tapPublic}</p>
           <div className="w-full">
             {actionCount > 0 && (
               <div className={`mx-auto grid w-full max-w-[520px] gap-3 sm:gap-4 ${actionCount === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                 {hasPhone && (
-                  <a href={`tel:${profile.phone}`} style={getCardActionStyle(template, texture)} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border px-3 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]">
+                  <a href={`tel:${profile.phone}`} style={getCardActionStyle(template, texture, design)} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border px-3 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]">
                     <Phone size={14} /> {t.call}
                   </a>
                 )}
                 {emails.map((email) => (
-                  <a key={email} href={`mailto:${email}`} style={getCardActionStyle(template, texture)} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border px-3 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]">
+                  <a key={email} href={`mailto:${email}`} style={getCardActionStyle(template, texture, design)} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border px-3 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]">
                     <Mail size={14} /> {t.emailAction}
                   </a>
                 ))}
@@ -1716,13 +1938,13 @@ function PublicCard({ onBack, template, profile, language, t, texture, publicCod
             <button
               type="button"
               onClick={() => void downloadVCard(profile, language)}
-              style={getCardActionStyle(template, texture)}
+              style={getCardActionStyle(template, texture, design)}
               className="mx-auto mt-3 flex h-12 w-full max-w-[520px] items-center justify-center gap-2.5 rounded-xl border px-5 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]"
             >
               <Download size={16} strokeWidth={2.4} /> {language === 'en' ? 'Save Contact' : t.saveContact}
             </button>
           )}
-          <CardAssetActions profile={profile} t={t} language={language} texture={texture} template={template} publicCode={publicCode} />
+          <CardAssetActions profile={profile} t={t} language={language} texture={texture} template={template} publicCode={publicCode} design={design} />
         </div>
       </div>
     </main>

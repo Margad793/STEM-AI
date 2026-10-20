@@ -1,4 +1,69 @@
-import type { Template, Texture } from './card-types'
+import type { CardDesign, Template, Texture } from './card-types'
+
+export type OrganizationAssets = {
+  code: string
+  patternSrc: string
+  nameColor?: string
+}
+
+// Registered organization codes live here; entering a matching code in the
+// editor swaps the card to that organization's unique design.
+const organizationAssets: OrganizationAssets[] = [
+  { code: 'muls26', patternSrc: '/assets/orgs/muls26/pattern.png', nameColor: '#1F4D2B' },
+]
+
+export const ORGANIZATION_PATTERN_WIDTH = '14.5%'
+// Back face: the same strip runs down the left edge there, so every text on
+// the back (header, contact rows, location, scan line) is pushed to the right
+// of it instead of sitting on top of the green. The card box carries 12u of
+// padding, so 37u of extra left padding lands the text at 49u from the card
+// edge — the 14.5% (≈42.9u) strip plus a 6u breathing gap. Only applied when
+// an organization design is active.
+export const ORGANIZATION_BACK_CONTENT_LEFT = 'calc(37 * var(--u))'
+// Organization card front layout, all percentages of the card box (aspect 1.7).
+//
+// Logo badge: a circle as wide as 14.5% of the card (≈24% of its height),
+// vertically centered at 23% so its edges land at 11%–35%, centered
+// horizontally on the right edge of the green strip (7% + 14.5%/2 = 14.5%) —
+// half of it covers the strip and half sits on the white area.
+export const ORGANIZATION_LOGO_DIAMETER = '14.5%'
+export const ORGANIZATION_LOGO_LEFT = '7%'
+export const ORGANIZATION_LOGO_TOP = '11%'
+// Organization name: two lines at ~3.2% of card width (bold, uppercase,
+// leading ~1.05), running from 24% to 80% (20% margin on the right) inside
+// the 18%–28% vertical band, sharing its 23% vertical center with the logo.
+export const ORGANIZATION_COMPANY_LEFT = '24%'
+export const ORGANIZATION_COMPANY_RIGHT = '20%'
+export const ORGANIZATION_COMPANY_TOP = '18%'
+export const ORGANIZATION_COMPANY_HEIGHT = '10%'
+// Person's text column: starts 54% from the left edge and stops 10% before
+// the right edge. Every text in it (name, job title, contacts) shares that
+// 54%–90% band and shrinks dynamically (data-fit) when it would not fit. The
+// name block (bold, ~4% of card width, up to 2 lines, leading ~1.18) starts at
+// 34%, the job title (~2.6% of card width, regular) at 49% — about 2% below
+// the name — and the contact block (~2.5% of card width, leading ~1.12) fills
+// 63.5%–91%, leaving 9% above the bottom edge. Name, job title and contacts
+// all share the same left line. Only the location may wrap onto a second
+// line; the other contact rows stay on one line and shrink instead.
+export const ORGANIZATION_TEXT_LEFT = '54%'
+export const ORGANIZATION_TEXT_RIGHT = '10%'
+export const ORGANIZATION_PERSON_NAME_TOP = '34%'
+export const ORGANIZATION_TITLE_TOP = '49%'
+export const ORGANIZATION_CONTACTS_TOP = '63.5%'
+export const ORGANIZATION_CONTACTS_BOTTOM = '9%'
+// Profile photo: sits left of the text column and spans vertically from the
+// top edge of the name block (34%) to the bottom edge of the job title (53%),
+// so its diameter is 19% of the card height; its right edge stops 7u (≈2.4%)
+// before the shared 54% left line.
+export const ORGANIZATION_AVATAR_TOP = '34%'
+export const ORGANIZATION_AVATAR_HEIGHT = '19%'
+export const ORGANIZATION_AVATAR_RIGHT = '48.4%'
+
+export function getOrganizationAssets(design: CardDesign | null | undefined): OrganizationAssets | null {
+  const code = (design?.organizationCode ?? '').trim().toLowerCase()
+  if (!code) return null
+  return organizationAssets.find((item) => item.code === code) ?? null
+}
 
 export const textures: { id: Texture; name: string; mnName: string; description: string; mnDescription: string }[] = [
   { id: 'holographic', name: 'CD Iridescent / Holographic', mnName: 'Солонгорсон голографик', description: 'Microscopic grooves with a soft iridescent sheen.', mnDescription: 'Нарийн ховилтой, зөөлөн солонгорсон өнгөлгөө.' },
@@ -43,7 +108,19 @@ export function getCardTextureImage(template: Template, texture: Texture) {
   return `linear-gradient(rgba(18,24,32,${shade}), rgba(18,24,32,${shade})), repeating-linear-gradient(115deg, rgba(255,255,255,.2) 0 1.5px, rgba(255,255,255,.03) 1.5px 3px, transparent 3px 5px), linear-gradient(135deg, rgba(30,40,50,.22), rgba(255,255,255,.12))`
 }
 
-export function getCardActionStyle(template: Template, texture: Texture) {
+export function getCardActionStyle(template: Template, texture: Texture, design?: CardDesign | null) {
+  // Organization cards carry their own identity (white card with a dark green
+  // accent), so their Call / Email / Save Contact actions use that palette
+  // instead of the selected template's.
+  const organization = getOrganizationAssets(design)
+  if (organization) {
+    return {
+      backgroundColor: organization.nameColor ?? '#1F4D2B',
+      backgroundImage: undefined,
+      borderColor: 'rgba(38,51,58,.25)',
+      color: '#ffffff',
+    }
+  }
   const templateBackground = template.name === 'Minimalist Classic'
     ? 'linear-gradient(135deg, #f4f0eb, #e5ded4)'
     : template.name === 'Luxury Dark & Gold'

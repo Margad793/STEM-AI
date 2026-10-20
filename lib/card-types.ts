@@ -38,3 +38,12 @@ export type Template = {
 }
 
 export type Texture = 'holographic' | 'arcs' | 'matte' | 'metal' | 'carbon-wave'
+
+export type CardColorId = string
+export type CardPatternId = string
+
+export type CardDesign = {
+  colorId: CardColorId | null
+  patternId: CardPatternId | null
+  organizationCode: string
+}
