@@ -40,6 +40,11 @@
 .flip-card {
   container-type: inline-size;
   --u: calc(100cqw / 296);
+  /* Android Chrome's "font boosting" silently enlarges small text and blows
+     the card layout apart; disabling text autosizing keeps our computed sizes.
+     (Inherited, so every text node inside the card is covered.) */
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
 }
 
 .card-handwritten {
@@ -94,6 +99,8 @@ button { cursor: pointer; }
 
 @media (max-width: 639px) {
   main:has(> div > div > div > div > button.flip-card) {
+    /* 100vh first so browsers without dvh support still get a height. */
+    height: 100vh;
     height: 100dvh;
     min-height: 0;
     overflow: hidden;

@@ -14,6 +14,25 @@ import { createContactVCard, encodeContactPhoto } from '@/lib/vcard'
 
 const publicCardHost = getPublicSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL).replace(/^https?:\/\//i, '')
 
+// A browser-generated id that lets the card owner's log count a returning
+// anonymous visitor once instead of on every page load. It stores no personal
+// data and is reset when the visitor clears their site data.
+function getOrCreateVisitorId(): string | null {
+  try {
+    const key = 'cardly-visitor-id'
+    const existing = window.localStorage.getItem(key)
+    if (existing) return existing
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      const id = crypto.randomUUID()
+      window.localStorage.setItem(key, id)
+      return id
+    }
+  } catch {
+    // Storage or crypto unavailable — log without anonymous deduplication.
+  }
+  return null
+}
+
 type PublicCard = {
   public_code: string
   name: string
@@ -72,6 +91,20 @@ export default function PublicCardPage() {
         if (!active) return
         if (queryError) throw queryError
         setCard(data as PublicCard | null)
+        try {
+          void supabase
+            .rpc('log_card_view', { p_public_code: code, p_visitor_id: getOrCreateVisitorId() })
+            .then(
+              ({ error: logError }) => {
+                if (logError) console.debug('Could not log card view.', logError)
+              },
+              () => {
+                // Logging must never block the card itself.
+              },
+            )
+        } catch {
+          // Logging must never block the card itself.
+        }
       } catch (queryError) {
         if (active) setError(queryError instanceof Error ? queryError.message : 'Unable to load this card.')
       } finally {

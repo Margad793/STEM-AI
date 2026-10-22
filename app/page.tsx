@@ -49,8 +49,24 @@ const getOwnedCardPhotoPath = (photoUrl: string, userId: string) => {
 }
 const googleOAuthEnabled = false
 const copy = {
-  en: { workspace: 'Workspace', manage: 'Manage', myCard: 'My card', contacts: 'Contacts', analytics: 'Analytics', settings: 'Settings', pro: 'Pro plan', proDesc: 'Unlimited cards and custom domains.', managePlan: 'Manage plan', edit: 'Edit your card', view: 'View card', save: 'Save', saved: 'Saved', profile: 'Your profile', memorable: 'Make it memorable.', personal: 'Personal details', essentials: 'The essentials people need to know.', fullName: 'Full name', jobTitle: 'Job title', company: 'Company', location: 'Location', bio: 'Short bio', contact: 'Contact details', reach: 'Make it easy for people to reach you.', email: 'Email address', phone: 'Phone number', website: 'Website', templates: 'Card style', live: 'Preview', looks: 'How your card looks', tap: 'Tap the card to see contact details', open: 'Open public card', flip: 'Flip card', front: 'Show front', back: 'Contact details', saveContact: 'Save to contacts', saveCardImage: 'Save card image', savingCardImage: 'Preparing image...', cardImageHelp: 'Choose “Save Image” in the share menu to add it to Photos.', cardImageReady: 'Image shared. If you chose Save Image, it is now in Photos.', cardImageDownloaded: 'Image downloaded. Open it and choose Save Image to add it to Photos.', cardImageError: 'Could not create the card image. Please try again.', frontSide: 'Front', backSide: 'Back', call: 'Call now', emailAction: 'Email', digital: 'Digital business card', backEditor: 'Back', scan: 'Scan to connect', changeLanguage: 'Change language', switchToEnglish: 'Would you like to change the website language to English?', switchToMongolian: 'Would you like to change the website language to Mongolian?', yes: 'Yes', no: 'No', cancel: 'Cancel', pattern: 'Pattern & texture', patternDescription: 'Add a subtle surface treatment to your card.', chooseIdentity: 'Choose a polished visual identity for your card.', chooseStyle: 'Choose a visual direction for your card.', socialLinks: 'Social links', instagramUrl: 'Instagram URL', facebookUrl: 'Facebook URL', viberLink: 'Viber link', whatsappLink: 'WhatsApp link', photoPreview: 'Photo preview', profilePhoto: 'Profile photo', changePhoto: 'Change photo', uploadPhoto: 'Upload photo', companyLogo: 'Company logo', uploadCompanyLogo: 'Upload logo', changeCompanyLogo: 'Change logo', remove: 'Remove', photoHint: 'Shows in the circle beside your name on the card.', cropPhoto: 'Crop your photo', cropHint: 'Drag to reposition and slide to zoom, then apply.', zoomPhoto: 'Zoom photo', saving: 'Saving...', applyPhoto: 'Apply photo', tapPublic: 'Tap the card to see contact details', orgDesign: 'Organization design', orgDesignDescription: 'Enter your organization code to apply its unique card design.', orgCode: 'Organization code', orgCodeApplied: 'Organization design applied.', orgCodeUnknown: 'This code is not registered yet.', orgApply: 'Apply', orgApplyHint: 'Press Apply to activate this design.' },
-  mn: { workspace: 'Ажлын орчин', manage: 'Удирдах', myCard: 'Миний карт', contacts: 'Харилцагчид', analytics: 'Статистик', settings: 'Тохиргоо', pro: 'Pro багц', proDesc: 'Хязгааргүй карт болон өөрийн домэйн ашиглах боломж.', managePlan: 'Багцыг удирдах', edit: 'Картаа засах', view: 'Карт харах', save: 'Хадгалах', saved: 'Хадгаллаа', profile: 'Таны профайл', memorable: 'Мартагдашгүй болгоорой.', personal: 'Хувийн мэдээлэл', essentials: 'Таны тухай мэдэх шаардлагатай үндсэн мэдээлэл.', fullName: 'Овог, нэр', jobTitle: 'Албан тушаал', company: 'Байгууллага', location: 'Байршил', bio: 'Товч танилцуулга', contact: 'Холбоо барих мэдээлэл', reach: 'Тантай холбогдоход хялбар болгоорой.', email: 'Имэйл хаяг', phone: 'Утасны дугаар', website: 'Вэбсайт', templates: 'Картын загвар', live: 'Урьдчилан харах', looks: 'Картын харагдах байдал', tap: 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.', open: 'Нийтийн картыг нээх', flip: 'Карт эргүүлэх', front: 'Нүүрэн талыг харуулах', back: 'Холбоо барих мэдээлэл', saveContact: 'Харилцагчийн жагсаалтад хадгалах', saveCardImage: 'Карт хадгалах', savingCardImage: 'Зураг бэлдэж байна...', cardImageHelp: 'Photos руу хадгалахын тулд хуваалцах цэснээс “Save Image”-ийг сонгоно уу.', cardImageReady: 'Зургийг хуваалцлаа. “Save Image” сонгосон бол Photos-д хадгалагдсан.', cardImageDownloaded: 'Зураг татагдлаа. Photos-д оруулахын тулд зургийг нээгээд Save Image сонгоно уу.', cardImageError: 'Картын зураг үүсгэж чадсангүй. Дахин оролдоно уу.', frontSide: 'Нүүр тал', backSide: 'Ар тал', call: 'Залгах', emailAction: 'Имэйл бичих', digital: 'Дижитал нэрийн хуудас', backEditor: 'Буцах', scan: 'Холбогдохын тулд уншуулна уу', changeLanguage: 'Хэл солих', switchToEnglish: 'Вэбсайтын хэлийг англи хэл рүү өөрчлөх үү?', switchToMongolian: 'Вэбсайтын хэлийг монгол хэл рүү өөрчлөх үү?', yes: 'Тийм', no: 'Үгүй', cancel: 'Болих', pattern: 'Хээ ба гадаргуу', patternDescription: 'Картын гадаргууд нарийн хээ, өнгөлгөө нэмнэ.', chooseIdentity: 'Картаа тохирсон өнгө төрхийг сонгоно уу.', chooseStyle: 'Картаа тохирсон загвар сонгоно уу.', socialLinks: 'Сошиал холбоосууд', instagramUrl: 'Instagram холбоос', facebookUrl: 'Facebook холбоос', viberLink: 'Viber холбоос', whatsappLink: 'WhatsApp холбоос', photoPreview: 'Зургийг урьдчилан харах', profilePhoto: 'Профайл зураг', changePhoto: 'Зураг солих', uploadPhoto: 'Зураг оруулах', companyLogo: 'Компанийн лого', uploadCompanyLogo: 'Лого оруулах', changeCompanyLogo: 'Лого солих', remove: 'Устгах', photoHint: 'Таны нэрийн хажуу дахь дугуй дүрсэнд харагдана.', cropPhoto: 'Зургийг тайрах', cropHint: 'Зургийг чирж байрлалыг тохируулан, томруулж эсвэл жижгэрүүлээд хэрэглэнэ үү.', zoomPhoto: 'Зургийг томруулах', saving: 'Хадгалж байна...', applyPhoto: 'Зураг хэрэглэх', tapPublic: 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.', orgDesign: 'Байгууллагын дизайн', orgDesignDescription: 'Байгууллагын кодоо оруулж онцгой картын дизайн идэвхижүүлнэ үү.', orgCode: 'Байгууллагын код', orgCodeApplied: 'Байгууллагын дизайн идэвхижлээ.', orgCodeUnknown: 'Энэ код бүртгэлгүй байна.', orgApply: 'Идэвхижүүлэх', orgApplyHint: 'Энэ дизайныг идэвхижүүлэхийн тулд товчийг дарна уу.' },
+  en: { workspace: 'Workspace', manage: 'Manage', myCard: 'My card', contacts: 'Contacts', analytics: 'Analytics', settings: 'Settings', pro: 'Pro plan', proDesc: 'Unlimited cards and custom domains.', managePlan: 'Manage plan', edit: 'Edit your card', view: 'View card', save: 'Save', saved: 'Saved', profile: 'Your profile', memorable: 'Make it memorable.', personal: 'Personal details', essentials: 'The essentials people need to know.', fullName: 'Full name', jobTitle: 'Job title', company: 'Company', location: 'Location', bio: 'Short bio', contact: 'Contact details', reach: 'Make it easy for people to reach you.', email: 'Email address', phone: 'Phone number', website: 'Website', templates: 'Card style', live: 'Preview', looks: 'How your card looks', tap: 'Tap the card to see contact details', open: 'Open public card', flip: 'Flip card', front: 'Show front', back: 'Contact details', saveContact: 'Save to contacts', saveCardImage: 'Save card image', savingCardImage: 'Preparing image...', cardImageHelp: 'Choose “Save Image” in the share menu to add it to Photos.', cardImageReady: 'Image shared. If you chose Save Image, it is now in Photos.', cardImageDownloaded: 'Image downloaded. Open it and choose Save Image to add it to Photos.', cardImageError: 'Could not create the card image. Please try again.', frontSide: 'Front', backSide: 'Back', call: 'Call now', emailAction: 'Email', digital: 'Digital business card', backEditor: 'Back', scan: 'Scan to connect', changeLanguage: 'Change language', switchToEnglish: 'Would you like to change the website language to English?', switchToMongolian: 'Would you like to change the website language to Mongolian?', yes: 'Yes', no: 'No', cancel: 'Cancel', pattern: 'Pattern & texture', patternDescription: 'Add a subtle surface treatment to your card.', chooseIdentity: 'Choose a polished visual identity for your card.', chooseStyle: 'Choose a visual direction for your card.', socialLinks: 'Social links', instagramUrl: 'Instagram URL', facebookUrl: 'Facebook URL', viberLink: 'Viber link', whatsappLink: 'WhatsApp link', photoPreview: 'Photo preview', profilePhoto: 'Profile photo', changePhoto: 'Change photo', uploadPhoto: 'Upload photo', companyLogo: 'Company logo', uploadCompanyLogo: 'Upload logo', changeCompanyLogo: 'Change logo', remove: 'Remove', photoHint: 'Shows in the circle beside your name on the card.', cropPhoto: 'Crop your photo', cropHint: 'Drag to reposition and slide to zoom, then apply.', zoomPhoto: 'Zoom photo', saving: 'Saving...', applyPhoto: 'Apply photo', tapPublic: 'Tap the card to see contact details', orgDesign: 'Organization design', orgDesignDescription: 'Enter your organization code to apply its unique card design.', orgCode: 'Organization code', orgCodeApplied: 'Organization design applied.', orgCodeUnknown: 'This code is not registered yet.', orgApply: 'Apply', orgApplyHint: 'Press Apply to activate this design.', viewersTitle: 'Who viewed your card', viewersEmpty: 'No views yet.', anonymousViewer: 'Anonymous visitor' },
+  mn: { workspace: 'Ажлын орчин', manage: 'Удирдах', myCard: 'Миний карт', contacts: 'Харилцагчид', analytics: 'Статистик', settings: 'Тохиргоо', pro: 'Pro багц', proDesc: 'Хязгааргүй карт болон өөрийн домэйн ашиглах боломж.', managePlan: 'Багцыг удирдах', edit: 'Картаа засах', view: 'Карт харах', save: 'Хадгалах', saved: 'Хадгаллаа', profile: 'Таны профайл', memorable: 'Мартагдашгүй болгоорой.', personal: 'Хувийн мэдээлэл', essentials: 'Таны тухай мэдэх шаардлагатай үндсэн мэдээлэл.', fullName: 'Овог, нэр', jobTitle: 'Албан тушаал', company: 'Байгууллага', location: 'Байршил', bio: 'Товч танилцуулга', contact: 'Холбоо барих мэдээлэл', reach: 'Тантай холбогдоход хялбар болгоорой.', email: 'Имэйл хаяг', phone: 'Утасны дугаар', website: 'Вэбсайт', templates: 'Картын загвар', live: 'Урьдчилан харах', looks: 'Картын харагдах байдал', tap: 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.', open: 'Нийтийн картыг нээх', flip: 'Карт эргүүлэх', front: 'Нүүрэн талыг харуулах', back: 'Холбоо барих мэдээлэл', saveContact: 'Харилцагчийн жагсаалтад хадгалах', saveCardImage: 'Карт хадгалах', savingCardImage: 'Зураг бэлдэж байна...', cardImageHelp: 'Photos руу хадгалахын тулд хуваалцах цэснээс “Save Image”-ийг сонгоно уу.', cardImageReady: 'Зургийг хуваалцлаа. “Save Image” сонгосон бол Photos-д хадгалагдсан.', cardImageDownloaded: 'Зураг татагдлаа. Photos-д оруулахын тулд зургийг нээгээд Save Image сонгоно уу.', cardImageError: 'Картын зураг үүсгэж чадсангүй. Дахин оролдоно уу.', frontSide: 'Нүүр тал', backSide: 'Ар тал', call: 'Залгах', emailAction: 'Имэйл бичих', digital: 'Дижитал нэрийн хуудас', backEditor: 'Буцах', scan: 'Холбогдохын тулд уншуулна уу', changeLanguage: 'Хэл солих', switchToEnglish: 'Вэбсайтын хэлийг англи хэл рүү өөрчлөх үү?', switchToMongolian: 'Вэбсайтын хэлийг монгол хэл рүү өөрчлөх үү?', yes: 'Тийм', no: 'Үгүй', cancel: 'Болих', pattern: 'Хээ ба гадаргуу', patternDescription: 'Картын гадаргууд нарийн хээ, өнгөлгөө нэмнэ.', chooseIdentity: 'Картаа тохирсон өнгө төрхийг сонгоно уу.', chooseStyle: 'Картаа тохирсон загвар сонгоно уу.', socialLinks: 'Сошиал холбоосууд', instagramUrl: 'Instagram холбоос', facebookUrl: 'Facebook холбоос', viberLink: 'Viber холбоос', whatsappLink: 'WhatsApp холбоос', photoPreview: 'Зургийг урьдчилан харах', profilePhoto: 'Профайл зураг', changePhoto: 'Зураг солих', uploadPhoto: 'Зураг оруулах', companyLogo: 'Компанийн лого', uploadCompanyLogo: 'Лого оруулах', changeCompanyLogo: 'Лого солих', remove: 'Устгах', photoHint: 'Таны нэрийн хажуу дахь дугуй дүрсэнд харагдана.', cropPhoto: 'Зургийг тайрах', cropHint: 'Зургийг чирж байрлалыг тохируулан, томруулж эсвэл жижгэрүүлээд хэрэглэнэ үү.', zoomPhoto: 'Зургийг томруулах', saving: 'Хадгалж байна...', applyPhoto: 'Зураг хэрэглэх', tapPublic: 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.', orgDesign: 'Байгууллагын дизайн', orgDesignDescription: 'Байгууллагын кодоо оруулж онцгой картын дизайн идэвхижүүлнэ үү.', orgCode: 'Байгууллагын код', orgCodeApplied: 'Байгууллагын дизайн идэвхижлээ.', orgCodeUnknown: 'Энэ код бүртгэлгүй байна.', orgApply: 'Идэвхижүүлэх', orgApplyHint: 'Энэ дизайныг идэвхижүүлэхийн тулд товчийг дарна уу.', viewersTitle: 'Хэн харав', viewersEmpty: 'Одоогоор үзэгдээгүй байна.', anonymousViewer: 'Нээлттэй хэрэглэгч' },
+}
+
+type CardViewerRow = {
+  id: string
+  viewer_name: string | null
+  viewer_company: string | null
+  viewer_phone: string | null
+  first_viewed_at: string
+}
+
+function formatViewedAt(iso: string, language: Language): string {
+  try {
+    return new Intl.DateTimeFormat(language === 'mn' ? 'mn-MN' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso))
+  } catch {
+    return iso
+  }
 }
 
 export default function Page() {
@@ -60,6 +76,7 @@ export default function Page() {
   const [authLoading, setAuthLoading] = useState(true)
   const [accessChecked, setAccessChecked] = useState(false)
   const [hasAccess, setHasAccess] = useState(false)
+  const [isBusinessAccount, setIsBusinessAccount] = useState(false)
   const [cardLoading, setCardLoading] = useState(true)
   const [authError, setAuthError] = useState('')
   const [saveError, setSaveError] = useState('')
@@ -70,6 +87,7 @@ export default function Page() {
   const [googleLinking, setGoogleLinking] = useState(false)
   const [cardId, setCardId] = useState<string | null>(null)
   const [publicCode, setPublicCode] = useState<string | null>(null)
+  const [cardViewers, setCardViewers] = useState<CardViewerRow[]>([])
   const [savedPhotoUrl, setSavedPhotoUrl] = useState('')
   const [pendingPhotoDeletions, setPendingPhotoDeletions] = useState<string[]>([])
   const [savedCompanyLogoUrl, setSavedCompanyLogoUrl] = useState('')
@@ -161,6 +179,7 @@ export default function Page() {
     if (!session || !supabase) {
       setAccessChecked(true)
       setHasAccess(false)
+      setIsBusinessAccount(false)
       return
     }
 
@@ -169,13 +188,17 @@ export default function Page() {
     setAuthError('')
     void (async () => {
       try {
-        const { data, error } = await supabase.from('cardly_access').select('user_id').eq('user_id', session.user.id).maybeSingle()
+        const { data, error } = await supabase.from('cardly_access').select('user_id, account_type').eq('user_id', session.user.id).maybeSingle()
         if (error) throw error
-        if (active) setHasAccess(Boolean(data))
+        if (active) {
+          setHasAccess(Boolean(data))
+          setIsBusinessAccount((data as { account_type?: string } | null)?.account_type === 'business')
+        }
       } catch (error) {
         if (active) {
           setAuthError(error instanceof Error ? error.message : 'Unable to verify account access.')
           setHasAccess(false)
+          setIsBusinessAccount(false)
         }
       } finally {
         if (active) setAccessChecked(true)
@@ -270,6 +293,26 @@ export default function Page() {
       active = false
     }
   }, [session?.user.id, hasAccess])
+
+  useEffect(() => {
+    if (!session || !supabase || !hasAccess || !isBusinessAccount) return
+    let active = true
+    void (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('card_views')
+          .select('id, viewer_name, viewer_company, viewer_phone, first_viewed_at')
+          .order('first_viewed_at', { ascending: false })
+        if (error) throw error
+        if (active) setCardViewers((data ?? []) as CardViewerRow[])
+      } catch {
+        // The viewer list is a secondary panel; leave it empty on failure.
+      }
+    })()
+    return () => {
+      active = false
+    }
+  }, [session?.user.id, hasAccess, isBusinessAccount])
 
   const requestLanguageChange = (nextLanguage: Language) => {
     if (nextLanguage !== language) setLanguageConfirmation(nextLanguage)
@@ -617,6 +660,34 @@ export default function Page() {
                   : "Хуулах"}
             </button>
           </div>
+        </section>
+      )}
+      {isBusinessAccount && (
+        <section className="mx-auto mt-4 max-w-[1380px] rounded-xl border border-[#dfe3e8] bg-white px-3 py-3 shadow-sm sm:mx-9 sm:px-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[11px] font-semibold text-[#52606f] sm:text-xs">{t.viewersTitle}</p>
+            <span className="rounded-full bg-[#eef1f4] px-2 py-0.5 text-[11px] font-semibold text-[#52606f]">{cardViewers.length}</span>
+          </div>
+          {cardViewers.length === 0 ? (
+            <p className="mt-2 text-xs text-[#8994a2]">{t.viewersEmpty}</p>
+          ) : (
+            <ul className="mt-2 divide-y divide-[#f0f2f5]">
+              {cardViewers.map((viewer) => (
+                <li key={viewer.id} className="flex items-center justify-between gap-3 py-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-[#18202d]">
+                      {viewer.viewer_name?.trim() || t.anonymousViewer}
+                      {viewer.viewer_company?.trim() ? ` · ${viewer.viewer_company.trim()}` : ''}
+                    </p>
+                    {viewer.viewer_phone?.trim() && (
+                      <p className="truncate text-xs text-[#52606f]">{viewer.viewer_phone.trim()}</p>
+                    )}
+                  </div>
+                  <span className="shrink-0 text-[11px] text-[#8994a2]">{formatViewedAt(viewer.first_viewed_at, language)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       )}
       {languageConfirmation && (

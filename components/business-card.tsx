@@ -11,6 +11,25 @@ import { getPublicSiteOrigin } from '@/lib/site'
 const publicCardOrigin = getPublicSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL)
 const publicCardHost = publicCardOrigin.replace(/^https?:\/\//i, '')
 
+// Older Android browsers (< Chrome 105, incl. some flip-phone WebViews) have no
+// container queries, so 100cqw is invalid, --u collapses, and every
+// calc(<px> * var(--u)) font size falls back to the inherited 16px — the card
+// text then overflows. Measuring the card in JS and writing --u inline restores
+// the same proportional scaling there.
+function useCardUnitFallback(ref: { current: HTMLElement | null }) {
+  useEffect(() => {
+    const node = ref.current
+    if (!node) return
+    if (typeof CSS !== 'undefined' && typeof CSS.supports === 'function' && CSS.supports('container-type', 'inline-size')) return
+    const apply = () => node.style.setProperty('--u', `${node.clientWidth / 296}px`)
+    apply()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(apply)
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [ref])
+}
+
 type CardCopy = {
   save: string
   scan: string
@@ -270,9 +289,12 @@ export function FlipCard({
   compact?: boolean
 }) {
   const [flipped, setFlipped] = useState(false)
+  const cardRef = useRef<HTMLButtonElement>(null)
+  useCardUnitFallback(cardRef)
   return (
     <div className={`flex w-full min-w-0 flex-col items-center ${compact ? 'gap-1.5' : 'gap-3'}`}>
       <button
+        ref={cardRef}
         type="button"
         aria-label={t.flip}
         onClick={() => setFlipped((value) => !value)}
