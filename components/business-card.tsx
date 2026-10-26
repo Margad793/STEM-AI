@@ -188,10 +188,10 @@ function CardFace({
             <p data-fit="1" style={{ top: ORGANIZATION_TITLE_TOP }} className="absolute inset-x-0 truncate text-[calc(7.7*var(--u))] font-normal leading-tight opacity-75">{profile.title}</p>
             <div data-contacts="1" style={{ top: ORGANIZATION_CONTACTS_TOP, bottom: ORGANIZATION_CONTACTS_BOTTOM }} className="absolute inset-x-0 flex flex-col justify-center overflow-hidden text-[calc(7.4*var(--u))] font-normal leading-[1.12] opacity-70">
               {profile.location.trim() && <p data-fit="2" className="line-clamp-2 min-w-0 break-words">{profile.location}</p>}
+              {profile.showRoomNumber && profile.roomNumber.trim() && <p data-fit="1" className="min-w-0 truncate">{profile.roomNumber}</p>}
               {profile.showPhone && profile.phone.trim() && <p data-fit="1" className="min-w-0 truncate">{profile.phone}</p>}
               {profile.showBusinessEmail && profile.businessEmail.trim() && <p data-fit="1" className="min-w-0 truncate">{profile.businessEmail}</p>}
               {profile.showPersonalEmail && profile.personalEmail.trim() && <p data-fit="1" className="min-w-0 truncate">{profile.personalEmail}</p>}
-              {profile.showRoomNumber && profile.roomNumber.trim() && <p data-fit="1" className="min-w-0 truncate">{profile.roomNumber}</p>}
               {profile.showWebsite && profile.website.trim() && <p data-fit="1" className="min-w-0 truncate">{profile.website}</p>}
             </div>
           </div>
@@ -200,7 +200,7 @@ function CardFace({
       {back ? (
         <div style={organization ? { paddingLeft: ORGANIZATION_BACK_CONTENT_LEFT } : undefined} className="relative z-10 flex h-full min-h-0 w-full flex-col">
           <div className="mb-[calc(8*var(--u))] flex shrink-0 items-center justify-between gap-[calc(6*var(--u))] border-b border-current/15 pb-[calc(8*var(--u))]">
-            <span data-fit="2" data-fit-split="2" className="line-clamp-2 min-w-0 break-words text-[calc(11*var(--u))] font-bold tracking-[0.18em]">{profile.company.toUpperCase()}</span>
+            <span data-fit="2" data-fit-split="2" style={organization ? { color: organization.nameColor } : undefined} className="line-clamp-2 min-w-0 break-words text-[calc(11*var(--u))] font-bold tracking-[0.18em]">{profile.company.toUpperCase()}</span>
           </div>
           <div className="flex min-h-0 flex-1 items-center justify-between gap-[calc(6*var(--u))]">
             <div className="flex min-w-0 flex-1 flex-col gap-[calc(6*var(--u))] text-[calc(8*var(--u))] font-medium leading-tight">

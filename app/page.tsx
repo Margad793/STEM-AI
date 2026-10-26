@@ -1531,32 +1531,32 @@ function CardFace({
             }}
             className="absolute inset-x-0 flex flex-col justify-center overflow-hidden text-[calc(7.4*var(--u))] font-normal leading-[1.12] opacity-70"
           >
-            {profile.location.trim() && (
-              <p data-fit="2" className="line-clamp-2 min-w-0 break-words">
-                {profile.location}
-              </p>
-            )}
-            {profile.showPhone && profile.phone.trim() && (
-              <p data-fit="1" className="min-w-0 truncate">
-                {profile.phone}
-              </p>
-            )}
-            {profile.showBusinessEmail && profile.businessEmail.trim() && (
-              <p data-fit="1" className="min-w-0 truncate">
-                {profile.businessEmail}
-              </p>
-            )}
-            {profile.showPersonalEmail && profile.personalEmail.trim() && (
-              <p data-fit="1" className="min-w-0 truncate">
-                {profile.personalEmail}
-              </p>
-            )}
-            {profile.showRoomNumber && profile.roomNumber.trim() && (
-              <p data-fit="1" className="min-w-0 truncate">
-                {profile.roomNumber}
-              </p>
-            )}
-            {profile.showWebsite && profile.website.trim() && (
+          {profile.location.trim() && (
+            <p data-fit="2" className="line-clamp-2 min-w-0 break-words">
+              {profile.location}
+            </p>
+          )}
+          {profile.showRoomNumber && profile.roomNumber.trim() && (
+            <p data-fit="1" className="min-w-0 truncate">
+              {profile.roomNumber}
+            </p>
+          )}
+          {profile.showPhone && profile.phone.trim() && (
+            <p data-fit="1" className="min-w-0 truncate">
+              {profile.phone}
+            </p>
+          )}
+          {profile.showBusinessEmail && profile.businessEmail.trim() && (
+            <p data-fit="1" className="min-w-0 truncate">
+              {profile.businessEmail}
+            </p>
+          )}
+          {profile.showPersonalEmail && profile.personalEmail.trim() && (
+            <p data-fit="1" className="min-w-0 truncate">
+              {profile.personalEmail}
+            </p>
+          )}
+          {profile.showWebsite && profile.website.trim() && (
               <p data-fit="1" className="min-w-0 truncate">
                 {profile.website}
               </p>
@@ -1574,6 +1574,7 @@ function CardFace({
             <span
               data-fit="2"
               data-fit-split="2"
+              style={organization ? { color: organization.nameColor } : undefined}
               className="line-clamp-2 min-w-0 break-words text-[calc(11*var(--u))] font-bold tracking-[0.18em]"
             >
               {profile.company.toUpperCase()}
