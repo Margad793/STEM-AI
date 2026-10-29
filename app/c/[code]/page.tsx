@@ -231,7 +231,7 @@ export default function PublicCardPage() {
               <Download size={16} strokeWidth={2.4} />{language === 'mn' ? 'Харилцагчийн жагсаалтад хадгалах' : 'Save Contact'}
             </button>
           )}
-          <PublicCardAssetActions profile={profile} template={selectedTemplate} texture={texture} publicCode={code} language={language} />
+          <PublicCardAssetActions profile={profile} template={selectedTemplate} texture={texture} publicCode={code} language={language} design={design} />
           <p className="mt-3 break-all text-center text-[8px] leading-tight text-current/45">{publicCardHost}/c/{card.public_code}</p>
         </div>
       </div>

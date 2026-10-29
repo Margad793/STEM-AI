@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { QrCode, Share2 } from 'lucide-react'
 import { toBlob } from 'html-to-image'
 import QRCode from 'qrcode'
-import type { Profile, Template, Texture } from '@/lib/card-types'
+import type { CardDesign, Profile, Template, Texture } from '@/lib/card-types'
 import { getPublicSiteOrigin } from '@/lib/site'
 import { CardFacesExport } from '@/components/business-card'
 
@@ -96,12 +96,14 @@ export function PublicCardAssetActions({
   texture,
   publicCode,
   language,
+  design,
 }: {
   profile: Profile
   template: Template
   texture: Texture
   publicCode: string
   language: 'en' | 'mn'
+  design?: CardDesign
 }) {
   const exportRef = useRef<HTMLDivElement>(null)
   const [activeAction, setActiveAction] = useState<'qr' | 'card' | null>(null)
@@ -208,7 +210,7 @@ export function PublicCardAssetActions({
         </div>
       </div>
       <div ref={exportRef} aria-hidden="true" className="flip-card pointer-events-none fixed left-[-10000px] top-0 z-[-1] flex w-[600px] flex-col gap-3 bg-[#eef1f4] p-10 text-[#26333a]">
-        <CardFacesExport template={template} profile={profile} texture={texture} publicCode={publicCode} language={language} />
+        <CardFacesExport template={template} profile={profile} texture={texture} publicCode={publicCode} design={design} language={language} />
       </div>
     </>
   )
