@@ -95,6 +95,13 @@ body:has(.auth-screen) {
   overflow-y: auto;
 }
 
+/* A back button sits above the panel, so leave room for it too — otherwise
+   the panel fills the screen and the button gets covered on small phones. */
+.auth-panel--with-back {
+  max-height: calc(100vh - 88px);
+  max-height: calc(100dvh - 88px);
+}
+
 .auth-brand { color: #18202d; }
 .auth-label { color: #4b5868; }
 .auth-muted { color: #8c96a3; }

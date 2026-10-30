@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
-import { ArrowUpRight, Camera, Check, Download, ExternalLink, Globe2, Hash, LogOut, Mail, Menu, MessageCircle, MoreHorizontal, Phone, QrCode, Save, Settings2, Share2, Sparkles, Upload, UserRound, UsersRound, X } from 'lucide-react'
+import { ArrowUpRight, Camera, Check, Download, Eye, EyeOff, ExternalLink, Globe2, Hash, KeyRound, LogOut, Mail, Menu, MessageCircle, MoreHorizontal, Phone, QrCode, Save, Settings2, Share2, Sparkles, Upload, UserRound, UsersRound, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toBlob } from 'html-to-image'
 import QRCode from 'qrcode'
@@ -52,8 +52,8 @@ const googleOAuthEnabled = false
 // The "Хэн харав" / who-viewed panel is switched off for now.
 const viewersEnabled: boolean = false
 const copy = {
-  en: { workspace: 'Workspace', manage: 'Manage', myCard: 'My card', contacts: 'Contacts', analytics: 'Analytics', settings: 'Settings', pro: 'Pro plan', proDesc: 'Unlimited cards and custom domains.', managePlan: 'Manage plan', edit: 'Edit your card', view: 'View card', save: 'Save', saved: 'Saved', profile: 'Your profile', memorable: 'Make it memorable.', personal: 'Personal details', essentials: 'The essentials people need to know.', fullName: 'Full name', jobTitle: 'Job title', company: 'Company', location: 'Location', bio: 'Short bio', contact: 'Contact details', reach: 'Make it easy for people to reach you.', email: 'Email address', phone: 'Phone number', website: 'Website', templates: 'Card style', live: 'Preview', looks: 'How your card looks', tap: 'Tap the card to see contact details', open: 'Open public card', flip: 'Flip card', front: 'Show front', back: 'Contact details', saveContact: 'Save to contacts', saveCardImage: 'Save card image', savingCardImage: 'Preparing image...', cardImageHelp: 'Choose “Save Image” in the share menu to add it to Photos.', cardImageReady: 'Image shared. If you chose Save Image, it is now in Photos.', cardImageDownloaded: 'Image downloaded. Open it and choose Save Image to add it to Photos.', cardImageError: 'Could not create the card image. Please try again.', frontSide: 'Front', backSide: 'Back', call: 'Call now', emailAction: 'Email', digital: 'Digital business card', backEditor: 'Back', scan: 'Scan to connect', changeLanguage: 'Change language', switchToEnglish: 'Would you like to change the website language to English?', switchToMongolian: 'Would you like to change the website language to Mongolian?', yes: 'Yes', no: 'No', cancel: 'Cancel', pattern: 'Pattern & texture', patternDescription: 'Add a subtle surface treatment to your card.', chooseIdentity: 'Choose a polished visual identity for your card.', chooseStyle: 'Choose a visual direction for your card.', socialLinks: 'Social links', instagramUrl: 'Instagram URL', facebookUrl: 'Facebook URL', viberLink: 'Viber link', whatsappLink: 'WhatsApp link', photoPreview: 'Photo preview', profilePhoto: 'Profile photo', changePhoto: 'Change photo', uploadPhoto: 'Upload photo', companyLogo: 'Company logo', uploadCompanyLogo: 'Upload logo', changeCompanyLogo: 'Change logo', remove: 'Remove', photoHint: 'Shows in the circle beside your name on the card.', cropPhoto: 'Crop your photo', cropHint: 'Drag to reposition and slide to zoom, then apply.', zoomPhoto: 'Zoom photo', saving: 'Saving...', applyPhoto: 'Apply photo', tapPublic: 'Tap the card to see contact details', orgDesign: 'Organization design', orgDesignDescription: 'Enter your organization code to apply its unique card design.', orgCode: 'Organization code', orgCodeApplied: 'Organization design applied.', orgCodeUnknown: 'This code is not registered yet.', orgApply: 'Apply', orgApplyHint: 'Press Apply to activate this design.', viewersTitle: 'Who viewed your card', viewersEmpty: 'No views yet.', anonymousViewer: 'Anonymous visitor' },
-  mn: { workspace: 'Ажлын орчин', manage: 'Удирдах', myCard: 'Миний карт', contacts: 'Харилцагчид', analytics: 'Статистик', settings: 'Тохиргоо', pro: 'Pro багц', proDesc: 'Хязгааргүй карт болон өөрийн домэйн ашиглах боломж.', managePlan: 'Багцыг удирдах', edit: 'Картаа засах', view: 'Карт харах', save: 'Хадгалах', saved: 'Хадгаллаа', profile: 'Таны профайл', memorable: 'Мартагдашгүй болгоорой.', personal: 'Хувийн мэдээлэл', essentials: 'Таны тухай мэдэх шаардлагатай үндсэн мэдээлэл.', fullName: 'Овог, нэр', jobTitle: 'Албан тушаал', company: 'Байгууллага', location: 'Байршил', bio: 'Товч танилцуулга', contact: 'Холбоо барих мэдээлэл', reach: 'Тантай холбогдоход хялбар болгоорой.', email: 'Имэйл хаяг', phone: 'Утасны дугаар', website: 'Вэбсайт', templates: 'Картын загвар', live: 'Урьдчилан харах', looks: 'Картын харагдах байдал', tap: 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.', open: 'Нийтийн картыг нээх', flip: 'Карт эргүүлэх', front: 'Нүүрэн талыг харуулах', back: 'Холбоо барих мэдээлэл', saveContact: 'Харилцагчийн жагсаалтад хадгалах', saveCardImage: 'Карт хадгалах', savingCardImage: 'Зураг бэлдэж байна...', cardImageHelp: 'Photos руу хадгалахын тулд хуваалцах цэснээс “Save Image”-ийг сонгоно уу.', cardImageReady: 'Зургийг хуваалцлаа. “Save Image” сонгосон бол Photos-д хадгалагдсан.', cardImageDownloaded: 'Зураг татагдлаа. Photos-д оруулахын тулд зургийг нээгээд Save Image сонгоно уу.', cardImageError: 'Картын зураг үүсгэж чадсангүй. Дахин оролдоно уу.', frontSide: 'Нүүр тал', backSide: 'Ар тал', call: 'Залгах', emailAction: 'Имэйл бичих', digital: 'Дижитал нэрийн хуудас', backEditor: 'Буцах', scan: 'Холбогдохын тулд уншуулна уу', changeLanguage: 'Хэл солих', switchToEnglish: 'Вэбсайтын хэлийг англи хэл рүү өөрчлөх үү?', switchToMongolian: 'Вэбсайтын хэлийг монгол хэл рүү өөрчлөх үү?', yes: 'Тийм', no: 'Үгүй', cancel: 'Болих', pattern: 'Хээ ба гадаргуу', patternDescription: 'Картын гадаргууд нарийн хээ, өнгөлгөө нэмнэ.', chooseIdentity: 'Картаа тохирсон өнгө төрхийг сонгоно уу.', chooseStyle: 'Картаа тохирсон загвар сонгоно уу.', socialLinks: 'Сошиал холбоосууд', instagramUrl: 'Instagram холбоос', facebookUrl: 'Facebook холбоос', viberLink: 'Viber холбоос', whatsappLink: 'WhatsApp холбоос', photoPreview: 'Зургийг урьдчилан харах', profilePhoto: 'Профайл зураг', changePhoto: 'Зураг солих', uploadPhoto: 'Зураг оруулах', companyLogo: 'Компанийн лого', uploadCompanyLogo: 'Лого оруулах', changeCompanyLogo: 'Лого солих', remove: 'Устгах', photoHint: 'Таны нэрийн хажуу дахь дугуй дүрсэнд харагдана.', cropPhoto: 'Зургийг тайрах', cropHint: 'Зургийг чирж байрлалыг тохируулан, томруулж эсвэл жижгэрүүлээд хэрэглэнэ үү.', zoomPhoto: 'Зургийг томруулах', saving: 'Хадгалж байна...', applyPhoto: 'Зураг хэрэглэх', tapPublic: 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.', orgDesign: 'Байгууллагын дизайн', orgDesignDescription: 'Байгууллагын кодоо оруулж онцгой картын дизайн идэвхижүүлнэ үү.', orgCode: 'Байгууллагын код', orgCodeApplied: 'Байгууллагын дизайн идэвхижлээ.', orgCodeUnknown: 'Энэ код бүртгэлгүй байна.', orgApply: 'Идэвхижүүлэх', orgApplyHint: 'Энэ дизайныг идэвхижүүлэхийн тулд товчийг дарна уу.', viewersTitle: 'Хэн харав', viewersEmpty: 'Одоогоор үзэгдээгүй байна.', anonymousViewer: 'Нээлттэй хэрэглэгч' },
+  en: { workspace: 'Workspace', manage: 'Manage', myCard: 'My card', contacts: 'Contacts', analytics: 'Analytics', settings: 'Settings', pro: 'Pro plan', proDesc: 'Unlimited cards and custom domains.', managePlan: 'Manage plan', edit: 'Edit your card', view: 'View card', save: 'Save', saved: 'Saved', profile: 'Your profile', memorable: 'Make it memorable.', personal: 'Personal details', essentials: 'The essentials people need to know.', fullName: 'Full name', jobTitle: 'Job title', company: 'Company', location: 'Location', bio: 'Short bio', contact: 'Contact details', reach: 'Make it easy for people to reach you.', email: 'Email address', phone: 'Phone number', website: 'Website', templates: 'Card style', live: 'Preview', looks: 'How your card looks', tap: 'Tap the card to see contact details', open: 'Open public card', flip: 'Flip card', front: 'Show front', back: 'Contact details', saveContact: 'Save to contacts', saveCardImage: 'Save card image', savingCardImage: 'Preparing image...', cardImageHelp: 'Choose “Save Image” in the share menu to add it to Photos.', cardImageReady: 'Image shared. If you chose Save Image, it is now in Photos.', cardImageDownloaded: 'Image downloaded. Open it and choose Save Image to add it to Photos.', cardImageError: 'Could not create the card image. Please try again.', frontSide: 'Front', backSide: 'Back', call: 'Call now', emailAction: 'Email', digital: 'Digital business card', backEditor: 'Back', scan: 'Scan to connect', changeLanguage: 'Change language', switchToEnglish: 'Would you like to change the website language to English?', switchToMongolian: 'Would you like to change the website language to Mongolian?', yes: 'Yes', no: 'No', cancel: 'Cancel', pattern: 'Pattern & texture', patternDescription: 'Add a subtle surface treatment to your card.', chooseIdentity: 'Choose a polished visual identity for your card.', chooseStyle: 'Choose a visual direction for your card.', socialLinks: 'Social links', instagramUrl: 'Instagram URL', facebookUrl: 'Facebook URL', viberLink: 'Viber link', whatsappLink: 'WhatsApp link', photoPreview: 'Photo preview', profilePhoto: 'Profile photo', changePhoto: 'Change photo', uploadPhoto: 'Upload photo', companyLogo: 'Company logo', uploadCompanyLogo: 'Upload logo', changeCompanyLogo: 'Change logo', remove: 'Remove', photoHint: 'Shows in the circle beside your name on the card.', cropPhoto: 'Crop your photo', cropHint: 'Drag to reposition and slide to zoom, then apply.', zoomPhoto: 'Zoom photo', saving: 'Saving...', applyPhoto: 'Apply photo', tapPublic: 'Tap the card to see contact details', orgDesign: 'Organization design', orgDesignDescription: 'Enter your organization code to apply its unique card design.', orgCode: 'Organization code', orgCodeApplied: 'Organization design applied.', orgCodeUnknown: 'This code is not registered yet.', orgApply: 'Apply', orgApplyHint: 'Press Apply to activate this design.', viewersTitle: 'Who viewed your card', viewersEmpty: 'No views yet.', anonymousViewer: 'Anonymous visitor', changeCode: 'Change code', changeCodeTitle: 'Change your code', changeCodeHint: 'Enter your current code, then type your new code twice to confirm it.', currentCode: 'Current code', newCode: 'New code', confirmNewCode: 'Repeat new code', codeRequired: 'Fill in all three fields.', codeMismatch: 'The new codes do not match.', codeTooShort: 'The new code must be at least 8 characters.', codeSame: 'The new code must be different from your current code.', currentCodeWrong: 'Your current code is incorrect.', codeChanged: 'Your code was changed.', codeChangeFailed: 'Could not change your code.', codeSaving: 'Please wait...', showCode: 'Show code', hideCode: 'Hide code' },
+  mn: { workspace: 'Ажлын орчин', manage: 'Удирдах', myCard: 'Миний карт', contacts: 'Харилцагчид', analytics: 'Статистик', settings: 'Тохиргоо', pro: 'Pro багц', proDesc: 'Хязгааргүй карт болон өөрийн домэйн ашиглах боломж.', managePlan: 'Багцыг удирдах', edit: 'Картаа засах', view: 'Карт харах', save: 'Хадгалах', saved: 'Хадгаллаа', profile: 'Таны профайл', memorable: 'Мартагдашгүй болгоорой.', personal: 'Хувийн мэдээлэл', essentials: 'Таны тухай мэдэх шаардлагатай үндсэн мэдээлэл.', fullName: 'Овог, нэр', jobTitle: 'Албан тушаал', company: 'Байгууллага', location: 'Байршил', bio: 'Товч танилцуулга', contact: 'Холбоо барих мэдээлэл', reach: 'Тантай холбогдоход хялбар болгоорой.', email: 'Имэйл хаяг', phone: 'Утасны дугаар', website: 'Вэбсайт', templates: 'Картын загвар', live: 'Урьдчилан харах', looks: 'Картын харагдах байдал', tap: 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.', open: 'Нийтийн картыг нээх', flip: 'Карт эргүүлэх', front: 'Нүүрэн талыг харуулах', back: 'Холбоо барих мэдээлэл', saveContact: 'Харилцагчийн жагсаалтад хадгалах', saveCardImage: 'Карт хадгалах', savingCardImage: 'Зураг бэлдэж байна...', cardImageHelp: 'Photos руу хадгалахын тулд хуваалцах цэснээс “Save Image”-ийг сонгоно уу.', cardImageReady: 'Зургийг хуваалцлаа. “Save Image” сонгосон бол Photos-д хадгалагдсан.', cardImageDownloaded: 'Зураг татагдлаа. Photos-д оруулахын тулд зургийг нээгээд Save Image сонгоно уу.', cardImageError: 'Картын зураг үүсгэж чадсангүй. Дахин оролдоно уу.', frontSide: 'Нүүр тал', backSide: 'Ар тал', call: 'Залгах', emailAction: 'Имэйл бичих', digital: 'Дижитал нэрийн хуудас', backEditor: 'Буцах', scan: 'Холбогдохын тулд уншуулна уу', changeLanguage: 'Хэл солих', switchToEnglish: 'Вэбсайтын хэлийг англи хэл рүү өөрчлөх үү?', switchToMongolian: 'Вэбсайтын хэлийг монгол хэл рүү өөрчлөх үү?', yes: 'Тийм', no: 'Үгүй', cancel: 'Болих', pattern: 'Хээ ба гадаргуу', patternDescription: 'Картын гадаргууд нарийн хээ, өнгөлгөө нэмнэ.', chooseIdentity: 'Картаа тохирсон өнгө төрхийг сонгоно уу.', chooseStyle: 'Картаа тохирсон загвар сонгоно уу.', socialLinks: 'Сошиал холбоосууд', instagramUrl: 'Instagram холбоос', facebookUrl: 'Facebook холбоос', viberLink: 'Viber холбоос', whatsappLink: 'WhatsApp холбоос', photoPreview: 'Зургийг урьдчилан харах', profilePhoto: 'Профайл зураг', changePhoto: 'Зураг солих', uploadPhoto: 'Зураг оруулах', companyLogo: 'Компанийн лого', uploadCompanyLogo: 'Лого оруулах', changeCompanyLogo: 'Лого солих', remove: 'Устгах', photoHint: 'Таны нэрийн хажуу дахь дугуй дүрсэнд харагдана.', cropPhoto: 'Зургийг тайрах', cropHint: 'Зургийг чирж байрлалыг тохируулан, томруулж эсвэл жижгэрүүлээд хэрэглэнэ үү.', zoomPhoto: 'Зургийг томруулах', saving: 'Хадгалж байна...', applyPhoto: 'Зураг хэрэглэх', tapPublic: 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.', orgDesign: 'Байгууллагын дизайн', orgDesignDescription: 'Байгууллагын кодоо оруулж онцгой картын дизайн идэвхижүүлнэ үү.', orgCode: 'Байгууллагын код', orgCodeApplied: 'Байгууллагын дизайн идэвхижлээ.', orgCodeUnknown: 'Энэ код бүртгэлгүй байна.', orgApply: 'Идэвхижүүлэх', orgApplyHint: 'Энэ дизайныг идэвхижүүлэхийн тулд товчийг дарна уу.', viewersTitle: 'Хэн харав', viewersEmpty: 'Одоогоор үзэгдээгүй байна.', anonymousViewer: 'Нээлттэй хэрэглэгч', changeCode: 'Код солих', changeCodeTitle: 'Кодоо солих', changeCodeHint: 'Хуучин кодоо оруулаад, шинэ кодоо 2 удаа бичиж баталгаажуулна уу.', currentCode: 'Хуучин код', newCode: 'Шинэ код', confirmNewCode: 'Шинэ кодоо давтан оруулна уу', codeRequired: 'Гурван талбарыг бөглөнө үү.', codeMismatch: 'Шинэ кодууд таарахгүй байна.', codeTooShort: 'Шинэ код дор хаяж 8 тэмдэгт байх ёстой.', codeSame: 'Шинэ код хуучин кодоос өөр байх ёстой.', currentCodeWrong: 'Хуучин код буруу байна.', codeChanged: 'Код амжилттай солигдлоо.', codeChangeFailed: 'Кодыг солих боломжгүй байна.', codeSaving: 'Түр хүлээнэ үү...', showCode: 'Код харуулах', hideCode: 'Код нуух' },
 }
 
 type CardViewerRow = {
@@ -93,6 +93,15 @@ export default function Page() {
   const [savingCard, setSavingCard] = useState(false)
   const [signOutConfirmation, setSignOutConfirmation] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
+  const [changeCodeOpen, setChangeCodeOpen] = useState(false)
+  const [currentCode, setCurrentCode] = useState('')
+  const [newCode, setNewCode] = useState('')
+  const [confirmNewCode, setConfirmNewCode] = useState('')
+  const [changingCode, setChangingCode] = useState(false)
+  const [changeCodeError, setChangeCodeError] = useState('')
+  const [showCurrentCode, setShowCurrentCode] = useState(false)
+  const [showNewCode, setShowNewCode] = useState(false)
+  const [showConfirmCode, setShowConfirmCode] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [showAuth, setShowAuth] = useState(false)
   const [authMode, setAuthMode] = useState<'signIn' | 'signUp'>('signIn')
@@ -476,6 +485,58 @@ export default function Page() {
     }
   }
 
+  // Changing the sign-in code: verify the current one first, then replace it.
+  // The new code is typed twice so a typo cannot lock the account out.
+  const changeCode = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!supabase) return
+    setChangeCodeError('')
+    if (!currentCode || !newCode || !confirmNewCode) {
+      setChangeCodeError(t.codeRequired)
+      return
+    }
+    if (newCode !== confirmNewCode) {
+      setChangeCodeError(t.codeMismatch)
+      return
+    }
+    if (newCode.length < 8) {
+      setChangeCodeError(t.codeTooShort)
+      return
+    }
+    if (newCode === currentCode) {
+      setChangeCodeError(t.codeSame)
+      return
+    }
+    const email = session?.user.email
+    if (!email) {
+      setChangeCodeError(t.currentCodeWrong)
+      return
+    }
+    setChangingCode(true)
+    try {
+      const { error: currentCodeError } = await supabase.auth.signInWithPassword({ email, password: currentCode })
+      if (currentCodeError) {
+        const detail = currentCodeError.message
+        setChangeCodeError(/invalid login credentials/i.test(detail) ? t.currentCodeWrong : getErrorMessage(currentCodeError, t.codeChangeFailed))
+        return
+      }
+      const { error: updateError } = await supabase.auth.updateUser({ password: newCode })
+      if (updateError) throw updateError
+      setCurrentCode('')
+      setNewCode('')
+      setConfirmNewCode('')
+      setShowCurrentCode(false)
+      setShowNewCode(false)
+      setShowConfirmCode(false)
+      setChangeCodeOpen(false)
+      setSaveNotice(t.codeChanged)
+    } catch (error) {
+      setChangeCodeError(getErrorMessage(error, t.codeChangeFailed))
+    } finally {
+      setChangingCode(false)
+    }
+  }
+
   const connectGoogle = async () => {
     if (!supabase) return
     setGoogleLinking(true)
@@ -581,6 +642,127 @@ export default function Page() {
                     : "Гарах"}
               </button>
             </div>
+          </section>
+        </div>
+      )}
+      {changeCodeOpen && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-[#101828]/45 p-4"
+          role="presentation"
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="change-code-title"
+            className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
+          >
+            <h2 id="change-code-title" className="text-lg font-semibold">
+              {t.changeCodeTitle}
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-[#52606f]">
+              {t.changeCodeHint}
+            </p>
+            <form onSubmit={changeCode} className="mt-5 space-y-4">
+              <label className="block text-xs font-semibold text-[#4b5868]">
+                {t.currentCode}
+                <span className="relative mt-2 block">
+                  <input
+                    type={showCurrentCode ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    value={currentCode}
+                    onChange={(event) => setCurrentCode(event.target.value)}
+                    className="h-11 w-full rounded-xl border-2 border-[#d9dee6] bg-[#fbfcfd] pl-3.5 pr-12 text-sm text-[#263343] outline-none transition focus:border-[#93a4cb] focus:ring-3 focus:ring-[#e9edfa]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentCode((visible) => !visible)}
+                    aria-label={showCurrentCode ? t.hideCode : t.showCode}
+                    aria-pressed={showCurrentCode}
+                    className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl text-[#7c8795] transition hover:text-[#172538]"
+                  >
+                    {showCurrentCode ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </span>
+              </label>
+              <label className="block text-xs font-semibold text-[#4b5868]">
+                {t.newCode}
+                <span className="relative mt-2 block">
+                  <input
+                    type={showNewCode ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    required
+                    minLength={8}
+                    value={newCode}
+                    onChange={(event) => setNewCode(event.target.value)}
+                    className="h-11 w-full rounded-xl border-2 border-[#d9dee6] bg-[#fbfcfd] pl-3.5 pr-12 text-sm text-[#263343] outline-none transition focus:border-[#93a4cb] focus:ring-3 focus:ring-[#e9edfa]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewCode((visible) => !visible)}
+                    aria-label={showNewCode ? t.hideCode : t.showCode}
+                    aria-pressed={showNewCode}
+                    className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl text-[#7c8795] transition hover:text-[#172538]"
+                  >
+                    {showNewCode ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </span>
+              </label>
+              <label className="block text-xs font-semibold text-[#4b5868]">
+                {t.confirmNewCode}
+                <span className="relative mt-2 block">
+                  <input
+                    type={showConfirmCode ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    required
+                    minLength={8}
+                    value={confirmNewCode}
+                    onChange={(event) => setConfirmNewCode(event.target.value)}
+                    className="h-11 w-full rounded-xl border-2 border-[#d9dee6] bg-[#fbfcfd] pl-3.5 pr-12 text-sm text-[#263343] outline-none transition focus:border-[#93a4cb] focus:ring-3 focus:ring-[#e9edfa]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmCode((visible) => !visible)}
+                    aria-label={showConfirmCode ? t.hideCode : t.showCode}
+                    aria-pressed={showConfirmCode}
+                    className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl text-[#7c8795] transition hover:text-[#172538]"
+                  >
+                    {showConfirmCode ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </span>
+              </label>
+              {changeCodeError && (
+                <p
+                  role="alert"
+                  className="rounded-lg bg-red-50 p-3 text-xs leading-relaxed text-red-800"
+                >
+                  {changeCodeError}
+                </p>
+              )}
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setChangeCodeOpen(false)
+                    setChangeCodeError("")
+                    setShowCurrentCode(false)
+                    setShowNewCode(false)
+                    setShowConfirmCode(false)
+                  }}
+                  disabled={changingCode}
+                  className="rounded-lg border border-[#dfe3e8] px-4 py-2 text-sm font-semibold text-[#52606f] disabled:opacity-60"
+                >
+                  {t.cancel}
+                </button>
+                <button
+                  type="submit"
+                  disabled={changingCode || !supabase}
+                  className="rounded-lg bg-[#172538] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                >
+                  {changingCode ? t.codeSaving : t.changeCode}
+                </button>
+              </div>
+            </form>
           </section>
         </div>
       )}
@@ -709,6 +891,18 @@ export default function Page() {
                     </button>
                   </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSettingsOpen(false)
+                    setChangeCodeError("")
+                    setChangeCodeOpen(true)
+                  }}
+                  className="flex w-full items-center gap-2 border-t border-[#f0f2f5] px-3 py-3 text-left text-sm font-semibold text-[#18202d] transition hover:bg-[#f7f8fa]"
+                >
+                  <KeyRound size={15} />
+                  {t.changeCode}
+                </button>
                 <button
                   type="button"
                   onClick={() => {

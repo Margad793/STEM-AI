@@ -47,6 +47,9 @@ const authCopy = {
     accessDescription: 'Your sign-in succeeded, but this account does not have Cardliy access yet. If you registered with the valid promo code, ask the site administrator to run the latest supabase/promo-code-trigger.sql in Supabase SQL Editor, then sign out and sign in again. Otherwise, the administrator must grant access to this account.',
     signOut: 'Sign out',
     back: 'Back',
+    wrongCodeTitle: 'Incorrect code',
+    wrongCode: 'The code you entered is incorrect. Please try again.',
+    ok: 'OK',
   },
   mn: {
     signIn: 'Нэвтрэх',
@@ -86,6 +89,9 @@ const authCopy = {
     accessDescription: 'Та амжилттай нэвтэрсэн боловч энэ бүртгэлд Cardliy ашиглах эрх олгогдоогүй байна. Зөв promo кодоор бүртгүүлсэн бол сайтын админаас Supabase SQL Editor дээр шинэчилсэн supabase/promo-code-trigger.sql файлыг ажиллуулахыг хүсээд, дараа нь гараад дахин нэвтэрнэ үү. Үгүй бол админ энэ бүртгэлд эрх олгох шаардлагатай.',
     signOut: 'Гарах',
     back: 'Буцах',
+    wrongCodeTitle: 'Код буруу',
+    wrongCode: 'Таны оруулсан код буруу байна. Дахин оролдоно уу.',
+    ok: 'Ок',
   },
 }
 
@@ -101,6 +107,7 @@ export function AuthScreen({ language, session, accessError, onBack, initialMode
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [canResendConfirmation, setCanResendConfirmation] = useState(false)
+  const [wrongCodePopup, setWrongCodePopup] = useState(false)
 
   const signInWithGoogle = async () => {
     if (!supabase) {
@@ -141,6 +148,7 @@ export function AuthScreen({ language, session, accessError, onBack, initialMode
     event.preventDefault()
     setMessage('')
     setError('')
+    setWrongCodePopup(false)
     setCanResendConfirmation(false)
 
     if (!supabase) {
@@ -182,8 +190,15 @@ export function AuthScreen({ language, session, accessError, onBack, initialMode
         ? String(authError.code)
         : ''
       const emailUnconfirmed = errorCode === 'email_not_confirmed' || /email not confirmed/i.test(detail)
+      // A wrong sign-in code gets its own pop-up instead of the raw Supabase text.
+      const wrongCode = mode === 'signIn' && (errorCode === 'invalid_credentials' || /invalid login credentials/i.test(detail))
       setCanResendConfirmation(mode === 'signIn' && emailUnconfirmed)
-      setError(isConnectionError ? t.connectionError : emailUnconfirmed ? t.emailNotConfirmed : detail || (mode === 'signIn' ? t.signInError : t.signUpError))
+      if (wrongCode) {
+        setError('')
+        setWrongCodePopup(true)
+      } else {
+        setError(isConnectionError ? t.connectionError : emailUnconfirmed ? t.emailNotConfirmed : detail || (mode === 'signIn' ? t.signInError : t.signUpError))
+      }
     } finally {
       setBusy(false)
     }
@@ -227,18 +242,46 @@ export function AuthScreen({ language, session, accessError, onBack, initialMode
     </section>
   </main>
 
-  return <main className="auth-screen relative flex min-h-screen items-center justify-center p-4 text-[#eef4ff]">
-    {onBack && (
-      <button
-        type="button"
-        onClick={onBack}
-        className="absolute left-4 top-4 flex items-center gap-1.5 rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/20 sm:left-6 sm:top-6"
+  return <main className="auth-screen relative flex min-h-screen flex-col items-center justify-center p-4 text-[#eef4ff]">
+    {wrongCodePopup && (
+      <div
+        className="absolute inset-0 z-10 flex items-center justify-center bg-[#101828]/60 p-4"
+        role="presentation"
+        onClick={(event) => {
+          if (event.target === event.currentTarget) setWrongCodePopup(false)
+        }}
       >
-        <ArrowLeft size={15} />
-        {t.back}
-      </button>
+        <section
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="wrong-code-title"
+          aria-describedby="wrong-code-description"
+          className="w-full max-w-sm rounded-2xl bg-white p-6 text-[#18202d] shadow-2xl"
+        >
+          <h2 id="wrong-code-title" className="text-base font-semibold">{t.wrongCodeTitle}</h2>
+          <p id="wrong-code-description" className="mt-2 text-sm leading-relaxed text-[#52606f]">{t.wrongCode}</p>
+          <button
+            type="button"
+            onClick={() => setWrongCodePopup(false)}
+            className="mt-5 h-11 w-full rounded-xl border border-[#263b57] bg-[#17263a] text-sm font-semibold text-white transition hover:bg-[#20344f]"
+          >
+            {t.ok}
+          </button>
+        </section>
+      </div>
     )}
-    <section className="auth-panel w-full max-w-md rounded-2xl border p-6 shadow-sm sm:p-8">
+    <div className="flex w-full max-w-md flex-col gap-3">
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex w-fit items-center gap-1.5 self-start rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/20"
+        >
+          <ArrowLeft size={15} />
+          {t.back}
+        </button>
+      )}
+      <section className={`auth-panel${onBack ? ' auth-panel--with-back' : ''} w-full rounded-2xl border p-6 shadow-sm sm:p-8`}>
       <button type="button" onClick={() => window.location.reload()} className="mb-7 flex items-center gap-2" aria-label="Cardliy">
         <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_gbudftgbudftgbud-6IOh1Fmz2F5ytWKVOX16A263gpQwEa.jpg" alt="Cardliy logo" className="size-9 rounded-[10px] object-cover" />
         <span className="auth-brand font-serif text-2xl font-medium italic tracking-[-0.045em]">Cardliy</span>
@@ -286,7 +329,8 @@ export function AuthScreen({ language, session, accessError, onBack, initialMode
           <p className="text-center text-xs leading-relaxed text-[#8c96a3]">{t.googleLinkHint}</p>
         </>}
       </form>
-    </section>
+      </section>
+    </div>
 
   </main>
 }
