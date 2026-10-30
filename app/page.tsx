@@ -8,6 +8,7 @@ import QRCode from 'qrcode'
 import Cropper, { type Area } from 'react-easy-crop'
 import type { Session } from '@supabase/supabase-js'
 import { AuthScreen } from '@/components/auth-screen'
+import { Landing } from '@/components/landing'
 import { FacebookGlyph, InstagramGlyph, ViberGlyph } from '@/components/social-icons'
 import { getCardActionStyle, getCarbonWaveTextureImage, getOrganizationAssets, ORGANIZATION_AVATAR_HEIGHT, ORGANIZATION_AVATAR_RIGHT, ORGANIZATION_AVATAR_TOP, ORGANIZATION_BACK_CONTENT_LEFT, ORGANIZATION_COMPANY_HEIGHT, ORGANIZATION_COMPANY_LEFT, ORGANIZATION_COMPANY_RIGHT, ORGANIZATION_COMPANY_TOP, ORGANIZATION_CONTACTS_BOTTOM, ORGANIZATION_CONTACTS_TOP, ORGANIZATION_LOGO_DIAMETER, ORGANIZATION_LOGO_LEFT, ORGANIZATION_LOGO_TOP, ORGANIZATION_PATTERN_WIDTH, ORGANIZATION_PERSON_NAME_TOP, ORGANIZATION_TEXT_LEFT, ORGANIZATION_TEXT_RIGHT, ORGANIZATION_TITLE_TOP, templates, templateSlugs, textures } from '@/lib/card-design'
 import type { CardDesign, Profile, Template, Texture } from '@/lib/card-types'
@@ -48,6 +49,8 @@ const getOwnedCardPhotoPath = (photoUrl: string, userId: string) => {
   }
 }
 const googleOAuthEnabled = false
+// The "Хэн харав" / who-viewed panel is switched off for now.
+const viewersEnabled: boolean = false
 const copy = {
   en: { workspace: 'Workspace', manage: 'Manage', myCard: 'My card', contacts: 'Contacts', analytics: 'Analytics', settings: 'Settings', pro: 'Pro plan', proDesc: 'Unlimited cards and custom domains.', managePlan: 'Manage plan', edit: 'Edit your card', view: 'View card', save: 'Save', saved: 'Saved', profile: 'Your profile', memorable: 'Make it memorable.', personal: 'Personal details', essentials: 'The essentials people need to know.', fullName: 'Full name', jobTitle: 'Job title', company: 'Company', location: 'Location', bio: 'Short bio', contact: 'Contact details', reach: 'Make it easy for people to reach you.', email: 'Email address', phone: 'Phone number', website: 'Website', templates: 'Card style', live: 'Preview', looks: 'How your card looks', tap: 'Tap the card to see contact details', open: 'Open public card', flip: 'Flip card', front: 'Show front', back: 'Contact details', saveContact: 'Save to contacts', saveCardImage: 'Save card image', savingCardImage: 'Preparing image...', cardImageHelp: 'Choose “Save Image” in the share menu to add it to Photos.', cardImageReady: 'Image shared. If you chose Save Image, it is now in Photos.', cardImageDownloaded: 'Image downloaded. Open it and choose Save Image to add it to Photos.', cardImageError: 'Could not create the card image. Please try again.', frontSide: 'Front', backSide: 'Back', call: 'Call now', emailAction: 'Email', digital: 'Digital business card', backEditor: 'Back', scan: 'Scan to connect', changeLanguage: 'Change language', switchToEnglish: 'Would you like to change the website language to English?', switchToMongolian: 'Would you like to change the website language to Mongolian?', yes: 'Yes', no: 'No', cancel: 'Cancel', pattern: 'Pattern & texture', patternDescription: 'Add a subtle surface treatment to your card.', chooseIdentity: 'Choose a polished visual identity for your card.', chooseStyle: 'Choose a visual direction for your card.', socialLinks: 'Social links', instagramUrl: 'Instagram URL', facebookUrl: 'Facebook URL', viberLink: 'Viber link', whatsappLink: 'WhatsApp link', photoPreview: 'Photo preview', profilePhoto: 'Profile photo', changePhoto: 'Change photo', uploadPhoto: 'Upload photo', companyLogo: 'Company logo', uploadCompanyLogo: 'Upload logo', changeCompanyLogo: 'Change logo', remove: 'Remove', photoHint: 'Shows in the circle beside your name on the card.', cropPhoto: 'Crop your photo', cropHint: 'Drag to reposition and slide to zoom, then apply.', zoomPhoto: 'Zoom photo', saving: 'Saving...', applyPhoto: 'Apply photo', tapPublic: 'Tap the card to see contact details', orgDesign: 'Organization design', orgDesignDescription: 'Enter your organization code to apply its unique card design.', orgCode: 'Organization code', orgCodeApplied: 'Organization design applied.', orgCodeUnknown: 'This code is not registered yet.', orgApply: 'Apply', orgApplyHint: 'Press Apply to activate this design.', viewersTitle: 'Who viewed your card', viewersEmpty: 'No views yet.', anonymousViewer: 'Anonymous visitor' },
   mn: { workspace: 'Ажлын орчин', manage: 'Удирдах', myCard: 'Миний карт', contacts: 'Харилцагчид', analytics: 'Статистик', settings: 'Тохиргоо', pro: 'Pro багц', proDesc: 'Хязгааргүй карт болон өөрийн домэйн ашиглах боломж.', managePlan: 'Багцыг удирдах', edit: 'Картаа засах', view: 'Карт харах', save: 'Хадгалах', saved: 'Хадгаллаа', profile: 'Таны профайл', memorable: 'Мартагдашгүй болгоорой.', personal: 'Хувийн мэдээлэл', essentials: 'Таны тухай мэдэх шаардлагатай үндсэн мэдээлэл.', fullName: 'Овог, нэр', jobTitle: 'Албан тушаал', company: 'Байгууллага', location: 'Байршил', bio: 'Товч танилцуулга', contact: 'Холбоо барих мэдээлэл', reach: 'Тантай холбогдоход хялбар болгоорой.', email: 'Имэйл хаяг', phone: 'Утасны дугаар', website: 'Вэбсайт', templates: 'Картын загвар', live: 'Урьдчилан харах', looks: 'Картын харагдах байдал', tap: 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.', open: 'Нийтийн картыг нээх', flip: 'Карт эргүүлэх', front: 'Нүүрэн талыг харуулах', back: 'Холбоо барих мэдээлэл', saveContact: 'Харилцагчийн жагсаалтад хадгалах', saveCardImage: 'Карт хадгалах', savingCardImage: 'Зураг бэлдэж байна...', cardImageHelp: 'Photos руу хадгалахын тулд хуваалцах цэснээс “Save Image”-ийг сонгоно уу.', cardImageReady: 'Зургийг хуваалцлаа. “Save Image” сонгосон бол Photos-д хадгалагдсан.', cardImageDownloaded: 'Зураг татагдлаа. Photos-д оруулахын тулд зургийг нээгээд Save Image сонгоно уу.', cardImageError: 'Картын зураг үүсгэж чадсангүй. Дахин оролдоно уу.', frontSide: 'Нүүр тал', backSide: 'Ар тал', call: 'Залгах', emailAction: 'Имэйл бичих', digital: 'Дижитал нэрийн хуудас', backEditor: 'Буцах', scan: 'Холбогдохын тулд уншуулна уу', changeLanguage: 'Хэл солих', switchToEnglish: 'Вэбсайтын хэлийг англи хэл рүү өөрчлөх үү?', switchToMongolian: 'Вэбсайтын хэлийг монгол хэл рүү өөрчлөх үү?', yes: 'Тийм', no: 'Үгүй', cancel: 'Болих', pattern: 'Хээ ба гадаргуу', patternDescription: 'Картын гадаргууд нарийн хээ, өнгөлгөө нэмнэ.', chooseIdentity: 'Картаа тохирсон өнгө төрхийг сонгоно уу.', chooseStyle: 'Картаа тохирсон загвар сонгоно уу.', socialLinks: 'Сошиал холбоосууд', instagramUrl: 'Instagram холбоос', facebookUrl: 'Facebook холбоос', viberLink: 'Viber холбоос', whatsappLink: 'WhatsApp холбоос', photoPreview: 'Зургийг урьдчилан харах', profilePhoto: 'Профайл зураг', changePhoto: 'Зураг солих', uploadPhoto: 'Зураг оруулах', companyLogo: 'Компанийн лого', uploadCompanyLogo: 'Лого оруулах', changeCompanyLogo: 'Лого солих', remove: 'Устгах', photoHint: 'Таны нэрийн хажуу дахь дугуй дүрсэнд харагдана.', cropPhoto: 'Зургийг тайрах', cropHint: 'Зургийг чирж байрлалыг тохируулан, томруулж эсвэл жижгэрүүлээд хэрэглэнэ үү.', zoomPhoto: 'Зургийг томруулах', saving: 'Хадгалж байна...', applyPhoto: 'Зураг хэрэглэх', tapPublic: 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.', orgDesign: 'Байгууллагын дизайн', orgDesignDescription: 'Байгууллагын кодоо оруулж онцгой картын дизайн идэвхижүүлнэ үү.', orgCode: 'Байгууллагын код', orgCodeApplied: 'Байгууллагын дизайн идэвхижлээ.', orgCodeUnknown: 'Энэ код бүртгэлгүй байна.', orgApply: 'Идэвхижүүлэх', orgApplyHint: 'Энэ дизайныг идэвхижүүлэхийн тулд товчийг дарна уу.', viewersTitle: 'Хэн харав', viewersEmpty: 'Одоогоор үзэгдээгүй байна.', anonymousViewer: 'Нээлттэй хэрэглэгч' },
@@ -59,6 +62,12 @@ type CardViewerRow = {
   viewer_company: string | null
   viewer_phone: string | null
   first_viewed_at: string
+}
+
+const initialsOf = (name: string) => {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (!parts.length) return '?'
+  return parts.slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join('')
 }
 
 function formatViewedAt(iso: string, language: Language): string {
@@ -84,6 +93,10 @@ export default function Page() {
   const [savingCard, setSavingCard] = useState(false)
   const [signOutConfirmation, setSignOutConfirmation] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [showAuth, setShowAuth] = useState(false)
+  const [authMode, setAuthMode] = useState<'signIn' | 'signUp'>('signIn')
+  const settingsRef = useRef<HTMLDivElement | null>(null)
   const [googleLinking, setGoogleLinking] = useState(false)
   const [cardId, setCardId] = useState<string | null>(null)
   const [publicCode, setPublicCode] = useState<string | null>(null)
@@ -141,6 +154,27 @@ export default function Page() {
     const timeout = window.setTimeout(() => setSaveError(''), 6000)
     return () => window.clearTimeout(timeout)
   }, [saveError])
+  useEffect(() => {
+    if (!settingsOpen) return
+    const handlePointerDown = (event: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) setSettingsOpen(false)
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSettingsOpen(false)
+    }
+    document.addEventListener('mousedown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [settingsOpen])
+  useEffect(() => {
+    if (session) {
+      setShowAuth(false)
+      setAuthMode('signIn')
+    }
+  }, [session])
 
   useEffect(() => {
     if (!supabase) {
@@ -295,7 +329,7 @@ export default function Page() {
   }, [session?.user.id, hasAccess])
 
   useEffect(() => {
-    if (!session || !supabase || !hasAccess || !isBusinessAccount) return
+    if (!session || !supabase || !hasAccess || !isBusinessAccount || !viewersEnabled) return
     let active = true
     void (async () => {
       try {
@@ -459,8 +493,28 @@ export default function Page() {
   }
 
   if (authLoading || (session && (!accessChecked || (hasAccess && cardLoading)))) return <main className="flex min-h-screen items-center justify-center bg-[#f7f8fa] text-sm text-[#52606f]">{language === 'en' ? 'Loading your account...' : 'Бүртгэлийг ачаалж байна...'}</main>
-  if (!session || !supabaseConfigured) return <AuthScreen language={language} onLanguageChange={setLanguage} />
-  if (!hasAccess) return <AuthScreen language={language} onLanguageChange={setLanguage} session={session} accessError={authError} />
+  if (!session || !supabaseConfigured) {
+    if (showAuth) {
+      return (
+        <AuthScreen
+          language={language}
+          initialMode={authMode}
+          onBack={() => setShowAuth(false)}
+        />
+      )
+    }
+    return (
+      <Landing
+        language={language}
+        onLanguageChange={setLanguage}
+        onSignIn={(mode) => {
+          setAuthMode(mode)
+          setShowAuth(true)
+        }}
+      />
+    )
+  }
+  if (!hasAccess) return <AuthScreen language={language} session={session} accessError={authError} />
   if (publicView) return <PublicCard language={language} t={t} onBack={() => setPublicView(false)} template={template} profile={profile} texture={selectedTexture} publicCode={publicCode} design={design} />
   return (
     <main className="min-h-screen w-full min-w-0 overflow-x-hidden bg-[#f7f8fa] text-[#18202d]">
@@ -530,36 +584,25 @@ export default function Page() {
           </section>
         </div>
       )}
-      <header className="fixed inset-x-0 top-0 z-50 flex min-w-0 h-[76px] items-center justify-between gap-2 overflow-hidden border-b border-[#e7e9ee] bg-white/95 px-3 shadow-[0_1px_8px_rgba(24,32,45,0.04)] backdrop-blur sm:px-9">
-        <div className="flex min-w-0 shrink items-center gap-2">
-          <div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-[#f7f4ed]">
+      <header className="fixed inset-x-0 top-0 z-50 flex min-w-0 h-[76px] items-center justify-between gap-2 border-b border-[#e7e9ee] bg-white/95 px-3 shadow-[0_1px_8px_rgba(24,32,45,0.04)] backdrop-blur sm:px-9">
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="flex min-w-0 shrink items-center gap-2"
+          aria-label="Cardliy"
+        >
+          <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-[#f7f4ed]">
             <img
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_gbudftgbudftgbud-6IOh1Fmz2F5ytWKVOX16A263gpQwEa.jpg"
               alt="Cardliy logo"
               className="size-full object-cover"
             />
-          </div>
-          <div>
-            <p className="font-serif text-[18px] font-medium italic tracking-[-0.045em] text-[#18202d]">
-              Cardliy
-            </p>
-          </div>
-        </div>
+          </span>
+          <span className="font-serif text-[18px] font-medium italic tracking-[-0.045em] text-[#18202d]">
+            Cardliy
+          </span>
+        </button>
         <div className="flex min-w-0 shrink items-center gap-1.5">
-          <div className="flex rounded-full border border-[#dfe3e8] bg-[#eef1f4] p-0.5 shadow-inner">
-            <button
-              onClick={() => requestLanguageChange("en")}
-              className={`rounded-full px-2 py-1 text-[10px] font-bold transition-all duration-200 ${language === "en" ? "bg-[#172538] text-white shadow-sm" : "text-[#8994a2] hover:text-[#52606f]"}`}
-            >
-              EN
-            </button>
-            <button
-              onClick={() => requestLanguageChange("mn")}
-              className={`rounded-full px-2 py-1 text-[10px] font-bold transition-all duration-200 ${language === "mn" ? "bg-[#172538] text-white shadow-sm" : "text-[#8994a2] hover:text-[#52606f]"}`}
-            >
-              MN
-            </button>
-          </div>
           <button
             onClick={() => setPublicView(true)}
             className="flex shrink-0 items-center gap-2 rounded-lg border border-[#dfe3e8] bg-white px-3 py-2 text-xs font-semibold text-[#52606f] transition hover:bg-[#f7f8fa]"
@@ -594,18 +637,92 @@ export default function Page() {
                 </span>
               </button>
             )}
-          <button
-            type="button"
-            onClick={() => setSignOutConfirmation(true)}
-            aria-label={language === "en" ? "Sign out" : "Гарах"}
-            title={language === "en" ? "Sign out" : "Гарах"}
-            className="flex shrink-0 items-center gap-2 rounded-lg border border-[#dfe3e8] bg-white px-2.5 py-2 text-xs font-semibold text-[#52606f] transition hover:bg-[#f7f8fa]"
-          >
-            <LogOut size={16} />
-            <span className="hidden min-[460px]:inline">
-              {language === "en" ? "Sign out" : "Гарах"}
-            </span>
-          </button>
+          <div ref={settingsRef} className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setSettingsOpen((open) => !open)}
+              aria-expanded={settingsOpen}
+              aria-controls="settings-menu"
+              aria-label={t.settings}
+              title={t.settings}
+              className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#dfe3e8] bg-white px-2.5 py-2 text-xs font-semibold text-[#52606f] transition hover:bg-[#f7f8fa] sm:px-3"
+            >
+              <Settings2 size={16} />
+              <span className="hidden min-[560px]:inline">{t.settings}</span>
+            </button>
+            {settingsOpen && (
+              <div
+                id="settings-menu"
+                className="absolute right-0 top-[calc(100%+10px)] w-[252px] overflow-hidden rounded-xl border border-[#dfe3e8] bg-white shadow-[0_16px_40px_rgba(16,24,40,0.16)]"
+              >
+                <div className="flex items-center gap-3 border-b border-[#f0f2f5] px-3 py-3">
+                  <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#eef1f4] text-sm font-bold text-[#52606f]">
+                    {profile.photo ? (
+                      <img src={profile.photo} alt="" className="size-full object-cover" />
+                    ) : (
+                      initialsOf(profile.name)
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-[#18202d]">
+                      {profile.name.trim() || (language === "en" ? "Your profile" : "Таны профайл")}
+                    </p>
+                    {(profile.title.trim() || profile.businessEmail.trim() || session.user.email) && (
+                      <p className="truncate text-xs text-[#8994a2]">
+                        {profile.title.trim() || profile.businessEmail.trim() || session.user.email}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="px-3 py-3">
+                  <p className="text-[11px] font-semibold text-[#52606f]">
+                    {t.changeLanguage}
+                  </p>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSettingsOpen(false)
+                        requestLanguageChange("en")
+                      }}
+                      className={`rounded-lg border px-2 py-2 text-xs font-bold transition ${
+                        language === "en"
+                          ? "border-[#172538] bg-[#172538] text-white"
+                          : "border-[#dfe3e8] bg-white text-[#52606f] hover:bg-[#f7f8fa]"
+                      }`}
+                    >
+                      EN
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSettingsOpen(false)
+                        requestLanguageChange("mn")
+                      }}
+                      className={`rounded-lg border px-2 py-2 text-xs font-bold transition ${
+                        language === "mn"
+                          ? "border-[#172538] bg-[#172538] text-white"
+                          : "border-[#dfe3e8] bg-white text-[#52606f] hover:bg-[#f7f8fa]"
+                      }`}
+                    >
+                      MN
+                    </button>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSettingsOpen(false)
+                    setSignOutConfirmation(true)
+                  }}
+                  className="flex w-full items-center gap-2 border-t border-[#f0f2f5] px-3 py-3 text-left text-sm font-semibold text-[#b42318] transition hover:bg-[#fff5f4]"
+                >
+                  <LogOut size={15} />
+                  {language === "en" ? "Sign out" : "Гарах"}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
       {(saveError || authError) && (
@@ -662,7 +779,7 @@ export default function Page() {
           </div>
         </section>
       )}
-      {isBusinessAccount && (
+      {isBusinessAccount && viewersEnabled && (
         <section className="mx-auto mt-4 max-w-[1380px] rounded-xl border border-[#dfe3e8] bg-white px-3 py-3 shadow-sm sm:mx-9 sm:px-4">
           <div className="flex items-center justify-between gap-2">
             <p className="text-[11px] font-semibold text-[#52606f] sm:text-xs">{t.viewersTitle}</p>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase-browser'
 
@@ -46,6 +46,7 @@ const authCopy = {
     accessTitle: 'Account access is not active',
     accessDescription: 'Your sign-in succeeded, but this account does not have Cardliy access yet. If you registered with the valid promo code, ask the site administrator to run the latest supabase/promo-code-trigger.sql in Supabase SQL Editor, then sign out and sign in again. Otherwise, the administrator must grant access to this account.',
     signOut: 'Sign out',
+    back: 'Back',
   },
   mn: {
     signIn: 'Нэвтрэх',
@@ -84,26 +85,22 @@ const authCopy = {
     accessTitle: 'Бүртгэлийн эрх идэвхгүй байна',
     accessDescription: 'Та амжилттай нэвтэрсэн боловч энэ бүртгэлд Cardliy ашиглах эрх олгогдоогүй байна. Зөв promo кодоор бүртгүүлсэн бол сайтын админаас Supabase SQL Editor дээр шинэчилсэн supabase/promo-code-trigger.sql файлыг ажиллуулахыг хүсээд, дараа нь гараад дахин нэвтэрнэ үү. Үгүй бол админ энэ бүртгэлд эрх олгох шаардлагатай.',
     signOut: 'Гарах',
+    back: 'Буцах',
   },
 }
 
-export function AuthScreen({ language, onLanguageChange, session, accessError }: { language: Language; onLanguageChange: (language: Language) => void; session?: Session | null; accessError?: string }) {
+export function AuthScreen({ language, session, accessError, onBack, initialMode }: { language: Language; session?: Session | null; accessError?: string; onBack?: () => void; initialMode?: 'signIn' | 'signUp' }) {
   const t = authCopy[language]
-  const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn')
+  const [mode, setMode] = useState<'signIn' | 'signUp'>(initialMode ?? 'signIn')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [promoCode, setPromoCode] = useState('')
   const [accountType, setAccountType] = useState<'personal' | 'business'>('personal')
-  const [confirmation, setConfirmation] = useState<Language | null>(null)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [canResendConfirmation, setCanResendConfirmation] = useState(false)
-
-  const chooseLanguage = (nextLanguage: Language) => {
-    if (language !== nextLanguage) setConfirmation(nextLanguage)
-  }
 
   const signInWithGoogle = async () => {
     if (!supabase) {
@@ -218,10 +215,10 @@ export function AuthScreen({ language, onLanguageChange, session, accessError }:
   if (session) return <main className="auth-screen flex min-h-screen items-center justify-center p-4 text-[#eef4ff]">
     <section className="auth-panel w-full max-w-md rounded-2xl border p-6 shadow-sm sm:p-8">
       <div className="mb-7 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <button type="button" onClick={() => window.location.reload()} className="flex items-center gap-2" aria-label="Cardliy">
           <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_gbudftgbudftgbud-6IOh1Fmz2F5ytWKVOX16A263gpQwEa.jpg" alt="Cardliy logo" className="size-9 rounded-[10px] object-cover" />
-          <p className="auth-brand font-serif text-2xl font-medium italic tracking-[-0.045em]">Cardliy</p>
-        </div>
+          <span className="auth-brand font-serif text-2xl font-medium italic tracking-[-0.045em]">Cardliy</span>
+        </button>
         <button type="button" onClick={() => void supabase?.auth.signOut()} className="text-xs font-semibold text-[#52606f]">{t.signOut}</button>
       </div>
       <h1 className="text-lg font-semibold">{t.accessTitle}</h1>
@@ -230,18 +227,22 @@ export function AuthScreen({ language, onLanguageChange, session, accessError }:
     </section>
   </main>
 
-  return <main className="auth-screen flex min-h-screen items-center justify-center p-4 text-[#eef4ff]">
+  return <main className="auth-screen relative flex min-h-screen items-center justify-center p-4 text-[#eef4ff]">
+    {onBack && (
+      <button
+        type="button"
+        onClick={onBack}
+        className="absolute left-4 top-4 flex items-center gap-1.5 rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/20 sm:left-6 sm:top-6"
+      >
+        <ArrowLeft size={15} />
+        {t.back}
+      </button>
+    )}
     <section className="auth-panel w-full max-w-md rounded-2xl border p-6 shadow-sm sm:p-8">
-      <div className="mb-7 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_gbudftgbudftgbud-6IOh1Fmz2F5ytWKVOX16A263gpQwEa.jpg" alt="Cardliy logo" className="size-9 rounded-[10px] object-cover" />
-          <p className="auth-brand font-serif text-2xl font-medium italic tracking-[-0.045em]">Cardliy</p>
-        </div>
-        <div className="flex gap-1 rounded-full border border-[#dfe3e8] bg-[#eef1f4] p-0.5">
-          <button type="button" onClick={() => chooseLanguage('en')} aria-pressed={language === 'en'} className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${language === 'en' ? 'border-[#263b57] bg-[#17263a] text-white shadow-sm' : 'border-transparent bg-transparent text-[#8994a2]'}`}>EN</button>
-          <button type="button" onClick={() => chooseLanguage('mn')} aria-pressed={language === 'mn'} className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${language === 'mn' ? 'border-[#263b57] bg-[#17263a] text-white shadow-sm' : 'border-transparent bg-transparent text-[#8994a2]'}`}>MN</button>
-        </div>
-      </div>
+      <button type="button" onClick={() => window.location.reload()} className="mb-7 flex items-center gap-2" aria-label="Cardliy">
+        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_gbudftgbudftgbud-6IOh1Fmz2F5ytWKVOX16A263gpQwEa.jpg" alt="Cardliy logo" className="size-9 rounded-[10px] object-cover" />
+        <span className="auth-brand font-serif text-2xl font-medium italic tracking-[-0.045em]">Cardliy</span>
+      </button>
 
       <div className="mb-6 grid grid-cols-2 rounded-xl bg-[#f1f3f6] p-1">
         <button type="button" onClick={() => { setMode('signIn'); setError(''); setMessage('') }} className={`rounded-lg px-3 py-2 text-sm font-semibold ${mode === 'signIn' ? 'bg-white text-[#172538] shadow-sm' : 'text-[#7c8795]'}`}>{t.signIn}</button>
@@ -287,15 +288,5 @@ export function AuthScreen({ language, onLanguageChange, session, accessError }:
       </form>
     </section>
 
-    {confirmation && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#101828]/45 p-4" role="presentation">
-      <section role="dialog" aria-modal="true" aria-labelledby="auth-language-title" className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
-        <h2 id="auth-language-title" className="text-lg font-semibold">{t.language}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-[#52606f]">{confirmation === 'mn' ? t.changeToMongolian : t.changeToEnglish}</p>
-        <div className="mt-6 flex justify-end gap-2">
-          <button type="button" onClick={() => setConfirmation(null)} className="rounded-lg border border-[#dfe3e8] px-4 py-2 text-sm font-semibold text-[#52606f]">{t.no}</button>
-          <button type="button" onClick={() => { onLanguageChange(confirmation); setConfirmation(null) }} className="rounded-lg bg-[#172538] px-4 py-2 text-sm font-semibold text-white">{t.yes}</button>
-        </div>
-      </section>
-    </div>}
   </main>
 }
