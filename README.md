@@ -9,5 +9,5 @@ An AI-powered digital business card and STEM research portfolio platform built w
 - **Live Cloud Backend:** Powered by Supabase for authentication, profiles, and database storage.
 
 ## Links
-- **Live Demo:** https://stem-connect2026.vercel.app
+- **Live Demo:** [https://stem-connect2026.vercel.app](https://stem-connect2026.vercel.app/c/dxyfmvc07h)
 - **Repository:** https://github.com/Margad793/STEM-AI
