@@ -227,6 +227,9 @@ export default function PublicCardPage() {
     <main style={{ color: textColor }} className={`relative min-h-screen w-full overflow-x-hidden ${selectedTemplate.publicBackground}`}>
       <div className="flex min-h-screen w-full flex-col items-center justify-center px-3 py-6 sm:px-8 sm:py-8">
         <div className="flex w-full max-w-[760px] flex-col items-center">
+          <div className="mb-1 flex w-full justify-end">
+            <EcoImpact tapCount={ecoTapCount} language={language} error={ecoTapError} />
+          </div>
           <div className="public-card-flip mt-3 mb-0 w-full">
             <FlipCard template={selectedTemplate} profile={profile} t={cardCopy} texture={texture} publicCode={code} design={design} />
           </div>
@@ -253,9 +256,6 @@ export default function PublicCardPage() {
           )}
           <PublicCardAssetActions profile={profile} template={selectedTemplate} texture={texture} publicCode={code} language={language} design={design} />
           </ProfileHighlights>
-          <div className="mt-3 w-full">
-            <EcoImpact tapCount={ecoTapCount} language={language} error={ecoTapError} />
-          </div>
           <p className="mt-3 break-all text-center text-[8px] leading-tight text-current/45">{publicCardHost}/c/{card.public_code}</p>
         </div>
       </div>

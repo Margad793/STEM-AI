@@ -1,4 +1,4 @@
-const defaultSiteOrigin = 'https://cardliy.com'
+const defaultSiteOrigin = 'https://stem-connect2026.vercel.app'
 
 export function getPublicSiteOrigin(configuredOrigin?: string): string {
   const origin = configuredOrigin?.trim() || defaultSiteOrigin

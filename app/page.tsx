@@ -617,7 +617,7 @@ export default function Page() {
     )
   }
   if (!hasAccess) return <AuthScreen language={language} session={session} accessError={authError} />
-  if (publicView) return <PublicCard language={language} t={t} onBack={() => setPublicView(false)} template={template} profile={profile} texture={selectedTexture} publicCode={publicCode} design={design} />
+  if (publicView) return <PublicCard language={language} t={t} onBack={() => setPublicView(false)} template={template} profile={profile} texture={selectedTexture} publicCode={publicCode} design={design} ecoTapCount={ecoTapCount} ecoTapError={ecoTapError} />
   return (
     <main className="min-h-screen w-full min-w-0 overflow-x-hidden bg-[#f7f8fa] text-[#18202d]">
       {saveNotice && (
@@ -978,11 +978,6 @@ export default function Page() {
             </button>
           </div>
         </section>
-      )}
-      {publicCode && (
-        <div className="mx-auto mt-3 max-w-[1380px] sm:mx-9">
-          <EcoImpact tapCount={ecoTapCount} language={language} error={ecoTapError} />
-        </div>
       )}
       {isBusinessAccount && viewersEnabled && (
         <section className="mx-auto mt-4 max-w-[1380px] rounded-xl border border-[#dfe3e8] bg-white px-3 py-3 shadow-sm sm:mx-9 sm:px-4">
@@ -1395,6 +1390,8 @@ export default function Page() {
           language={language}
           publicCode={publicCode}
           design={design}
+          ecoTapCount={ecoTapCount}
+          ecoTapError={ecoTapError}
         />
       </div>
     </main>
@@ -2218,7 +2215,7 @@ function CardAssetActions({
     </>
   )
 }
-function PreviewPanel({ template, profile, t, language, texture, publicCode, design }: { template: Template; profile: Profile; t: typeof copy.en; language: Language; texture: Texture; publicCode: string | null; design?: CardDesign }) {
+function PreviewPanel({ template, profile, t, language, texture, publicCode, design, ecoTapCount, ecoTapError }: { template: Template; profile: Profile; t: typeof copy.en; language: Language; texture: Texture; publicCode: string | null; design?: CardDesign; ecoTapCount: number | null; ecoTapError: string }) {
   const hasPhone = profile.showPhone && Boolean(profile.phone.trim())
   const emails = [
     profile.showBusinessEmail ? profile.businessEmail.trim() : '',
@@ -2230,6 +2227,9 @@ function PreviewPanel({ template, profile, t, language, texture, publicCode, des
       <div className="relative w-full max-w-[min(245px,calc(100vw-2rem))] shrink-0 rounded-[34px] border-[7px] border-[#303e51] bg-[#0d1623] p-2 shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
         <div className="absolute left-1/2 top-0 z-20 h-4 w-24 -translate-x-1/2 rounded-b-2xl bg-[#303e51]" />
         <div className={`flex min-h-[430px] w-full min-w-0 flex-col items-center justify-center overflow-visible rounded-[24px] px-2.5 py-5 ${template.publicBackground}`}>
+          <div className="mb-1 flex w-full min-w-0 max-w-[205px] justify-end">
+            <EcoImpact tapCount={ecoTapCount} language={language} error={ecoTapError} />
+          </div>
           <div className="order-1 mb-0 flex w-full min-w-0 max-w-[205px] shrink-0 justify-center overflow-hidden">
             <FlipCard compact template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} design={design} />
           </div>
@@ -2264,7 +2264,7 @@ function PreviewPanel({ template, profile, t, language, texture, publicCode, des
     </aside>
   )
 }
-function PublicCard({ onBack, template, profile, language, t, texture, publicCode, design }: { onBack: () => void; template: Template; profile: Profile; language: Language; t: typeof copy.en; texture: Texture; publicCode: string | null; design?: CardDesign }) {
+function PublicCard({ onBack, template, profile, language, t, texture, publicCode, design, ecoTapCount, ecoTapError }: { onBack: () => void; template: Template; profile: Profile; language: Language; t: typeof copy.en; texture: Texture; publicCode: string | null; design?: CardDesign; ecoTapCount: number | null; ecoTapError: string }) {
   const publicTextColor = template.name === 'Soft Feminine Pastel' ? '#573b48' : template.name === 'Creative Glass' ? '#3d315f' : '#26333a'
   const hasPhone = profile.showPhone && Boolean(profile.phone.trim())
   const emails = [
@@ -2286,6 +2286,9 @@ function PublicCard({ onBack, template, profile, language, t, texture, publicCod
           >
             <X size={14} /> {t.backEditor}
           </button>
+          <div className="mb-1 flex w-full justify-end">
+            <EcoImpact tapCount={ecoTapCount} language={language} error={ecoTapError} />
+          </div>
           <div className="public-card-flip mt-3 mb-0 w-full">
             <FlipCard template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} design={design} />
           </div>
