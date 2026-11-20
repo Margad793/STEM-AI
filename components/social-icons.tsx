@@ -39,3 +39,20 @@ export function ViberGlyph({ size = 18, className }: SocialIconProps) {
     </svg>
   )
 }
+
+export function GitHubGlyph({ size = 18, className }: SocialIconProps) {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="currentColor" d="M12 1.5a10.5 10.5 0 0 0-3.32 20.46c.52.1.72-.23.72-.5v-1.84c-2.94.64-3.56-1.25-3.56-1.25-.48-1.22-1.17-1.55-1.17-1.55-.96-.66.07-.65.07-.65 1.06.08 1.62 1.09 1.62 1.09.95 1.62 2.49 1.15 3.1.88.1-.69.37-1.15.68-1.42-2.35-.27-4.82-1.18-4.82-5.23 0-1.16.42-2.1 1.1-2.85-.11-.27-.48-1.35.1-2.81 0 0 .9-.29 2.89 1.09a10.05 10.05 0 0 1 5.26 0c2-1.38 2.89-1.09 2.89-1.09.58 1.46.21 2.54.1 2.81.69.75 1.1 1.69 1.1 2.85 0 4.06-2.47 4.96-4.83 5.22.38.33.72.97.72 1.96v2.9c0 .27.19.6.72.5A10.5 10.5 0 0 0 12 1.5Z" />
+    </svg>
+  )
+}
+
+export function LinkedInGlyph({ size = 18, className }: SocialIconProps) {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="1" y="1" width="22" height="22" rx="4" fill="#0A66C2" />
+      <path fill="white" d="M7.1 9.3H4.4v9.1h2.7V9.3ZM5.75 8.1a1.56 1.56 0 1 0 0-3.12 1.56 1.56 0 0 0 0 3.12ZM19.6 13.2c0-2.74-1.46-4.02-3.4-4.02-1.57 0-2.28.86-2.67 1.46V9.3h-2.7v9.1h2.7v-4.5c0-1.18.22-2.32 1.68-2.32s1.48 1.35 1.48 2.4v4.42h2.7l.01-5.2Z" />
+    </svg>
+  )
+}

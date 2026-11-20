@@ -8,8 +8,10 @@ import QRCode from 'qrcode'
 import Cropper, { type Area } from 'react-easy-crop'
 import type { Session } from '@supabase/supabase-js'
 import { AuthScreen } from '@/components/auth-screen'
+import { GitHubGlyph, LinkedInGlyph } from '@/components/social-icons'
+import { EcoImpact } from '@/components/eco-impact'
+import { ProfileHighlights } from '@/components/business-card'
 import { Landing } from '@/components/landing'
-import { FacebookGlyph, InstagramGlyph, ViberGlyph } from '@/components/social-icons'
 import { getCardActionStyle, getCarbonWaveTextureImage, getOrganizationAssets, ORGANIZATION_AVATAR_HEIGHT, ORGANIZATION_AVATAR_RIGHT, ORGANIZATION_AVATAR_TOP, ORGANIZATION_BACK_CONTENT_LEFT, ORGANIZATION_COMPANY_HEIGHT, ORGANIZATION_COMPANY_LEFT, ORGANIZATION_COMPANY_RIGHT, ORGANIZATION_COMPANY_TOP, ORGANIZATION_CONTACTS_BOTTOM, ORGANIZATION_CONTACTS_TOP, ORGANIZATION_LOGO_DIAMETER, ORGANIZATION_LOGO_LEFT, ORGANIZATION_LOGO_TOP, ORGANIZATION_PATTERN_WIDTH, ORGANIZATION_PERSON_NAME_TOP, ORGANIZATION_TEXT_LEFT, ORGANIZATION_TEXT_RIGHT, ORGANIZATION_TITLE_TOP, templates, templateSlugs, textures } from '@/lib/card-design'
 import type { CardDesign, Profile, Template, Texture } from '@/lib/card-types'
 import { fitText, packContactRows } from '@/lib/fit-text'
@@ -18,8 +20,8 @@ import { getPublicSiteOrigin } from '@/lib/site'
 import { createContactVCard, encodeContactPhoto } from '@/lib/vcard'
 
 type Language = 'en' | 'mn'
-type CardRow = Omit<Profile, 'photo' | 'companyLogo' | 'roomNumber' | 'businessEmail' | 'personalEmail' | 'showPhone' | 'showBusinessEmail' | 'showPersonalEmail' | 'showRoomNumber' | 'showWebsite' | 'showInstagram' | 'showFacebook' | 'showViber'> & { id: string; public_code: string; is_published: boolean; template: string; texture: Texture; language: Language; organization_code: string | null; user_id: string; photo_url: string; company_logo_url: string; room_number: string; email: string; business_email: string; personal_email: string; show_phone: boolean; show_business_email: boolean; show_personal_email: boolean; show_room_number: boolean; show_website: boolean; show_instagram: boolean; show_facebook: boolean; show_viber: boolean }
-const initialProfile: Profile = { name: 'Alex Morgan', title: 'Creative Director', company: 'Northstar Studio', location: 'Brooklyn, NY', bio: 'Building brands with a little more soul. I help ambitious teams turn good ideas into work people remember.', businessEmail: 'alex@northstar.co', personalEmail: '', showPhone: true, showBusinessEmail: true, showPersonalEmail: false, showRoomNumber: true, showWebsite: true, showInstagram: true, showFacebook: true, showViber: true, phone: '+1 917 555 0184', roomNumber: '', website: 'alexmorgan.co', instagram: 'https://instagram.com/', facebook: 'https://facebook.com/', viber: 'viber://chat?number=%2B19175550184', photo: '', companyLogo: '' }
+type CardRow = Omit<Profile, 'photo' | 'companyLogo' | 'roomNumber' | 'businessEmail' | 'personalEmail' | 'showPhone' | 'showBusinessEmail' | 'showPersonalEmail' | 'showRoomNumber' | 'showWebsite' | 'showInstagram' | 'showFacebook' | 'showViber'> & { id: string; public_code: string; is_published: boolean; template: string; texture: Texture; language: Language; organization_code: string | null; research_highlight?: string | null; user_id: string; photo_url: string; company_logo_url: string; room_number: string; email: string; business_email: string; personal_email: string; show_phone: boolean; show_business_email: boolean; show_personal_email: boolean; show_room_number: boolean; show_website: boolean; show_instagram: boolean; show_facebook: boolean; show_viber: boolean }
+const initialProfile: Profile = { name: 'Maya Chen', title: 'AI & Data Science Undergraduate', company: 'National University of Science', location: 'Singapore', bio: 'AI and data science student building practical, human-centered technology. Research interests include computer vision, robotics, and responsible AI for sustainability.', researchHighlight: 'Developing a low-cost computer vision system to monitor plant health and reduce water use.', businessEmail: 'maya.chen@example.edu', personalEmail: '', showPhone: true, showBusinessEmail: true, showPersonalEmail: false, showRoomNumber: true, showWebsite: true, showInstagram: true, showFacebook: true, showViber: true, phone: '+65 5555 0184', roomNumber: '', website: '', instagram: 'https://github.com/Margad793/STEM-AI', facebook: 'https://www.linkedin.com/in/your-profile', viber: 'https://your-project.vercel.app', photo: '', companyLogo: '' }
 const emptyProfile: Profile = { name: '', title: '', company: '', location: '', bio: '', businessEmail: '', personalEmail: '', showPhone: true, showBusinessEmail: true, showPersonalEmail: false, showRoomNumber: true, showWebsite: true, showInstagram: true, showFacebook: true, showViber: true, phone: '', roomNumber: '', website: '', instagram: '', facebook: '', viber: '', photo: '', companyLogo: '' }
 const publicCardOrigin = getPublicSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL)
 const publicCardHost = publicCardOrigin.replace(/^https?:\/\//i, '')
@@ -79,8 +81,7 @@ function formatViewedAt(iso: string, language: Language): string {
 }
 
 export default function Page() {
-  const [language, setLanguage] = useState<Language>('en')
-  const [languagePreferenceLoaded, setLanguagePreferenceLoaded] = useState(false)
+  const language: Language = 'en'
   const [session, setSession] = useState<Session | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [accessChecked, setAccessChecked] = useState(false)
@@ -121,8 +122,9 @@ export default function Page() {
   const [appliedOrganizationCode, setAppliedOrganizationCode] = useState('')
   const [publicView, setPublicView] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [languageConfirmation, setLanguageConfirmation] = useState<Language | null>(null)
   const [profile, setProfile] = useState(initialProfile)
+  const [ecoTapCount, setEcoTapCount] = useState<number | null>(null)
+  const [ecoTapError, setEcoTapError] = useState('')
   const t = copy[language]
   const template = templates[selectedTemplate]
   const design: CardDesign = { colorId: null, patternId: null, organizationCode: appliedOrganizationCode }
@@ -145,14 +147,6 @@ export default function Page() {
   const applyOrganizationCode = () => {
     if (organizationMatch) setAppliedOrganizationCode(organizationMatch.code)
   }
-  useEffect(() => {
-    const storedLanguage = window.localStorage.getItem('cardly-language')
-    if (storedLanguage === 'en' || storedLanguage === 'mn') setLanguage(storedLanguage)
-    setLanguagePreferenceLoaded(true)
-  }, [])
-  useEffect(() => {
-    if (languagePreferenceLoaded) window.localStorage.setItem('cardly-language', language)
-  }, [language, languagePreferenceLoaded])
   useEffect(() => {
     if (!saveNotice) return
     const timeout = window.setTimeout(() => setSaveNotice(''), 2000)
@@ -266,7 +260,7 @@ export default function Page() {
       try {
         const { data, error } = await supabase
           .from('cards')
-          .select('id, user_id, public_code, is_published, name, title, company, company_logo_url, location, bio, email, business_email, personal_email, show_phone, show_business_email, show_personal_email, show_room_number, show_website, show_instagram, show_facebook, show_viber, phone, room_number, website, instagram, facebook, viber, photo_url, template, texture, language, organization_code')
+          .select('id, user_id, public_code, is_published, name, title, company, company_logo_url, location, bio, research_highlight, email, business_email, personal_email, show_phone, show_business_email, show_personal_email, show_room_number, show_website, show_instagram, show_facebook, show_viber, phone, room_number, website, instagram, facebook, viber, photo_url, template, texture, language, organization_code')
           .eq('user_id', session.user.id)
           .maybeSingle()
         if (!active) return
@@ -285,6 +279,7 @@ export default function Page() {
             company: row.company,
             location: row.location,
             bio: row.bio,
+            researchHighlight: row.research_highlight ?? '',
             businessEmail: row.business_email || row.email || '',
             personalEmail: row.personal_email ?? '',
             showPhone: row.show_phone ?? true,
@@ -357,10 +352,56 @@ export default function Page() {
     }
   }, [session?.user.id, hasAccess, isBusinessAccount])
 
-  const requestLanguageChange = (nextLanguage: Language) => {
-    if (nextLanguage !== language) setLanguageConfirmation(nextLanguage)
-  }
+  useEffect(() => {
+    const client = supabase
+    if (!publicCode || !client) {
+      setEcoTapCount(0)
+      setEcoTapError('')
+      return
+    }
+
+    let active = true
+    const refreshTapCount = async () => {
+      const { data, error } = await client.rpc('get_card_tap_count', {
+        p_public_code: publicCode,
+      })
+      if (!active) return
+      if (error) {
+        console.error('Could not load the NFC / QR tap counter.', error)
+        setEcoTapError('Tap counter is unavailable. Apply supabase/eco-card-taps.sql to enable it.')
+        setEcoTapCount(0)
+        return
+      }
+      setEcoTapError('')
+      setEcoTapCount(typeof data === 'number' ? data : 0)
+    }
+
+    void refreshTapCount()
+    const interval = window.setInterval(() => void refreshTapCount(), 15_000)
+    window.addEventListener('focus', refreshTapCount)
+    return () => {
+      active = false
+      window.clearInterval(interval)
+      window.removeEventListener('focus', refreshTapCount)
+    }
+  }, [publicCode])
+
   const update = (key: keyof Profile) => (value: string) => setProfile((current) => ({ ...current, [key]: value }))
+  const generateStemBio = () => {
+    const name = profile.name.trim()
+    const title = profile.title.trim()
+    const company = profile.company.trim()
+    const highlight = profile.researchHighlight?.trim()
+    if (!name && !title && !company && !highlight) return
+
+    const identity = [name, title].filter(Boolean).join(', ')
+    const affiliation = company ? ` at ${company}` : ''
+    const focus = highlight
+      ? ` Their work includes ${highlight.charAt(0).toLowerCase()}${highlight.slice(1).replace(/[.!?]+$/, '')}.`
+      : ' Their work explores practical applications of AI, technology, and scientific research.'
+    const bio = `${identity || 'A STEM researcher'}${affiliation} is focused on building thoughtful technology for real-world impact.${focus}`
+    setProfile((current) => ({ ...current, bio: bio.trim() }))
+  }
   const saveCard = async () => {
     const client = supabase
     if (!client || !session || savingCard) return
@@ -393,6 +434,7 @@ export default function Page() {
         company: profile.company,
         location: profile.location,
         bio: profile.bio,
+        research_highlight: profile.researchHighlight?.trim() || null,
         email: profile.businessEmail,
         business_email: profile.businessEmail,
         personal_email: profile.personalEmail,
@@ -567,7 +609,6 @@ export default function Page() {
     return (
       <Landing
         language={language}
-        onLanguageChange={setLanguage}
         onSignIn={(mode) => {
           setAuthMode(mode)
           setShowAuth(true)
@@ -856,41 +897,6 @@ export default function Page() {
                     )}
                   </div>
                 </div>
-                <div className="px-3 py-3">
-                  <p className="text-[11px] font-semibold text-[#52606f]">
-                    {t.changeLanguage}
-                  </p>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSettingsOpen(false)
-                        requestLanguageChange("en")
-                      }}
-                      className={`rounded-lg border px-2 py-2 text-xs font-bold transition ${
-                        language === "en"
-                          ? "border-[#172538] bg-[#172538] text-white"
-                          : "border-[#dfe3e8] bg-white text-[#52606f] hover:bg-[#f7f8fa]"
-                      }`}
-                    >
-                      EN
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSettingsOpen(false)
-                        requestLanguageChange("mn")
-                      }}
-                      className={`rounded-lg border px-2 py-2 text-xs font-bold transition ${
-                        language === "mn"
-                          ? "border-[#172538] bg-[#172538] text-white"
-                          : "border-[#dfe3e8] bg-white text-[#52606f] hover:bg-[#f7f8fa]"
-                      }`}
-                    >
-                      MN
-                    </button>
-                  </div>
-                </div>
                 <button
                   type="button"
                   onClick={() => {
@@ -973,6 +979,11 @@ export default function Page() {
           </div>
         </section>
       )}
+      {publicCode && (
+        <div className="mx-auto mt-3 max-w-[1380px] sm:mx-9">
+          <EcoImpact tapCount={ecoTapCount} language={language} error={ecoTapError} />
+        </div>
+      )}
       {isBusinessAccount && viewersEnabled && (
         <section className="mx-auto mt-4 max-w-[1380px] rounded-xl border border-[#dfe3e8] bg-white px-3 py-3 shadow-sm sm:mx-9 sm:px-4">
           <div className="flex items-center justify-between gap-2">
@@ -1000,50 +1011,6 @@ export default function Page() {
             </ul>
           )}
         </section>
-      )}
-      {languageConfirmation && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-[#101828]/45 p-4"
-          role="presentation"
-        >
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="language-dialog-title"
-            className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
-          >
-            <h2
-              id="language-dialog-title"
-              className="text-lg font-semibold text-[#18202d]"
-            >
-              {t.changeLanguage}
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-[#52606f]">
-              {languageConfirmation === "mn"
-                ? t.switchToMongolian
-                : t.switchToEnglish}
-            </p>
-            <div className="mt-6 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setLanguageConfirmation(null)}
-                className="rounded-lg border border-[#dfe3e8] px-4 py-2 text-sm font-semibold text-[#52606f] hover:bg-[#f7f8fa]"
-              >
-                {t.no}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setLanguage(languageConfirmation);
-                  setLanguageConfirmation(null);
-                }}
-                className="rounded-lg bg-[#172538] px-4 py-2 text-sm font-semibold text-white hover:bg-[#24354b]"
-              >
-                {t.yes}
-              </button>
-            </div>
-          </section>
-        </div>
       )}
       <div
         className={`mx-auto grid w-full min-w-0 max-w-[1450px] grid-cols-1 gap-8 p-3 ${publicCode ? "pt-4" : "pt-[92px]"} sm:p-9 ${publicCode ? "sm:pt-6" : "sm:pt-[108px]"} xl:grid-cols-[minmax(420px,1fr)_390px]`}
@@ -1242,14 +1209,35 @@ export default function Page() {
                 />
               </div>
               <div className="mt-5">
-                <label className="mb-2 block text-xs font-semibold text-[#4b5868]">
-                  {t.bio}
-                </label>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <label className="block text-xs font-semibold text-[#4b5868]">
+                    {t.bio}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={generateStemBio}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#d8def0] bg-[#f5f7ff] px-3 text-xs font-semibold text-[#455d96] transition hover:bg-[#edf1ff]"
+                  >
+                    <Sparkles size={13} />
+                    {language === 'en' ? 'Generate STEM Bio with AI' : 'AI-аар STEM танилцуулга үүсгэх'}
+                  </button>
+                </div>
                 <textarea
                   value={profile.bio}
                   onChange={(e) => update("bio")(e.target.value)}
                   className="min-h-[92px] w-full resize-none rounded-xl border border-[#e1e5ea] bg-[#fbfcfd] px-3.5 py-3 text-sm leading-6 text-[#263343] outline-none transition focus:border-[#93a4cb] focus:ring-3 focus:ring-[#e9edfa]"
                 />
+                <div className="mt-4">
+                  <label className="mb-2 block text-xs font-semibold text-[#4b5868]">
+                    {language === 'en' ? 'STEM / Research highlight' : 'STEM / Судалгааны чиглэл'}
+                  </label>
+                  <input
+                    value={profile.researchHighlight ?? ''}
+                    onChange={(event) => update('researchHighlight')(event.target.value)}
+                    placeholder={language === 'en' ? 'e.g. Computer vision for sustainable agriculture' : 'Жишээ: Хөдөө аж ахуйд тогтвортой компьютерийн хараа'}
+                    className="h-11 w-full rounded-xl border border-[#e1e5ea] bg-[#fbfcfd] px-3.5 text-sm text-[#263343] outline-none transition focus:border-[#93a4cb] focus:ring-3 focus:ring-[#e9edfa]"
+                  />
+                </div>
               </div>
             </section>
             <section className="rounded-2xl border border-[#e5e8ec] bg-white p-5 sm:p-7">
@@ -1336,41 +1324,41 @@ export default function Page() {
                   }
                 />
                 <Field
-                  label={t.instagramUrl}
+                  label="GitHub URL"
                   value={profile.instagram}
                   onChange={update("instagram")}
-                  icon={InstagramGlyph}
+                  icon={GitHubGlyph}
                   control={
                     <VisibilityToggle
-                      label={language === "en" ? "Show Instagram" : "Instagram холбоосыг харуулах"}
+                      label={language === "en" ? "Show GitHub" : "GitHub холбоосыг харуулах"}
                       enabled={profile.showInstagram}
                       onChange={(showInstagram) => setProfile((current) => ({ ...current, showInstagram }))}
                     />
                   }
                 />
                 <Field
-                  label={t.viberLink}
-                  value={profile.viber}
-                  onChange={update("viber")}
-                  icon={MessageCircle}
+                  label="LinkedIn URL"
+                  value={profile.facebook}
+                  onChange={update("facebook")}
+                  icon={LinkedInGlyph}
                   control={
                     <VisibilityToggle
-                      label={language === "en" ? "Show Viber" : "Viber холбоосыг харуулах"}
-                      enabled={profile.showViber}
-                      onChange={(showViber) => setProfile((current) => ({ ...current, showViber }))}
+                      label={language === "en" ? "Show LinkedIn" : "LinkedIn холбоосыг харуулах"}
+                      enabled={profile.showFacebook}
+                      onChange={(showFacebook) => setProfile((current) => ({ ...current, showFacebook }))}
                     />
                   }
                 />
                 <Field
-                  label={t.facebookUrl}
-                  value={profile.facebook}
-                  onChange={update("facebook")}
-                  icon={FacebookGlyph}
+                  label={language === "en" ? "Portfolio / Project / Demo URL" : "Портфолио / Төсөл / Демо холбоос"}
+                  value={profile.viber}
+                  onChange={update("viber")}
+                  icon={Globe2}
                   control={
                     <VisibilityToggle
-                      label={language === "en" ? "Show Facebook" : "Facebook холбоосыг харуулах"}
-                      enabled={profile.showFacebook}
-                      onChange={(showFacebook) => setProfile((current) => ({ ...current, showFacebook }))}
+                      label={language === "en" ? "Show portfolio link" : "Портфолио холбоос харуулах"}
+                      enabled={profile.showViber}
+                      onChange={(showViber) => setProfile((current) => ({ ...current, showViber }))}
                     />
                   }
                 />
@@ -2241,31 +2229,35 @@ function PreviewPanel({ template, profile, t, language, texture, publicCode, des
       <p className="mb-3 w-full max-w-[min(245px,calc(100vw-2rem))] text-left text-xs font-semibold text-[#8996a8]">{t.live}</p>
       <div className="relative w-full max-w-[min(245px,calc(100vw-2rem))] shrink-0 rounded-[34px] border-[7px] border-[#303e51] bg-[#0d1623] p-2 shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
         <div className="absolute left-1/2 top-0 z-20 h-4 w-24 -translate-x-1/2 rounded-b-2xl bg-[#303e51]" />
-        <div className={`flex min-h-[430px] w-full min-w-0 flex-col items-center justify-center overflow-hidden rounded-[24px] px-2.5 py-5 ${template.publicBackground}`}>
+        <div className={`flex min-h-[430px] w-full min-w-0 flex-col items-center justify-center overflow-visible rounded-[24px] px-2.5 py-5 ${template.publicBackground}`}>
           <div className="order-1 mb-0 flex w-full min-w-0 max-w-[205px] shrink-0 justify-center overflow-hidden">
             <FlipCard compact template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} design={design} />
           </div>
-          {(hasPhone || emails.length > 0) && (
-            <div className={`order-3 mt-3 grid w-full min-w-0 max-w-[205px] gap-2 ${Number(hasPhone) + emails.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-              {hasPhone && <a href={`tel:${profile.phone}`} style={getCardActionStyle(template, texture, design)} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg border px-1 text-[9px] font-bold shadow-sm transition hover:brightness-105"><Phone size={10} className="shrink-0" /><span className="truncate">{t.call}</span></a>}
-              {emails.map((email) => <a key={email} href={`mailto:${email}`} style={getCardActionStyle(template, texture, design)} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg border px-1 text-[9px] font-bold shadow-sm transition hover:brightness-105"><Mail size={10} className="shrink-0" /><span className="truncate">{t.emailAction}</span></a>)}
-            </div>
-          )}
-          {Boolean((profile.showInstagram && profile.instagram.trim()) || (profile.showViber && profile.viber.trim()) || (profile.showFacebook && profile.facebook.trim())) && (
-            <div className="order-4 mt-3 flex gap-2">
-              {profile.showInstagram && profile.instagram.trim() && <a href={profile.instagram.trim()} target="_blank" rel="noreferrer" aria-label="Instagram" className="flex size-6 items-center justify-center"><InstagramGlyph size={20} /></a>}
-              {profile.showViber && profile.viber.trim() && <a href={profile.viber.trim()} target="_blank" rel="noreferrer" aria-label="Viber" className="flex size-6 items-center justify-center"><ViberGlyph size={20} /></a>}
-              {profile.showFacebook && profile.facebook.trim() && <a href={profile.facebook.trim()} target="_blank" rel="noreferrer" aria-label="Facebook" className="flex size-6 items-center justify-center"><FacebookGlyph size={20} /></a>}
-            </div>
-          )}
           <p className="order-2 mt-3 max-w-[185px] text-center text-[8px] leading-tight text-[#8996a8]">{t.tap}</p>
-          {hasPhone && (
-            <button type="button" onClick={() => void downloadVCard(profile, language)} style={getCardActionStyle(template, texture, design)} className="order-5 mt-4 flex h-7 w-full max-w-[205px] shrink-0 items-center justify-center gap-1.5 rounded-lg border text-[9px] font-bold shadow-sm transition hover:brightness-105">
-              <Download size={11} /> <span className="text-[9px] font-bold leading-none">{language === 'en' ? 'Save Contact' : t.saveContact}</span>
-            </button>
-          )}
-          <div className="order-6 mt-2 w-full max-w-[205px]">
-            <CardAssetActions compact profile={profile} t={t} language={language} texture={texture} template={template} publicCode={publicCode} design={design} />
+          <div className="order-3 w-full">
+            <ProfileHighlights profile={profile} language={language} compact>
+              {(hasPhone || emails.length > 0) && (
+                <div className={`mt-3 grid w-full min-w-0 gap-2 ${Number(hasPhone) + emails.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                  {hasPhone && <a href={`tel:${profile.phone}`} style={getCardActionStyle(template, texture, design)} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg border px-1 text-[9px] font-bold shadow-sm transition hover:brightness-105"><Phone size={10} className="shrink-0" /><span className="truncate">{t.call}</span></a>}
+                  {emails.map((email) => <a key={email} href={`mailto:${email}`} style={getCardActionStyle(template, texture, design)} className="flex h-7 min-w-0 items-center justify-center gap-1 rounded-lg border px-1 text-[9px] font-bold shadow-sm transition hover:brightness-105"><Mail size={10} className="shrink-0" /><span className="truncate">{t.emailAction}</span></a>)}
+                </div>
+              )}
+              {Boolean((profile.showInstagram && profile.instagram.trim()) || (profile.showFacebook && profile.facebook.trim()) || (profile.showViber && profile.viber.trim())) && (
+                <div className="mt-3 flex justify-center gap-2">
+                  {profile.showInstagram && profile.instagram.trim() && <a href={profile.instagram.trim()} target="_blank" rel="noreferrer" aria-label="GitHub" className="flex size-6 items-center justify-center"><GitHubGlyph size={20} /></a>}
+                  {profile.showFacebook && profile.facebook.trim() && <a href={profile.facebook.trim()} target="_blank" rel="noreferrer" aria-label="LinkedIn" className="flex size-6 items-center justify-center"><LinkedInGlyph size={20} /></a>}
+                  {profile.showViber && profile.viber.trim() && <a href={profile.viber.trim()} target="_blank" rel="noreferrer" aria-label="Portfolio / Project / Demo" className="flex size-6 items-center justify-center"><Globe2 size={20} /></a>}
+                </div>
+              )}
+              {hasPhone && (
+                <button type="button" onClick={() => void downloadVCard(profile, language)} style={getCardActionStyle(template, texture, design)} className="mt-4 flex h-7 w-full shrink-0 items-center justify-center gap-1.5 rounded-lg border text-[9px] font-bold shadow-sm transition hover:brightness-105">
+                  <Download size={11} /> <span className="text-[9px] font-bold leading-none">{language === 'en' ? 'Save Contact' : t.saveContact}</span>
+                </button>
+              )}
+              <div className="mt-2 w-full">
+                <CardAssetActions compact profile={profile} t={t} language={language} texture={texture} template={template} publicCode={publicCode} design={design} />
+              </div>
+            </ProfileHighlights>
           </div>
         </div>
       </div>
@@ -2299,6 +2291,7 @@ function PublicCard({ onBack, template, profile, language, t, texture, publicCod
           </div>
           <p className="public-card-prompt mt-6 mb-6 text-center text-base font-medium text-current/55">{t.tapPublic}</p>
           <div className="w-full">
+            <ProfileHighlights profile={profile} language={language}>
             {actionCount > 0 && (
               <div className={`mx-auto grid w-full max-w-[520px] gap-3 sm:gap-4 ${actionCount === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                 {hasPhone && (
@@ -2313,12 +2306,11 @@ function PublicCard({ onBack, template, profile, language, t, texture, publicCod
                 ))}
               </div>
             )}
-          </div>
-          {Boolean((profile.showInstagram && profile.instagram.trim()) || (profile.showViber && profile.viber.trim()) || (profile.showFacebook && profile.facebook.trim())) && (
+          {Boolean((profile.showInstagram && profile.instagram.trim()) || (profile.showFacebook && profile.facebook.trim()) || (profile.showViber && profile.viber.trim())) && (
             <div className="public-card-socials mt-3 flex justify-center gap-3">
-              {profile.showInstagram && profile.instagram.trim() && <a href={profile.instagram.trim()} target="_blank" rel="noreferrer" aria-label="Instagram" className="flex size-11 items-center justify-center"><InstagramGlyph size={30} /></a>}
-              {profile.showViber && profile.viber.trim() && <a href={profile.viber.trim()} target="_blank" rel="noreferrer" aria-label="Viber" className="flex size-11 items-center justify-center"><ViberGlyph size={30} /></a>}
-              {profile.showFacebook && profile.facebook.trim() && <a href={profile.facebook.trim()} target="_blank" rel="noreferrer" aria-label="Facebook" className="flex size-11 items-center justify-center"><FacebookGlyph size={30} /></a>}
+              {profile.showInstagram && profile.instagram.trim() && <a href={profile.instagram.trim()} target="_blank" rel="noreferrer" aria-label="GitHub" className="flex size-11 items-center justify-center"><GitHubGlyph size={30} /></a>}
+              {profile.showFacebook && profile.facebook.trim() && <a href={profile.facebook.trim()} target="_blank" rel="noreferrer" aria-label="LinkedIn" className="flex size-11 items-center justify-center"><LinkedInGlyph size={30} /></a>}
+              {profile.showViber && profile.viber.trim() && <a href={profile.viber.trim()} target="_blank" rel="noreferrer" aria-label="Portfolio / Project / Demo" className="flex size-11 items-center justify-center"><Globe2 size={30} /></a>}
             </div>
           )}
           {hasPhone && (
@@ -2332,6 +2324,8 @@ function PublicCard({ onBack, template, profile, language, t, texture, publicCod
             </button>
           )}
           <CardAssetActions profile={profile} t={t} language={language} texture={texture} template={template} publicCode={publicCode} design={design} />
+            </ProfileHighlights>
+          </div>
         </div>
       </div>
     </main>

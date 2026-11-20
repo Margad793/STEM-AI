@@ -17,9 +17,6 @@ const authCopy = {
     showPassword: 'Show password',
     hidePassword: 'Hide password',
     promo: 'Promo code',
-    accountType: 'Account type',
-    personal: 'Personal',
-    business: 'Business',
     signInButton: 'Sign in',
     signUpButton: 'Create account',
     googleSignIn: 'Continue with Google',
@@ -59,9 +56,6 @@ const authCopy = {
     showPassword: 'Нууц үг харуулах',
     hidePassword: 'Нууц үг нуух',
     promo: 'Урамшууллын код',
-    accountType: 'Бүртгэлийн төрөл',
-    personal: 'Хувийн',
-    business: 'Бизнес',
     signInButton: 'Нэвтрэх',
     signUpButton: 'Бүртгэл үүсгэх',
     googleSignIn: 'Google-ээр үргэлжлүүлэх',
@@ -102,7 +96,7 @@ export function AuthScreen({ language, session, accessError, onBack, initialMode
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [promoCode, setPromoCode] = useState('')
-  const [accountType, setAccountType] = useState<'personal' | 'business'>('personal')
+  const accountType = 'personal'
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -294,12 +288,6 @@ export function AuthScreen({ language, session, accessError, onBack, initialMode
 
       {!supabase && <p role="alert" className="mb-5 rounded-lg bg-amber-50 p-3 text-xs leading-relaxed text-amber-900">{t.missingConfig}</p>}
       <form onSubmit={submit} className="space-y-4">
-        {mode === 'signUp' && <div className="auth-label block text-xs font-semibold">{t.accountType}
-          <div className="mt-2 grid grid-cols-2 gap-2" role="group" aria-label={t.accountType}>
-            <button type="button" aria-pressed={accountType === 'personal'} onClick={() => setAccountType('personal')} className={`rounded-xl border-2 px-3 py-2.5 text-sm font-semibold transition ${accountType === 'personal' ? 'border-[#263b57] bg-[#17263a] text-white' : 'border-[#d9dee6] bg-white text-[#263343] hover:bg-[#f7f8fa]'}`}>{t.personal}</button>
-            <button type="button" aria-pressed={accountType === 'business'} onClick={() => setAccountType('business')} className={`rounded-xl border-2 px-3 py-2.5 text-sm font-semibold transition ${accountType === 'business' ? 'border-[#263b57] bg-[#17263a] text-white' : 'border-[#d9dee6] bg-white text-[#263343] hover:bg-[#f7f8fa]'}`}>{t.business}</button>
-          </div>
-        </div>}
         <label className="auth-label block text-xs font-semibold">{t.email}
           <input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} className="auth-input mt-2 h-11 w-full rounded-xl border-2 px-3.5 text-base outline-none focus:border-[#a9c8f4] sm:text-sm" />
         </label>

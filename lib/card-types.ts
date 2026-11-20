@@ -4,6 +4,7 @@ export type Profile = {
   company: string
   location: string
   bio: string
+  researchHighlight?: string
   businessEmail: string
   personalEmail: string
   showPhone: boolean

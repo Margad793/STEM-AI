@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Globe2, Hash, Mail, Phone } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { ChevronDown, ChevronUp, Globe2, Hash, Mail, Phone } from 'lucide-react'
 import QRCode from 'qrcode'
 import { getCarbonWaveTextureImage, getOrganizationAssets, ORGANIZATION_AVATAR_HEIGHT, ORGANIZATION_AVATAR_RIGHT, ORGANIZATION_AVATAR_TOP, ORGANIZATION_BACK_CONTENT_LEFT, ORGANIZATION_COMPANY_HEIGHT, ORGANIZATION_COMPANY_LEFT, ORGANIZATION_COMPANY_RIGHT, ORGANIZATION_COMPANY_TOP, ORGANIZATION_CONTACTS_BOTTOM, ORGANIZATION_CONTACTS_TOP, ORGANIZATION_LOGO_DIAMETER, ORGANIZATION_LOGO_LEFT, ORGANIZATION_LOGO_TOP, ORGANIZATION_PATTERN_WIDTH, ORGANIZATION_PERSON_NAME_TOP, ORGANIZATION_TEXT_LEFT, ORGANIZATION_TEXT_RIGHT, ORGANIZATION_TITLE_TOP } from '@/lib/card-design'
 import type { CardDesign, Profile, Template, Texture } from '@/lib/card-types'
@@ -34,6 +35,79 @@ type CardCopy = {
   save: string
   scan: string
   flip: string
+}
+
+export function ProfileHighlights({
+  profile,
+  language,
+  compact = false,
+  children,
+}: {
+  profile: Profile
+  language: 'en' | 'mn'
+  compact?: boolean
+  children: ReactNode
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const bio = profile.bio.trim()
+  const research = profile.researchHighlight?.trim() ?? ''
+  if (!bio && !research) return <>{children}</>
+
+  const panelId = compact ? 'compact-profile-highlights' : 'profile-highlights'
+
+  return (
+    <section className={`mx-auto flex w-full flex-col text-[#263343] ${compact ? 'max-w-[205px]' : 'max-w-[520px]'}`}>
+      <div
+        id={panelId}
+        aria-hidden={!expanded}
+        className={`grid transition-[grid-template-rows,opacity,margin] duration-300 ease-in-out ${expanded ? 'mb-2 grid-rows-[1fr] opacity-100' : 'mb-0 grid-rows-[0fr] opacity-0'}`}
+      >
+        <div className="overflow-hidden">
+          <div className={`rounded-xl border border-current/10 bg-white/75 ${compact ? 'p-2' : 'p-4 sm:p-5'}`}>
+            {bio && (
+              <>
+                <h2 className={`font-semibold uppercase tracking-[0.12em] text-[#72809a] ${compact ? 'text-[7px]' : 'text-[10px]'}`}>
+                  ABOUT / STEM BIO
+                </h2>
+                <p className={`mt-1.5 leading-relaxed ${compact ? 'text-[8px]' : 'text-sm'}`}>
+                  {bio}
+                </p>
+              </>
+            )}
+            {research && (
+              <div className={`${bio ? 'mt-2 border-t border-current/10 pt-2' : ''}`}>
+                <h3 className={`font-semibold text-[#52678c] ${compact ? 'text-[7px]' : 'text-xs'}`}>
+                  Research focus
+                </h3>
+                <p className={`mt-0.5 leading-relaxed ${compact ? 'text-[8px]' : 'text-sm'}`}>
+                  {research}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      {!expanded && <div className="w-full">{children}</div>}
+      <button
+        type="button"
+        aria-expanded={expanded}
+        aria-controls={panelId}
+        onClick={() => setExpanded((open) => !open)}
+        style={compact ? { fontSize: '9px', lineHeight: 1, WebkitTextSizeAdjust: 'none' } : undefined}
+        className={`flex w-full min-w-0 items-center justify-center rounded-xl border border-current/15 bg-white/75 font-semibold transition hover:bg-white ${compact ? 'mt-2 h-7 gap-1 px-1 text-[9px] leading-none' : 'mt-3 h-12 gap-2 px-4 text-sm'}`}
+      >
+        <span
+          style={compact ? { fontSize: '9px', lineHeight: 1, WebkitTextSizeAdjust: 'none' } : undefined}
+          className="min-w-0 truncate"
+        >
+          {expanded ? 'Hide STEM Bio & Research' : '✨ STEM Bio & Research'}
+        </span>
+        {expanded
+          ? <ChevronUp size={compact ? 12 : 16} className="shrink-0" />
+          : <ChevronDown size={compact ? 12 : 16} className="shrink-0" />}
+      </button>
+    </section>
+  )
 }
 
 function CardQR({ url }: { url: string }) {

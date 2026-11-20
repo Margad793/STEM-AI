@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { Download, Mail, Phone } from 'lucide-react'
-import { FlipCard } from '@/components/business-card'
+import { Download, Globe2, Mail, Phone } from 'lucide-react'
+import { FlipCard, ProfileHighlights } from '@/components/business-card'
 import { PublicCardAssetActions } from '@/components/public-card-asset-actions'
-import { FacebookGlyph, InstagramGlyph, ViberGlyph } from '@/components/social-icons'
+import { EcoImpact } from '@/components/eco-impact'
+import { GitHubGlyph, LinkedInGlyph } from '@/components/social-icons'
 import { getCardActionStyle, templateSlugs, templates } from '@/lib/card-design'
 import type { CardDesign, Profile, Texture } from '@/lib/card-types'
 import { supabase } from '@/lib/supabase-browser'
@@ -41,6 +42,7 @@ type PublicCard = {
   company_logo_url: string | null
   location: string
   bio: string
+  research_highlight: string | null
   email: string
   business_email: string | null
   personal_email: string | null
@@ -71,9 +73,14 @@ export default function PublicCardPage() {
   const [card, setCard] = useState<PublicCard | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [ecoTapCount, setEcoTapCount] = useState<number | null>(null)
+  const [ecoTapError, setEcoTapError] = useState('')
+  const tapRecordedCode = useRef<string | null>(null)
 
   useEffect(() => {
     let active = true
+    setEcoTapCount(null)
+    setEcoTapError('')
     if (!supabase) {
       setError('This card is temporarily unavailable.')
       setLoading(false)
@@ -82,15 +89,28 @@ export default function PublicCardPage() {
 
     void (async () => {
       try {
-        const { data, error: queryError } = await supabase
-          .from('cards')
-          .select('public_code, name, title, company, company_logo_url, location, bio, email, business_email, personal_email, show_phone, show_business_email, show_personal_email, show_room_number, show_website, show_instagram, show_facebook, show_viber, phone, room_number, website, instagram, facebook, viber, photo_url, template, texture, language, organization_code')
-          .eq('public_code', code)
-          .eq('is_published', true)
-          .maybeSingle()
+        const { data, error: queryError } = await supabase.rpc('get_public_card', {
+          p_public_code: code,
+        })
         if (!active) return
         if (queryError) throw queryError
         setCard(data as PublicCard | null)
+        if (data && tapRecordedCode.current !== code) {
+          tapRecordedCode.current = code
+          void supabase.rpc('record_card_tap', { p_public_code: code }).then(({ data: count, error: tapError }) => {
+            if (!active) return
+            if (tapError) {
+              console.error('Could not record this NFC / QR card tap.', tapError)
+              setEcoTapError('Tap counter is unavailable. Apply supabase/eco-card-taps.sql to enable it.')
+              return
+            }
+            setEcoTapCount(typeof count === 'number' ? count : 0)
+          }, (tapError: unknown) => {
+            if (!active) return
+            console.error('Could not record this NFC / QR card tap.', tapError)
+            setEcoTapError('Tap counter is unavailable. Apply supabase/eco-card-taps.sql to enable it.')
+          })
+        }
         try {
           void supabase
             .rpc('log_card_view', { p_public_code: code, p_visitor_id: getOrCreateVisitorId() })
@@ -134,7 +154,7 @@ export default function PublicCardPage() {
   const roomNumber = (card.show_room_number ?? true) ? card.room_number?.trim() || '' : ''
   const selectedTemplate = templates[Math.max(0, templateSlugs.indexOf(card.template))]
   const texture = (['holographic', 'arcs', 'matte', 'metal', 'carbon-wave'].includes(card.texture) ? card.texture : 'arcs') as Texture
-  const language = card.language === 'mn' ? 'mn' : 'en'
+  const language = 'en'
   // The saved organization design drives the card art and the action buttons.
   const design: CardDesign = { colorId: null, patternId: null, organizationCode: card.organization_code ?? '' }
   const profile: Profile = {
@@ -143,6 +163,7 @@ export default function PublicCardPage() {
     company: card.company,
     location: card.location,
     bio: card.bio,
+    researchHighlight: card.research_highlight ?? '',
     businessEmail,
     personalEmail,
     showPhone: phoneVisible,
@@ -163,9 +184,9 @@ export default function PublicCardPage() {
     companyLogo: card.company_logo_url || '',
   }
   const cardCopy = {
-    save: language === 'mn' ? 'Хадгалах' : 'Save',
-    scan: language === 'mn' ? 'Холбогдохын тулд уншуулна уу' : 'Scan to connect',
-    flip: language === 'mn' ? 'Карт эргүүлэх' : 'Flip card',
+    save: 'Save',
+    scan: 'Scan to connect',
+    flip: 'Flip card',
   }
 
   const downloadContact = () => {
@@ -194,9 +215,7 @@ export default function PublicCardPage() {
         window.setTimeout(() => URL.revokeObjectURL(url), 2000)
       } catch (error) {
         console.error('Unable to create contact card:', error)
-        window.alert(language === 'mn'
-          ? 'Харилцагчийн зурагтай файлыг бэлтгэж чадсангүй. Зургийн файлаа шалгаад дахин оролдоно уу.'
-          : 'Could not prepare the contact photo. Please check the image and try again.')
+        window.alert('Could not prepare the contact photo. Please check the image and try again.')
       }
     })()
   }
@@ -211,27 +230,32 @@ export default function PublicCardPage() {
           <div className="public-card-flip mt-3 mb-0 w-full">
             <FlipCard template={selectedTemplate} profile={profile} t={cardCopy} texture={texture} publicCode={code} design={design} />
           </div>
-          <p className="public-card-prompt mt-6 mb-6 text-center text-base font-medium text-current/55">{language === 'mn' ? 'Холбоо барих мэдээллийг харахын тулд карт дээр товшино уу.' : 'Tap the card to see contact details'}</p>
+          <p className="public-card-prompt mt-6 mb-6 text-center text-base font-medium text-current/55">Tap the card to see contact details</p>
+          <ProfileHighlights profile={profile} language={language}>
           {actionCount > 0 && (
             <div className={`w-full max-w-[520px] grid gap-3 sm:gap-4 ${actionCount === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-              {phoneVisible && <a href={`tel:${phone}`} style={getCardActionStyle(selectedTemplate, texture, design)} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border px-3 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]"><Phone size={14} />{language === 'mn' ? 'Залгах' : 'Call now'}</a>}
-              {businessEmailVisible && <a href={`mailto:${businessEmail}`} style={getCardActionStyle(selectedTemplate, texture, design)} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border px-3 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]"><Mail size={14} />{language === 'mn' ? 'Имэйл бичих' : 'Email'}</a>}
-              {personalEmailVisible && <a href={`mailto:${personalEmail}`} style={getCardActionStyle(selectedTemplate, texture, design)} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border px-3 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]"><Mail size={14} />{language === 'mn' ? 'Имэйл бичих' : 'Email'}</a>}
+              {phoneVisible && <a href={`tel:${phone}`} style={getCardActionStyle(selectedTemplate, texture, design)} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border px-3 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]"><Phone size={14} />Call now</a>}
+              {businessEmailVisible && <a href={`mailto:${businessEmail}`} style={getCardActionStyle(selectedTemplate, texture, design)} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border px-3 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]"><Mail size={14} />Email</a>}
+              {personalEmailVisible && <a href={`mailto:${personalEmail}`} style={getCardActionStyle(selectedTemplate, texture, design)} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border px-3 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]"><Mail size={14} />Email</a>}
             </div>
           )}
           {Boolean(instagram || facebook || viber) && (
             <div className="public-card-socials mt-3 flex justify-center gap-3">
-              {instagram && <a href={instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="flex size-11 items-center justify-center"><InstagramGlyph size={30} /></a>}
-              {viber && <a href={viber} target="_blank" rel="noreferrer" aria-label="Viber" className="flex size-11 items-center justify-center"><ViberGlyph size={30} /></a>}
-              {facebook && <a href={facebook} target="_blank" rel="noreferrer" aria-label="Facebook" className="flex size-11 items-center justify-center"><FacebookGlyph size={30} /></a>}
+              {instagram && <a href={instagram} target="_blank" rel="noreferrer" aria-label="GitHub" className="flex size-11 items-center justify-center"><GitHubGlyph size={30} /></a>}
+              {facebook && <a href={facebook} target="_blank" rel="noreferrer" aria-label="LinkedIn" className="flex size-11 items-center justify-center"><LinkedInGlyph size={30} /></a>}
+              {viber && <a href={viber} target="_blank" rel="noreferrer" aria-label="Portfolio / Project / Demo" className="flex size-11 items-center justify-center"><Globe2 size={30} /></a>}
             </div>
           )}
           {phoneVisible && (
             <button type="button" onClick={downloadContact} style={getCardActionStyle(selectedTemplate, texture, design)} className="public-card-save mx-auto mt-3 flex h-12 w-full max-w-[520px] items-center justify-center gap-2.5 rounded-xl border px-5 text-sm font-bold shadow-[0_10px_24px_rgba(20,30,50,0.25)] transition hover:brightness-105 active:scale-[0.99]">
-              <Download size={16} strokeWidth={2.4} />{language === 'mn' ? 'Харилцагчийн жагсаалтад хадгалах' : 'Save Contact'}
+              <Download size={16} strokeWidth={2.4} />Save Contact
             </button>
           )}
           <PublicCardAssetActions profile={profile} template={selectedTemplate} texture={texture} publicCode={code} language={language} design={design} />
+          </ProfileHighlights>
+          <div className="mt-3 w-full">
+            <EcoImpact tapCount={ecoTapCount} language={language} error={ecoTapError} />
+          </div>
           <p className="mt-3 break-all text-center text-[8px] leading-tight text-current/45">{publicCardHost}/c/{card.public_code}</p>
         </div>
       </div>

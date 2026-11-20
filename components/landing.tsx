@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ArrowRight, Check, ChevronDown, Download, EyeOff, Languages, Leaf, QrCode, Share2, SmartphoneNfc } from 'lucide-react'
+import { ArrowRight, Check, ChevronDown, Download, EyeOff, Leaf, QrCode, Share2, SmartphoneNfc } from 'lucide-react'
 
 type Language = 'en' | 'mn'
 
@@ -18,43 +18,43 @@ const NFC_PHONE_IDLE_IMAGE = '/nfc-phone-idle.png'
 const landingCopy = {
   en: {
     navSignIn: 'Sign in',
-    eyebrow: 'Digital business card',
-    h1a: 'Your business card appears',
+    eyebrow: 'Smart NFC & AI Portfolio for STEM Students & Researchers',
+    h1a: 'Share your STEM identity',
     h1b: 'the moment a phone comes close',
-    sub: 'Cardliy is a digital business card you share with an NFC card, a QR code or a plain link. Build your profile once and hand it over — no app to install.',
+    sub: 'Cardliy STEM gives students, researchers and innovators one tap to share their profile, AI and research work through NFC, QR or a link — no app to install.',
     ctaPrimary: 'Get started',
     ctaSecondary: 'How it works',
     chip1: 'No app needed',
     chip2: 'NFC · QR · LINK',
-    chip3: 'MN · EN',
+    chip3: 'ENGLISH-FIRST',
     sceneIdle: 'Hold the NFC card to the phone',
     nfcCardLabel: 'NFC business card',
     cap1: '① Bring the NFC card close to the phone',
     cap2: '② Your digital card opens',
     howEyebrow: 'How it works?',
     step1Title: 'Create your card',
-    step1Desc: 'Add your name, title, photo and details, hit save, and your digital card is ready.',
+    step1Desc: 'Add your name, STEM role, research highlight and profile, then use AI to generate a concise introduction.',
     step2Title: 'Plenty of ways to share',
     step2Desc: 'Hand it over with an NFC card, a QR code or a Link — whoever you meet.',
     step3Title: 'Instant actions',
     step3Desc: 'The visitor opens your card on their phone, saves your number to Contacts and keeps the card image and QR code as a photo.',
     featEyebrow: 'Advantages',
-    f1Title: 'No paper waste',
-    f1Desc: 'An NFC card means no printed business cards to reprint or throw away.',
+    f1Title: 'Lower paper impact',
+    f1Desc: 'Share a STEM profile with NFC or QR instead of printed cards, notes and conference handouts.',
     f2Title: 'Card and QR code',
     f2Desc: 'Hold the card to the phone, or scan the QR code — your card opens either way.',
     f3Title: 'Save contact details',
     f3Desc: 'Contacts keeps the number together with the rest of your details.',
-    f4Title: 'Social links',
-    f4Desc: 'Add your Instagram, Facebook and Viber straight as links.',
-    f5Title: 'Switch language',
-    f5Desc: 'The card works in Mongolian and English.',
+    f4Title: 'STEM project links',
+    f4Desc: 'Show your GitHub code, LinkedIn profile and a portfolio or live project demo.',
+    f5Title: 'English-first experience',
+    f5Desc: 'A clear English interface for international STEM events.',
     f6Title: 'Hide what you want',
     f6Desc: 'Choose which details stay off your public card.',
-    ctaTitle: 'Create your card today',
-    ctaSub: 'Setting up your profile takes a couple of minutes.',
+    ctaTitle: 'Create your STEM smart identity',
+    ctaSub: 'Build an AI-assisted research profile and share it in one tap.',
     ctaButton: 'Create account',
-    footer: '© 2026 Cardliy · Digital business cards',
+    footer: '© 2026 Cardliy STEM · NFC Smart Identity & AI Portfolio',
     back: 'Back',
     changeLanguage: 'Change language',
     switchToEnglish: 'Change the website language to English?',
@@ -72,7 +72,7 @@ const landingCopy = {
     ctaSecondary: 'Хэрхэн ажилладаг вэ?',
     chip1: 'Апп шаардлагагүй',
     chip2: 'NFC · QR · LINK',
-    chip3: 'MN · EN',
+    chip3: 'ENGLISH-FIRST',
     sceneIdle: 'NFC картыг утсанд хүргэнэ үү',
     nfcCardLabel: 'NFC нэрийн хуудас',
     cap1: '① NFC картыг утсанд ойртуулна',
@@ -91,8 +91,8 @@ const landingCopy = {
     f2Desc: 'Картыг утсанд ойртуулаад харин QR кодыг утсаар уншуулаад л нэрийн хуудас нээгдэнэ.',
     f3Title: 'Холбоо барих мэдээлэл хадгалах',
     f3Desc: 'Contacts дотор дугаарын хамтаар бусад мэдээллийг хадгална.',
-    f4Title: 'Цахим хаягийн холбоос',
-    f4Desc: 'Instagram, Facebook, Viber гэсэн 3 цахим хаягаа шууд холбоос байдлаар оруулах.',
+    f4Title: 'STEM төслийн холбоосууд',
+    f4Desc: 'GitHub код, LinkedIn профайл болон портфолио эсвэл төслийн демогоо харуулна.',
     f5Title: 'Хэл солих боломж',
     f5Desc: 'Нэрийн хуудас монгол, англи хэл дээр ажиллах боломжтой',
     f6Title: 'Мэдээллээ нуух',
@@ -110,22 +110,19 @@ const landingCopy = {
   },
 } as const
 
-const featureIcons = [Leaf, QrCode, Download, Share2, Languages, EyeOff]
+const featureIcons = [Leaf, QrCode, Download, Share2, SmartphoneNfc, EyeOff]
 
 export function Landing({
   language,
-  onLanguageChange,
   onSignIn,
 }: {
   language: Language
-  onLanguageChange: (language: Language) => void
   onSignIn: (mode: 'signIn' | 'signUp') => void
 }) {
   const t = landingCopy[language]
   const [cardImageFailed, setCardImageFailed] = useState(false)
   const [phoneResultImage, setPhoneResultImage] = useState<string | null>(null)
   const [phoneIdleImage, setPhoneIdleImage] = useState<string | null>(null)
-  const [pendingLanguage, setPendingLanguage] = useState<Language | null>(null)
 
   useEffect(() => {
     const probe = (src: string, onLoad: (loaded: string) => void) => {
@@ -139,15 +136,6 @@ export function Landing({
 
   const scrollToHow = () => {
     document.getElementById('how')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
-  const requestLanguageChange = (nextLanguage: Language) => {
-    if (nextLanguage !== language) setPendingLanguage(nextLanguage)
-  }
-
-  const confirmLanguageChange = () => {
-    if (pendingLanguage) onLanguageChange(pendingLanguage)
-    setPendingLanguage(null)
   }
 
   const featureKeys = ['f1', 'f2', 'f3', 'f4', 'f5', 'f6'] as const
@@ -168,24 +156,6 @@ export function Landing({
             <span className="font-serif text-[19px] font-medium italic tracking-[-0.045em] text-white">Cardliy</span>
           </button>
           <div className="flex items-center gap-2">
-            <div className="flex rounded-full border border-white/20 bg-white/10 p-0.5">
-              <button
-                type="button"
-                onClick={() => requestLanguageChange('en')}
-                aria-pressed={language === 'en'}
-                className={`rounded-full px-2.5 py-1 text-[10px] font-bold transition ${language === 'en' ? 'bg-white text-[#172538]' : 'text-[#b7c3d6] hover:text-white'}`}
-              >
-                EN
-              </button>
-              <button
-                type="button"
-                onClick={() => requestLanguageChange('mn')}
-                aria-pressed={language === 'mn'}
-                className={`rounded-full px-2.5 py-1 text-[10px] font-bold transition ${language === 'mn' ? 'bg-white text-[#172538]' : 'text-[#b7c3d6] hover:text-white'}`}
-              >
-                MN
-              </button>
-            </div>
             <button
               type="button"
               onClick={() => onSignIn('signIn')}
@@ -359,39 +329,6 @@ export function Landing({
         </div>
       </footer>
 
-      {pendingLanguage && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#101828]/45 p-4" role="presentation">
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="landing-language-title"
-            className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
-          >
-            <h2 id="landing-language-title" className="text-lg font-semibold text-[#18202d]">
-              {t.changeLanguage}
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-[#52606f]">
-              {pendingLanguage === 'mn' ? t.switchToMongolian : t.switchToEnglish}
-            </p>
-            <div className="mt-6 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setPendingLanguage(null)}
-                className="rounded-lg border border-[#dfe3e8] px-4 py-2 text-sm font-semibold text-[#52606f] hover:bg-[#f7f8fa]"
-              >
-                {t.no}
-              </button>
-              <button
-                type="button"
-                onClick={confirmLanguageChange}
-                className="rounded-lg bg-[#172538] px-4 py-2 text-sm font-semibold text-white hover:bg-[#24354b]"
-              >
-                {t.yes}
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
     </main>
   )
 }
