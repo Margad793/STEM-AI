@@ -1,3 +1,5 @@
+import { Leaf } from 'lucide-react'
+
 export function EcoImpact({
   tapCount,
   language,
@@ -8,15 +10,25 @@ export function EcoImpact({
   error?: string
 }) {
   const count = tapCount ?? 0
-  const savings = tapCount === null
-    ? '— sheets · — L saved'
-    : `~${(count * 10).toLocaleString()} sheets · ~${(count * 2).toLocaleString()} L saved`
+  const savings = error
+    ? language === 'en' ? 'Impact unavailable' : 'Нөлөөллийн тоо боломжгүй'
+    : tapCount === null
+      ? language === 'en' ? '— taps · — L water saved' : '— товшилт · — л ус хэмнэв'
+      : language === 'en'
+        ? `${count.toLocaleString()} taps · ~${(count * 2).toLocaleString()} L water saved`
+        : `${count.toLocaleString()} товшилт · ~${(count * 2).toLocaleString()} л ус хэмнэв`
 
   return (
     <p
-      title={error || (language === 'en' ? 'Estimated savings: 10 sheets ≈ 2 L water per card visit' : 'Нэг нээлтэд 10 хуудас ≈ 2 л ус хэмнэнэ гэсэн ойролцоо тооцоо')}
-      className="max-w-full truncate text-right text-[9px] font-medium leading-tight text-current/60 sm:text-[10px]"
+      role={error ? 'status' : undefined}
+      title={error || (language === 'en' ? 'Estimated water savings: about 2 L per card visit' : 'Ойролцоогоор нэг нээлтэд 2 л ус хэмнэнэ')}
+      className={`inline-flex max-w-full items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[8px] font-semibold leading-tight sm:gap-1 sm:px-2 sm:py-1 sm:text-[10px] ${
+        error
+          ? 'border-amber-200 bg-amber-50 text-amber-800'
+          : 'border-emerald-200/80 bg-emerald-50/90 text-emerald-800'
+      }`}
     >
+      {!error && <Leaf size={9} className="shrink-0 text-emerald-600 sm:size-[11px]" aria-hidden="true" />}
       {savings}
     </p>
   )
