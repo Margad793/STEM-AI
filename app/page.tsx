@@ -2228,7 +2228,7 @@ function PreviewPanel({ template, profile, t, language, texture, publicCode, des
         <div className="absolute left-1/2 top-0 z-20 h-4 w-24 -translate-x-1/2 rounded-b-2xl bg-[#303e51]" />
         <div className={`flex min-h-[430px] w-full min-w-0 flex-col items-center justify-center overflow-visible rounded-[24px] px-2.5 py-5 ${template.publicBackground}`}>
           <div className="mb-1 flex w-full min-w-0 max-w-[205px] justify-end">
-            <EcoImpact tapCount={ecoTapCount} language={language} error={ecoTapError} />
+            <EcoImpact tapCount={ecoTapCount} language={language} error={ecoTapError} compact />
           </div>
           <div className="order-1 mb-0 flex w-full min-w-0 max-w-[205px] shrink-0 justify-center overflow-hidden">
             <FlipCard compact template={template} profile={profile} t={t} texture={texture} publicCode={publicCode} design={design} />
