@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
-import { ArrowUpRight, Camera, Check, Download, Eye, EyeOff, ExternalLink, Globe2, Hash, KeyRound, LogOut, Mail, Menu, MessageCircle, MoreHorizontal, Phone, QrCode, Save, Settings2, Share2, Sparkles, Upload, UserRound, UsersRound, X } from 'lucide-react'
+import { ArrowUpRight, Camera, Check, Download, Eye, EyeOff, ExternalLink, Globe2, Hash, KeyRound, LoaderCircle, LogOut, Mail, Menu, MessageCircle, MoreHorizontal, Phone, QrCode, Save, Settings2, Share2, Sparkles, Upload, UserRound, UsersRound, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toBlob } from 'html-to-image'
 import QRCode from 'qrcode'
@@ -17,6 +17,7 @@ import type { CardDesign, Profile, Template, Texture } from '@/lib/card-types'
 import { fitText, packContactRows } from '@/lib/fit-text'
 import { supabase, supabaseConfigured } from '@/lib/supabase-browser'
 import { getPublicSiteOrigin } from '@/lib/site'
+import { generateLocalStemBio } from '@/lib/stem-bio'
 import { createContactVCard, encodeContactPhoto } from '@/lib/vcard'
 
 type Language = 'en' | 'mn'
@@ -125,6 +126,9 @@ export default function Page() {
   const [profile, setProfile] = useState(initialProfile)
   const [ecoTapCount, setEcoTapCount] = useState<number | null>(null)
   const [ecoTapError, setEcoTapError] = useState('')
+  const [generatingBio, setGeneratingBio] = useState(false)
+  const [bioCooldown, setBioCooldown] = useState(false)
+  const bioCooldownTimeout = useRef<number | null>(null)
   const t = copy[language]
   const template = templates[selectedTemplate]
   const design: CardDesign = { colorId: null, patternId: null, organizationCode: appliedOrganizationCode }
@@ -157,6 +161,9 @@ export default function Page() {
     const timeout = window.setTimeout(() => setSaveError(''), 6000)
     return () => window.clearTimeout(timeout)
   }, [saveError])
+  useEffect(() => () => {
+    if (bioCooldownTimeout.current !== null) window.clearTimeout(bioCooldownTimeout.current)
+  }, [])
   useEffect(() => {
     if (!settingsOpen) return
     const handlePointerDown = (event: MouseEvent) => {
@@ -387,20 +394,39 @@ export default function Page() {
   }, [publicCode])
 
   const update = (key: keyof Profile) => (value: string) => setProfile((current) => ({ ...current, [key]: value }))
-  const generateStemBio = () => {
-    const name = profile.name.trim()
-    const title = profile.title.trim()
-    const company = profile.company.trim()
-    const highlight = profile.researchHighlight?.trim()
-    if (!name && !title && !company && !highlight) return
+  const generateStemBio = async () => {
+    if (generatingBio || bioCooldown) return
+    setGeneratingBio(true)
+    const input = {
+      fullName: profile.name,
+      jobTitle: profile.title,
+      company: profile.company,
+      location: profile.location,
+      researchHighlight: profile.researchHighlight ?? '',
+    }
+    let bio = generateLocalStemBio(input)
 
-    const identity = [name, title].filter(Boolean).join(', ')
-    const affiliation = company ? ` at ${company}` : ''
-    const focus = highlight
-      ? ` Their work includes ${highlight.charAt(0).toLowerCase()}${highlight.slice(1).replace(/[.!?]+$/, '')}.`
-      : ' Their work explores practical applications of AI, technology, and scientific research.'
-    const bio = `${identity || 'A STEM researcher'}${affiliation} is focused on building thoughtful technology for real-world impact.${focus}`
-    setProfile((current) => ({ ...current, bio: bio.trim() }))
+    try {
+      const response = await fetch('/api/generate-bio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      })
+      const result: unknown = await response.json()
+      if (response.ok && typeof result === 'object' && result !== null && 'bio' in result && typeof result.bio === 'string' && result.bio.trim().length > 0 && result.bio.trim().length <= 240) {
+        bio = result.bio.trim()
+      }
+    } catch {
+      console.warn('Using local STEM bio fallback after the generation request failed.')
+    }
+
+    setProfile((current) => ({ ...current, bio }))
+    setGeneratingBio(false)
+    setBioCooldown(true)
+    bioCooldownTimeout.current = window.setTimeout(() => {
+      setBioCooldown(false)
+      bioCooldownTimeout.current = null
+    }, 3000)
   }
   const saveCard = async () => {
     const client = supabase
@@ -1210,11 +1236,12 @@ export default function Page() {
                   </label>
                   <button
                     type="button"
-                    onClick={generateStemBio}
-                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#d8def0] bg-[#f5f7ff] px-3 text-xs font-semibold text-[#455d96] transition hover:bg-[#edf1ff]"
+                    onClick={() => void generateStemBio()}
+                    disabled={generatingBio || bioCooldown}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#d8def0] bg-[#f5f7ff] px-3 text-xs font-semibold text-[#455d96] transition hover:bg-[#edf1ff] disabled:cursor-wait disabled:opacity-60"
                   >
-                    <Sparkles size={13} />
-                    {language === 'en' ? 'Generate STEM Bio with AI' : 'AI-аар STEM танилцуулга үүсгэх'}
+                    {generatingBio ? <LoaderCircle size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                    {generatingBio ? 'Generating...' : language === 'en' ? 'Generate STEM Bio with AI' : 'AI-аар STEM танилцуулга үүсгэх'}
                   </button>
                 </div>
                 <textarea
