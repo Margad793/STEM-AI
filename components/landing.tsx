@@ -5,15 +5,14 @@ import { ArrowRight, Check, ChevronDown, Download, EyeOff, Leaf, QrCode, Share2,
 
 type Language = 'en' | 'mn'
 
-const LOGO_URL = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_gbudftgbudftgbud-6IOh1Fmz2F5ytWKVOX16A263gpQwEa.jpg'
 // Drop a photo of the physical NFC card at this path (public/nfc-card.png).
 // Until it exists the built-in CSS card artwork is shown instead.
 const NFC_CARD_IMAGE = '/nfc-card.png'
 // public/nfc-phone.png — the screen after the NFC card has been scanned.
 const NFC_PHONE_IMAGE = '/nfc-phone.png'
-// public/nfc-phone-idle.png — the "hold the NFC card to the phone" state.
+// public/nfc-phone-idl.png — the idle phone state.
 // Until it exists the CSS phone with that same text is shown instead.
-const NFC_PHONE_IDLE_IMAGE = '/nfc-phone-idle.png'
+const NFC_PHONE_IDLE_IMAGE = '/nfc-phone-idl.png'
 
 const landingCopy = {
   en: {
@@ -21,13 +20,12 @@ const landingCopy = {
     eyebrow: 'Smart NFC & AI Portfolio for STEM Students & Researchers',
     h1a: 'Share your STEM identity',
     h1b: 'the moment a phone comes close',
-    sub: 'Cardliy STEM gives students, researchers and innovators one tap to share their profile, AI and research work through NFC, QR or a link — no app to install.',
+    sub: 'STEM2Connect gives students, researchers and innovators one tap to share their profile, AI and research work through NFC, QR or a link — no app to install.',
     ctaPrimary: 'Get started',
     ctaSecondary: 'How it works',
     chip1: 'No app needed',
     chip2: 'NFC · QR · LINK',
     chip3: 'ENGLISH-FIRST',
-    sceneIdle: 'Hold the NFC card to the phone',
     nfcCardLabel: 'NFC business card',
     cap1: '① Bring the NFC card close to the phone',
     cap2: '② Your digital card opens',
@@ -54,7 +52,7 @@ const landingCopy = {
     ctaTitle: 'Create your STEM smart identity',
     ctaSub: 'Build an AI-assisted research profile and share it in one tap.',
     ctaButton: 'Create account',
-    footer: '© 2026 Cardliy STEM · NFC Smart Identity & AI Portfolio',
+    footer: '© 2026 STEM2Connect · NFC Smart Identity & AI Portfolio',
     back: 'Back',
     changeLanguage: 'Change language',
     switchToEnglish: 'Change the website language to English?',
@@ -67,13 +65,12 @@ const landingCopy = {
     eyebrow: 'Дижитал нэрийн хуудас',
     h1a: 'Карт ойртох мөчид л',
     h1b: 'таны нэрийн хуудас гарч ирнэ',
-    sub: 'Cardliy нь NFC карт, QR код эсвэл Link-ээр дамжуулан бусадтай хуваалцах дижитал нэрийн хуудас. Профайлаа нэг удаа үүсгээд, харилцагчдаа апп таталгүйгээр мэдээллээ шууд дамжуулаарай.',
+    sub: 'STEM2Connect нь NFC карт, QR код эсвэл Link-ээр дамжуулан бусадтай хуваалцах STEM профайл. Профайлаа нэг удаа үүсгээд, хамтран ажиллах хүмүүст мэдээллээ шууд дамжуулаарай.',
     ctaPrimary: 'Эхлэх',
     ctaSecondary: 'Хэрхэн ажилладаг вэ?',
     chip1: 'Апп шаардлагагүй',
     chip2: 'NFC · QR · LINK',
     chip3: 'ENGLISH-FIRST',
-    sceneIdle: 'NFC картыг утсанд хүргэнэ үү',
     nfcCardLabel: 'NFC нэрийн хуудас',
     cap1: '① NFC картыг утсанд ойртуулна',
     cap2: '② Нэрийн хуудас нээгдэнэ',
@@ -100,7 +97,7 @@ const landingCopy = {
     ctaTitle: 'Өөрийн нэрийн хуудсаа үүсгэ',
     ctaSub: 'Профайлаа бэлтгэхэд хэдхэн минут шаардлагатай.',
     ctaButton: 'Бүртгэл үүсгэх',
-    footer: '© 2026 Cardliy · Дижитал нэрийн хуудас',
+    footer: '© 2026 STEM2Connect · STEM дижитал профайл',
     back: 'Буцах',
     changeLanguage: 'Хэл солих',
     switchToEnglish: 'Вэбсайтын хэлийг англи хэл рүү өөрчлөх үү?',
@@ -121,6 +118,7 @@ export function Landing({
 }) {
   const t = landingCopy[language]
   const [cardImageFailed, setCardImageFailed] = useState(false)
+  const [cardImageReady, setCardImageReady] = useState(false)
   const [phoneResultImage, setPhoneResultImage] = useState<string | null>(null)
   const [phoneIdleImage, setPhoneIdleImage] = useState<string | null>(null)
 
@@ -128,10 +126,19 @@ export function Landing({
     const probe = (src: string, onLoad: (loaded: string) => void) => {
       const image = new Image()
       image.onload = () => onLoad(src)
+      image.onerror = () => onLoad('')
       image.src = src
     }
     probe(NFC_PHONE_IMAGE, setPhoneResultImage)
     probe(NFC_PHONE_IDLE_IMAGE, setPhoneIdleImage)
+
+    const cardImage = new Image()
+    cardImage.onload = () => setCardImageReady(true)
+    cardImage.onerror = () => {
+      setCardImageReady(false)
+      setCardImageFailed(true)
+    }
+    cardImage.src = NFC_CARD_IMAGE
   }, [])
 
   const scrollToHow = () => {
@@ -148,12 +155,9 @@ export function Landing({
             type="button"
             onClick={() => window.location.reload()}
             className="flex min-w-0 items-center gap-2"
-            aria-label="Cardliy"
+            aria-label="STEM2Connect"
           >
-            <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-[11px] bg-[#f7f4ed]">
-              <img src={LOGO_URL} alt="Cardliy logo" className="size-full object-cover" />
-            </span>
-            <span className="font-serif text-[19px] font-medium italic tracking-[-0.045em] text-white">Cardliy</span>
+            <span className="font-serif text-[19px] font-medium italic tracking-[-0.045em] text-white">STEM2Connect</span>
           </button>
           <div className="flex items-center gap-2">
             <button
@@ -210,16 +214,9 @@ export function Landing({
 
                 <div className="nfc-phone-float">
                   <div className="nfc-phone">
-                    <div className={`nfc-phone-state nfc-phase-idle${phoneResultImage ? '' : ' nfc-phase-hold'}`}>
-                      {phoneIdleImage ? (
+                    <div className="nfc-phone-state nfc-phase-idle">
+                      {phoneIdleImage && (
                         <img src={phoneIdleImage} alt="" className="nfc-phone-img" />
-                      ) : (
-                        <div className="nfc-phone-face">
-                          <div className="nfc-idle">
-                            <SmartphoneNfc size={34} strokeWidth={1.6} />
-                            <p>{t.sceneIdle}</p>
-                          </div>
-                        </div>
                       )}
                     </div>
                     {phoneResultImage && (
@@ -235,17 +232,20 @@ export function Landing({
                         <span className="nfc-chip" aria-hidden="true" />
                         <div className="nfc-card-foot">
                           <div>
-                            <p className="nfc-card-brand">Cardliy</p>
+                            <p className="nfc-card-brand">STEM2Connect</p>
                             <p className="nfc-card-label">{t.nfcCardLabel}</p>
                           </div>
                           <SmartphoneNfc size={22} className="text-[#d7b56a]" />
                         </div>
                       </div>
+                    ) : !cardImageReady ? (
+                      <div className="nfc-card-art nfc-card-loading" aria-hidden="true" />
                     ) : (
                       <img
                         src={NFC_CARD_IMAGE}
                         alt=""
                         className="nfc-card-art"
+                        onLoad={() => setCardImageReady(true)}
                         onError={() => setCardImageFailed(true)}
                       />
                     )}

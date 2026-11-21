@@ -21,7 +21,7 @@ const authCopy = {
     signUpButton: 'Create account',
     googleSignIn: 'Continue with Google',
     googleSignUp: 'Create account with Google',
-    googleLinkHint: 'Use your existing Gmail account. The promo code is still required to create a Cardliy account.',
+    googleLinkHint: 'Use your existing Gmail account. The promo code is still required to create a STEM2Connect account.',
     or: 'or',
     promoHint: 'Enter the account invitation code to register.',
     missingPromo: 'Enter the promo code to create an account.',
@@ -41,7 +41,7 @@ const authCopy = {
     yes: 'Yes',
     no: 'No',
     accessTitle: 'Account access is not active',
-    accessDescription: 'Your sign-in succeeded, but this account does not have Cardliy access yet. If you registered with the valid promo code, ask the site administrator to run the latest supabase/promo-code-trigger.sql in Supabase SQL Editor, then sign out and sign in again. Otherwise, the administrator must grant access to this account.',
+    accessDescription: 'Your sign-in succeeded, but this account does not have STEM2Connect access yet. If you registered with the valid promo code, ask the site administrator to run the latest supabase/promo-code-trigger.sql in Supabase SQL Editor, then sign out and sign in again. Otherwise, the administrator must grant access to this account.',
     signOut: 'Sign out',
     back: 'Back',
     wrongCodeTitle: 'Incorrect code',
@@ -60,7 +60,7 @@ const authCopy = {
     signUpButton: 'Бүртгэл үүсгэх',
     googleSignIn: 'Google-ээр үргэлжлүүлэх',
     googleSignUp: 'Google хаягаар бүртгэл үүсгэх',
-    googleLinkHint: 'Өөрийн Gmail хаягийг ашиглана уу. Cardliy бүртгэл үүсгэхэд урамшууллын код шаардлагатай.',
+    googleLinkHint: 'Өөрийн Gmail хаягийг ашиглана уу. STEM2Connect бүртгэл үүсгэхэд урамшууллын код шаардлагатай.',
     or: 'эсвэл',
     promoHint: 'Бүртгүүлэхийн тулд урилгын код оруулна уу.',
     missingPromo: 'Бүртгэл үүсгэхийн тулд урамшууллын код оруулна уу.',
@@ -80,7 +80,7 @@ const authCopy = {
     yes: 'Тийм',
     no: 'Үгүй',
     accessTitle: 'Бүртгэлийн эрх идэвхгүй байна',
-    accessDescription: 'Та амжилттай нэвтэрсэн боловч энэ бүртгэлд Cardliy ашиглах эрх олгогдоогүй байна. Зөв promo кодоор бүртгүүлсэн бол сайтын админаас Supabase SQL Editor дээр шинэчилсэн supabase/promo-code-trigger.sql файлыг ажиллуулахыг хүсээд, дараа нь гараад дахин нэвтэрнэ үү. Үгүй бол админ энэ бүртгэлд эрх олгох шаардлагатай.',
+    accessDescription: 'Та амжилттай нэвтэрсэн боловч энэ бүртгэлд STEM2Connect ашиглах эрх олгогдоогүй байна. Зөв promo кодоор бүртгүүлсэн бол сайтын админаас Supabase SQL Editor дээр шинэчилсэн supabase/promo-code-trigger.sql файлыг ажиллуулахыг хүсээд, дараа нь гараад дахин нэвтэрнэ үү. Үгүй бол админ энэ бүртгэлд эрх олгох шаардлагатай.',
     signOut: 'Гарах',
     back: 'Буцах',
     wrongCodeTitle: 'Код буруу',
@@ -118,8 +118,8 @@ export function AuthScreen({ language, session, accessError, onBack, initialMode
         setError(t.invalidPromo)
         return
       }
-      window.sessionStorage.setItem('cardly_pending_promo', promoCode)
-      window.sessionStorage.setItem('cardly_pending_account_type', accountType)
+      window.sessionStorage.setItem('stem2connect_pending_promo', promoCode)
+      window.sessionStorage.setItem('stem2connect_pending_account_type', accountType)
     }
 
     setBusy(true)
@@ -224,9 +224,8 @@ export function AuthScreen({ language, session, accessError, onBack, initialMode
   if (session) return <main className="auth-screen flex min-h-screen items-center justify-center p-4 text-[#eef4ff]">
     <section className="auth-panel w-full max-w-md rounded-2xl border p-6 shadow-sm sm:p-8">
       <div className="mb-7 flex items-center justify-between">
-        <button type="button" onClick={() => window.location.reload()} className="flex items-center gap-2" aria-label="Cardliy">
-          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_gbudftgbudftgbud-6IOh1Fmz2F5ytWKVOX16A263gpQwEa.jpg" alt="Cardliy logo" className="size-9 rounded-[10px] object-cover" />
-          <span className="auth-brand font-serif text-2xl font-medium italic tracking-[-0.045em]">Cardliy</span>
+        <button type="button" onClick={() => window.location.reload()} className="flex items-center gap-2" aria-label="STEM2Connect">
+          <span className="auth-brand font-serif text-2xl font-medium italic tracking-[-0.045em]">STEM2Connect</span>
         </button>
         <button type="button" onClick={() => void supabase?.auth.signOut()} className="text-xs font-semibold text-[#52606f]">{t.signOut}</button>
       </div>
@@ -276,9 +275,8 @@ export function AuthScreen({ language, session, accessError, onBack, initialMode
         </button>
       )}
       <section className={`auth-panel${onBack ? ' auth-panel--with-back' : ''} w-full rounded-2xl border p-6 shadow-sm sm:p-8`}>
-      <button type="button" onClick={() => window.location.reload()} className="mb-7 flex items-center gap-2" aria-label="Cardliy">
-        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_gbudftgbudftgbud-6IOh1Fmz2F5ytWKVOX16A263gpQwEa.jpg" alt="Cardliy logo" className="size-9 rounded-[10px] object-cover" />
-        <span className="auth-brand font-serif text-2xl font-medium italic tracking-[-0.045em]">Cardliy</span>
+      <button type="button" onClick={() => window.location.reload()} className="mb-7 flex items-center gap-2" aria-label="STEM2Connect">
+        <span className="auth-brand font-serif text-2xl font-medium italic tracking-[-0.045em]">STEM2Connect</span>
       </button>
 
       <div className="mb-6 grid grid-cols-2 rounded-xl bg-[#f1f3f6] p-1">

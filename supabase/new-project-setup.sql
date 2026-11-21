@@ -1,4 +1,4 @@
--- Cardliy STEM setup for a brand-new, empty Supabase project.
+-- STEM2Connect setup for a brand-new, empty Supabase project.
 -- Run this file once in Supabase SQL Editor. Do not run the individual
 -- migration files in this folder as well; this script consolidates them.
 

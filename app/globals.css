@@ -249,48 +249,11 @@ body:has(.auth-screen) {
   animation: nfc-phase-idle 11s ease-in-out infinite;
 }
 
-/* No scanned-card render available: the idle state simply stays put. */
-.nfc-phase-hold {
-  animation: none;
-  opacity: 1;
-}
-
 .nfc-phase-result {
   position: absolute;
   inset: 0;
   opacity: 0;
   animation: nfc-phase-result 11s ease-in-out infinite;
-}
-
-.nfc-phone-face {
-  position: absolute;
-  inset: 6% 11%;
-  border-radius: 34px;
-  background: linear-gradient(180deg, #f7f8fa, #e9edf4);
-  box-shadow:
-    0 0 0 7px #141c2a,
-    0 0 0 9px #4a5875,
-    0 26px 60px rgba(2, 6, 14, 0.45);
-}
-
-.nfc-idle {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  padding: 0 26px;
-  text-align: center;
-  color: #6d82bf;
-}
-
-.nfc-idle p {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.45;
-  color: #52606f;
 }
 
 .nfc-tap-card {
@@ -312,6 +275,13 @@ body:has(.auth-screen) {
 
 img.nfc-card-art {
   object-fit: contain;
+}
+
+.nfc-card-loading {
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 46px rgba(2, 6, 14, 0.35);
 }
 
 .nfc-card-css {
@@ -524,7 +494,7 @@ img.nfc-card-art {
   .nfc-caption-1 {
     opacity: 0;
   }
-  .nfc-phase-idle:not(.nfc-phase-hold) {
+  .nfc-phase-idle {
     animation: none !important;
     opacity: 0;
   }

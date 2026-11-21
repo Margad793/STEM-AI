@@ -838,17 +838,10 @@ export default function Page() {
           type="button"
           onClick={() => window.location.reload()}
           className="flex min-w-0 shrink items-center gap-2"
-          aria-label="Cardliy"
+          aria-label="STEM2Connect"
         >
-          <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-[#f7f4ed]">
-            <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_gbudftgbudftgbud-6IOh1Fmz2F5ytWKVOX16A263gpQwEa.jpg"
-              alt="Cardliy logo"
-              className="size-full object-cover"
-            />
-          </span>
           <span className="font-serif text-[18px] font-medium italic tracking-[-0.045em] text-[#18202d]">
-            Cardliy
+            STEM2Connect
           </span>
         </button>
         <div className="flex min-w-0 shrink items-center gap-1.5">

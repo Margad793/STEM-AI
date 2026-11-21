@@ -1,4 +1,4 @@
--- Add automatic NFC / QR public-card tap counts to an existing Cardliy project.
+-- Add automatic NFC / QR public-card tap counts to an existing STEM2Connect project.
 -- Public page loads of published cards count as taps; no visitor identity is stored.
 
 begin;

@@ -20,7 +20,7 @@ const publicCardHost = getPublicSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL).rep
 // data and is reset when the visitor clears their site data.
 function getOrCreateVisitorId(): string | null {
   try {
-    const key = 'cardly-visitor-id'
+    const key = 'stem2connect-visitor-id'
     const existing = window.localStorage.getItem(key)
     if (existing) return existing
     if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {

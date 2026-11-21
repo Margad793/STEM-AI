@@ -1,4 +1,4 @@
--- Cardliy STEM profile fields
+-- STEM2Connect profile fields
 -- Run once in each Supabase project after duplicating the app/database.
 
 alter table public.cards
