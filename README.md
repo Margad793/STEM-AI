@@ -23,3 +23,26 @@ At academic conferences, hackathons, and STEM networking events, thousands of pa
 - **Repository:** https://github.com/Margad793/STEM-AI
 - **Demo Account Email:** `Stem2ConnectAI@gmail.com`
 - **Demo Account Password:** `Stem2ConnectAI1234`
+
+
+
+## How to Run Locally
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Margad793/STEM-AI.git
+cd STEM-AI
+
+# 2. Install dependencies
+npm install
+
+# 3. Create a .env.local file and add your keys:
+# NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+# GEMINI_API_KEY=your_google_gemini_api_key
+
+# 4. Start the development server
+npm run dev
+
+# 5. Open http://localhost:3000 in your browser
+```
